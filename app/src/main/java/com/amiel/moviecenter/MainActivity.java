@@ -21,10 +21,10 @@ public class MainActivity extends AppCompatActivity {
     ListView listView;
 
     // Define array adapter for ListView
-    ArrayAdapter<String> adapter;
+    MovieListAdapter adapter;
 
     // Define array List for List View data
-    ArrayList<String> mylist;
+    List<MovieListItem> moviesList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,16 +35,14 @@ public class MainActivity extends AppCompatActivity {
         listView = findViewById(R.id.listView);
 
         // Add items to Array List
-        mylist = new ArrayList<>();
-        mylist.add("1");
-        mylist.add("11");
-        mylist.add("12");
-        mylist.add("22");
-        mylist.add("1234");
-        mylist.add("43");
+        moviesList = new ArrayList<>();
+        moviesList.add(new MovieListItem("Joker", "2019", R.drawable.joker));
+        moviesList.add(new MovieListItem("Inception", "2010", R.drawable.inception));
+        moviesList.add(new MovieListItem("Black Panther", "2018", R.drawable.blackpanther));
+        moviesList.add(new MovieListItem("Jaws", "1975", R.drawable.jaws));
 
         // Set adapter to ListView
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mylist);
+        adapter = new MovieListAdapter(this, moviesList);
         listView.setAdapter(adapter);
     }
 
@@ -67,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String query) {
                 // If the list contains the search query than filter the adapter
                 // using the filter method with the query as its argument
-                if (mylist.contains(query)) {
+                if (moviesList.stream().anyMatch(curr -> curr.movieName.toLowerCase().contains(query.toLowerCase()))) {
                     adapter.getFilter().filter(query);
                 } else {
                     // Search query not found in List View
