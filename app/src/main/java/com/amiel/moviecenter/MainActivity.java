@@ -1,30 +1,32 @@
 package com.amiel.moviecenter;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuItemCompat;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    // List View object
-    ListView listView;
+    // Recycler View object
+    RecyclerView list;
 
-    // Define array adapter for ListView
-    MovieListAdapter adapter;
+    // Define array List for Recycler View data
+    private List<MovieListItem> originalData;
+    private List<MovieListItem> filteredData;
 
-    // Define array List for List View data
-    List<MovieListItem> moviesList;
+    MovieRecyclerAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,18 +34,29 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // initialise ListView with id
-        listView = findViewById(R.id.listView);
+        list = findViewById(R.id.main_recycler_list_movies);
+        list.setHasFixedSize(true);
 
         // Add items to Array List
-        moviesList = new ArrayList<>();
-        moviesList.add(new MovieListItem("Joker", "2019", R.drawable.joker));
-        moviesList.add(new MovieListItem("Inception", "2010", R.drawable.inception));
-        moviesList.add(new MovieListItem("Black Panther", "2018", R.drawable.blackpanther));
-        moviesList.add(new MovieListItem("Jaws", "1975", R.drawable.jaws));
+        originalData = new ArrayList<>();
+        originalData.add(new MovieListItem("Joker", "2019", R.drawable.joker));
+        originalData.add(new MovieListItem("Inception", "2010", R.drawable.inception));
+        originalData.add(new MovieListItem("Black Panther", "2018", R.drawable.blackpanther));
+        originalData.add(new MovieListItem("Jaws", "1975", R.drawable.jaws));
 
-        // Set adapter to ListView
-        adapter = new MovieListAdapter(this, moviesList);
-        listView.setAdapter(adapter);
+        // Set adapter to recycler view
+        list.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new MovieRecyclerAdapter(originalData);
+        list.setAdapter(adapter);
+
+        list.addItemDecoration(new DividerItemDecoration(list.getContext(), DividerItemDecoration.VERTICAL));
+        
+        adapter.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(int pos) {
+                Log.d("TAG", "Row was clicked " + pos);
+            }
+        });
     }
 
     @Override
@@ -65,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onQueryTextSubmit(String query) {
                 // If the list contains the search query than filter the adapter
                 // using the filter method with the query as its argument
-                if (moviesList.stream().anyMatch(curr -> curr.movieName.toLowerCase().contains(query.toLowerCase()))) {
+                if (originalData.stream().anyMatch(curr -> curr.movieName.toLowerCase().contains(query.toLowerCase()))) {
                     adapter.getFilter().filter(query);
                 } else {
                     // Search query not found in List View
