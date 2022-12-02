@@ -1,65 +1,48 @@
 package com.amiel.moviecenter;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.ImageView;
-import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MovieListAdapter extends BaseAdapter implements Filterable {
+class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> implements Filterable {
 
-    Context context;
-    private List<MovieListItem> originalData;
-    private List<MovieListItem> filteredData;
-    private static LayoutInflater inflater = null;
+    OnItemClickListener listener;
+    List<MovieListItem> originalData;
+    List<MovieListItem> filteredData;
 
-    public MovieListAdapter(Context context, List<MovieListItem> data) {
-        this.context = context;
-        this.originalData = data;
-        this.filteredData = data;
-        inflater = (LayoutInflater) context
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    public MovieRecyclerAdapter(List<MovieListItem> originalData) {
+        this.originalData = originalData;
+        this.filteredData = originalData;
+    }
+
+    void setOnItemClickListener(OnItemClickListener listener){
+        this.listener = listener;
+    }
+
+    @NonNull
+    @Override
+    public MovieViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_item,parent,false);
+        return new MovieViewHolder(view,listener);
     }
 
     @Override
-    public int getCount() {
+    public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
+        MovieListItem movie = filteredData.get(position);
+        holder.bind(movie, position);
+    }
+
+    @Override
+    public int getItemCount() {
         return filteredData.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return filteredData.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View vi = convertView;
-        if (vi == null)
-            vi = inflater.inflate(R.layout.row_item, null);
-
-        ImageView movieImage = (ImageView) vi.findViewById(R.id.row_item_movie_image);
-        TextView movieName = (TextView) vi.findViewById(R.id.row_item_movie_name);
-        TextView movieYear = (TextView) vi.findViewById(R.id.row_item_movie_year);
-
-        MovieListItem item = filteredData.get(position);
-
-        movieName.setText(item.movieName);
-        movieYear.setText(item.movieYear);
-        movieImage.setImageResource(item.imageResID);
-
-        return vi;
     }
 
     @Override
