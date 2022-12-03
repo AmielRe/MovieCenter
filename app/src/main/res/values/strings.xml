@@ -13,6 +13,8 @@
     <string name="sign_in_email_hint">Email</string>
     <string name="sign_in_password_hint">Password</string>
     <string name="sign_in_button_text">Sign in</string>
+    <string name="error_invalid_email_length">Please enter valid email</string>
+    <string name="error_invalid_password_length">Please enter 6–20 letters password</string>
 
     <!-- Login options -->
     <string name="login_sign_in_with_google_text">Sign in with google</string>
@@ -27,4 +29,7 @@
     <string name="sign_up_username_string">Username</string>
     <string name="sign_up_big_header_text">Register</string>
     <string name="sign_up_small_header_text">Create new account</string>
+    <string name="error_email_already_in_use">We\'re sorry, this email is taken</string>
+    <string name="error_password_confirm">Passwords don\'t match</string>
+    <string name="error_invalid_username_length">Please enter 3–15 letters username</string>
 </resources>
