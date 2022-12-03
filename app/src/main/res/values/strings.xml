@@ -29,4 +29,7 @@
     <string name="sign_up_username_string">Username</string>
     <string name="sign_up_big_header_text">Register</string>
     <string name="sign_up_small_header_text">Create new account</string>
+    <string name="error_email_already_in_use">We\'re sorry, this email is taken</string>
+    <string name="error_password_confirm">Passwords don\'t match</string>
+    <string name="error_invalid_username_length">Please enter 3–15 letters username</string>
 </resources>
