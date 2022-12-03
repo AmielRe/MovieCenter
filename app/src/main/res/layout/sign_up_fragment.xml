@@ -46,7 +46,7 @@
             android:hint="@string/sign_up_username_string"
             android:textColorHint="@color/pink300"
             app:errorEnabled="true"
-            app:startIconDrawable="@android:drawable/sym_action_email">
+            app:startIconDrawable="@mipmap/ic_action_account_circle">
 
             <!--this is the actual edit text which takes the input-->
             <com.google.android.material.textfield.TextInputEditText

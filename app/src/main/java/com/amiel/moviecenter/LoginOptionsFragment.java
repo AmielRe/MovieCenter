@@ -35,5 +35,11 @@ public class LoginOptionsFragment extends Fragment {
                 FragmentUtils.loadFragment(LoginOptionsFragment.this, null, new SignInFragment());
             }
         });
+
+        signUp.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                FragmentUtils.loadFragment(LoginOptionsFragment.this, null, new SignUpFragment());
+            }
+        });
     }
 }
