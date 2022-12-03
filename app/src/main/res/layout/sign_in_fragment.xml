@@ -11,14 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="#3fff"
         android:gravity="center"
         android:padding="10dp">
 
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Login"
+            android:text="@string/sign_in_big_header_text"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:textColor="@android:color/black"
@@ -30,7 +29,7 @@
         <com.google.android.material.textview.MaterialTextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Please sign in to continue"
+            android:text="@string/sign_in_small_header_text"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:layout_marginBottom="32dp"
@@ -41,19 +40,19 @@
         </com.google.android.material.textview.MaterialTextView>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/login_email_inputlayout"
+            android:id="@+id/sign_in_email_inputlayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
-            android:hint="@string/login_email_hint"
+            android:hint="@string/sign_in_email_hint"
             android:textColorHint="@color/pink300"
             app:errorEnabled="true"
             app:startIconDrawable="@android:drawable/sym_action_email">
 
             <!--this is the actual edit text which takes the input-->
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/login_email_edittext"
+                android:id="@+id/sign_in_email_edittext"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textEmailAddress"
@@ -62,19 +61,19 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/login_password_inputlayout"
+            android:id="@+id/sign_in_password_inputlayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
-            android:hint="@string/login_password_hint"
+            android:hint="@string/sign_in_password_hint"
             android:textColorHint="@color/pink300"
             app:errorEnabled="true"
             app:startIconDrawable="@android:drawable/ic_lock_lock">
 
             <!--this is the actual edit text which takes the input-->
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/login_password_edittext"
+                android:id="@+id/sign_in_password_edittext"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword" />
@@ -82,10 +81,10 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button style="@style/Widget.AppCompat.Button.Colored"
-            android:id="@+id/login_sign_in_button"
+            android:id="@+id/sign_in_sign_in_button"
             android:layout_width="250dp"
             android:layout_height="40dp"
-            android:text="@string/login_sign_in_button_text"
+            android:text="@string/sign_in_button_text"
             android:layout_marginTop="10dp"
             android:background="@drawable/customloginbutton"
             android:textColor="#FFFBF6"/>
