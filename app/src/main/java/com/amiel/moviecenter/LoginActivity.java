@@ -2,12 +2,9 @@ package com.amiel.moviecenter;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import androidx.fragment.app.FragmentManager;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.Toast;
-
-import com.google.android.material.textfield.TextInputLayout;
+import android.util.Log;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -15,13 +12,18 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        
-        Button signinButton = (Button) findViewById(R.id.login_sign_in_button);
+        FragmentUtils.loadFragment(null, LoginActivity.this, new LoginOptionsFragment());
+    }
 
-        signinButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Toast.makeText(LoginActivity.this, "Click event works.", Toast.LENGTH_SHORT).show();
-            }
-        });
+    @Override
+    public void onBackPressed(){
+        FragmentManager fm = getSupportFragmentManager();
+        if (fm.getBackStackEntryCount() > 0) {
+            Log.i("MainActivity", "popping backstack");
+            fm.popBackStack();
+        } else {
+            Log.i("MainActivity", "nothing on backstack, calling super");
+            super.onBackPressed();
+        }
     }
 }
