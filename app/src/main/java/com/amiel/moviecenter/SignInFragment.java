@@ -1,5 +1,6 @@
 package com.amiel.moviecenter;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
@@ -10,10 +11,16 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Objects;
 
@@ -24,11 +31,15 @@ public class SignInFragment extends Fragment {
     TextInputLayout emailInputLayout;
     TextInputLayout passwordInputLayout;
     Button signInButton;
+    private FirebaseAuth mAuth;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+        // Initialize Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
+
         // Defines the xml file for the fragment
         return inflater.inflate(R.layout.sign_in_fragment, parent, false);
     }
@@ -74,7 +85,25 @@ public class SignInFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(validate()) {
-                    // Success -> login with firebase
+                    mAuth.signInWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString())
+                            .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+                                        // Sign in success, update UI with the signed-in user's information
+                                        Log.d("TAG", "signInWithEmail:success");
+                                        FirebaseUser user = mAuth.getCurrentUser();
+                                        Intent i = new Intent(getActivity(), MainActivity.class);
+                                        startActivity(i);
+                                        getActivity().finish();
+                                    } else {
+                                        // If sign in fails, display a message to the user.
+                                        Log.w("TAG", "signInWithEmail:failure", task.getException());
+                                        Toast.makeText(SignInFragment.this.getContext(), "Authentication failed.",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
                 }
             }
         });
