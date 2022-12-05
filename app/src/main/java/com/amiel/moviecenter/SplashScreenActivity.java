@@ -13,26 +13,21 @@ import com.google.firebase.auth.FirebaseUser;
 
 public class SplashScreenActivity extends AppCompatActivity {
 
-    private FirebaseAuth mAuth;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-
-        // Initialize Firebase Auth
-        mAuth = FirebaseAuth.getInstance();
     }
 
     @Override
     public void onStart() {
         super.onStart();
         Intent i;
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
+        if(FirebaseAuthHandler.getInstance().isUserLoggedIn()){
+            Toast.makeText(this, "EXIST", Toast.LENGTH_SHORT).show();
             i = new Intent(SplashScreenActivity.this, MainActivity.class);
         } else {
+            Toast.makeText(this, "EXIST", Toast.LENGTH_SHORT).show();
             i = new Intent(SplashScreenActivity.this, LoginActivity.class);
         }
 
