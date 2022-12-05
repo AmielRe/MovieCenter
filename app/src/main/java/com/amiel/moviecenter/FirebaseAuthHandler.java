@@ -18,6 +18,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.SignInMethodQueryResult;
 
 public class FirebaseAuthHandler {
     private static volatile FirebaseAuthHandler INSTANCE = null;
@@ -39,6 +40,10 @@ public class FirebaseAuthHandler {
             }
         }
         return INSTANCE;
+    }
+
+    public FirebaseAuth getmAuth() {
+        return mAuth;
     }
 
     public boolean isUserLoggedIn() {

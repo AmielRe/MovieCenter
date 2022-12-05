@@ -1,6 +1,7 @@
 package com.amiel.moviecenter;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,10 +9,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.SignInMethodQueryResult;
 
 import java.util.Objects;
 
@@ -117,7 +122,27 @@ public class SignUpFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(validate()) {
-                    FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity());
+                    // Check email isn't already exist
+                    // We're doing it here and not in validate because it's async call
+                    FirebaseAuthHandler.getInstance().getmAuth().fetchSignInMethodsForEmail(emailEditText.getText().toString())
+                            .addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+
+                                    boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
+
+                                    if (isNewUser) {
+                                        // Email doesn't already exist
+                                        emailEditText.setError(null);
+                                        FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity());
+                                    } else {
+                                        // Email already exists
+                                        emailEditText.setError(getString(R.string.error_email_already_in_use));
+                                        emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+                                    }
+
+                                }
+                            });
                 }
             }
         });
@@ -134,6 +159,7 @@ public class SignUpFragment extends Fragment {
         if (username.isEmpty() || username.length() < 3 || username.length() > 15) {
             usernameEditText.setError(getString(R.string.error_invalid_username_length));
             valid = false;
+            usernameInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             usernameEditText.setError(null);
         }
@@ -141,20 +167,15 @@ public class SignUpFragment extends Fragment {
         if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             emailEditText.setError(getString(R.string.error_invalid_email_length));
             valid = false;
+            emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             emailEditText.setError(null);
         }
 
-        /*if(EMAIL_IS_TAKEN) {
-            emailEditText.setError(getString(R.string.error_email_already_in_use));
-            valid = false;
-        } else {
-            emailEditText.setError(null);
-        }*/
-
         if (password.isEmpty() || password.length() < 6 || password.length() > 20) {
             passwordEditText.setError(getString(R.string.error_invalid_password_length));
             valid = false;
+            passwordInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             passwordEditText.setError(null);
         }
@@ -162,6 +183,7 @@ public class SignUpFragment extends Fragment {
         if(passwordConfirm.isEmpty() || !passwordConfirm.equals(password)) {
             passwordConfirmEditText.setError(getString(R.string.error_password_confirm));
             valid = false;
+            passwordConfirmInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             passwordConfirmEditText.setError(null);
         }
