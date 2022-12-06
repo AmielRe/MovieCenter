@@ -1,22 +1,39 @@
 package com.amiel.moviecenter;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.auth.SignInMethodQueryResult;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.Objects;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class SignUpFragment extends Fragment {
 
+    ProgressBar loadingProgressBar;
     TextInputEditText usernameEditText;
     TextInputEditText emailEditText;
     TextInputEditText passwordEditText;
@@ -26,6 +43,8 @@ public class SignUpFragment extends Fragment {
     TextInputLayout passwordInputLayout;
     TextInputLayout passwordConfirmInputLayout;
     Button signUpButton;
+
+    private static final String BASE_URL = "https://api.eva.pingutil.com/email?email=";
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
@@ -39,6 +58,7 @@ public class SignUpFragment extends Fragment {
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        loadingProgressBar = view.findViewById(R.id.sign_up_loading_progress_bar);
         usernameInputLayout = view.findViewById(R.id.sign_up_username_input_layout);
         usernameEditText = view.findViewById(R.id.sign_up_username_edittext);
         emailInputLayout = view.findViewById(R.id.sign_up_email_input_layout);
@@ -117,7 +137,78 @@ public class SignUpFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(validate()) {
-                    // Success -> register with firebase
+                    loadingProgressBar.setVisibility(View.VISIBLE);
+                    OkHttpClient client = new OkHttpClient();
+
+                    Request request = new Request.Builder()
+                            .url(BASE_URL + emailEditText.getText().toString())
+                            .build();
+
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            //loadingProgressBar.setVisibility(View.GONE);
+                            call.cancel();
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+
+                            final String myResponse = response.body().string();
+                            JSONObject json = new JSONObject();
+                            try {
+                                json = new JSONObject(myResponse);
+                            } catch (JSONException e) {
+                                loadingProgressBar.setVisibility(View.INVISIBLE);
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                // Check if email is real
+                                if(json.getJSONObject("data").getBoolean("valid_syntax") && json.getJSONObject("data").getBoolean("deliverable")) {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            // If we got here, email is not fake
+                                            FirebaseAuthHandler.getInstance().getmAuth().fetchSignInMethodsForEmail(emailEditText.getText().toString())
+                                                    .addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+
+                                                            boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
+
+                                                            if (isNewUser) {
+                                                                // Email doesn't already exist
+                                                                emailEditText.setError(null);
+                                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity());
+                                                            } else {
+                                                                // Email already exists
+                                                                emailEditText.setError(getString(R.string.error_email_already_in_use));
+                                                                emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+                                                                loadingProgressBar.setVisibility(View.INVISIBLE);
+                                                            }
+
+                                                        }
+                                                    });
+                                        }
+                                    });
+                                }
+                                else {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+                                            emailEditText.setError(getString(R.string.error_invalid_email));
+                                            loadingProgressBar.setVisibility(View.INVISIBLE);
+                                        }
+                                    });
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                loadingProgressBar.setVisibility(View.INVISIBLE);
+                            }
+                        }
+                    });
                 }
             }
         });
@@ -134,6 +225,7 @@ public class SignUpFragment extends Fragment {
         if (username.isEmpty() || username.length() < 3 || username.length() > 15) {
             usernameEditText.setError(getString(R.string.error_invalid_username_length));
             valid = false;
+            usernameInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             usernameEditText.setError(null);
         }
@@ -141,20 +233,15 @@ public class SignUpFragment extends Fragment {
         if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             emailEditText.setError(getString(R.string.error_invalid_email_length));
             valid = false;
+            emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             emailEditText.setError(null);
         }
 
-        /*if(EMAIL_IS_TAKEN) {
-            emailEditText.setError(getString(R.string.error_email_already_in_use));
-            valid = false;
-        } else {
-            emailEditText.setError(null);
-        }*/
-
         if (password.isEmpty() || password.length() < 6 || password.length() > 20) {
             passwordEditText.setError(getString(R.string.error_invalid_password_length));
             valid = false;
+            passwordInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             passwordEditText.setError(null);
         }
@@ -162,6 +249,7 @@ public class SignUpFragment extends Fragment {
         if(passwordConfirm.isEmpty() || !passwordConfirm.equals(password)) {
             passwordConfirmEditText.setError(getString(R.string.error_password_confirm));
             valid = false;
+            passwordConfirmInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             passwordConfirmEditText.setError(null);
         }

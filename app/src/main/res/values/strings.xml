@@ -20,6 +20,7 @@
     <string name="login_sign_in_with_google_text">Sign in with google</string>
     <string name="login_sign_in_with_email_text">Sign in with email</string>
     <string name="login_sign_up_button_text">Sign up</string>
+    <string name="web_client_id">1081210416441-in054ffkomiqgqdqefsg630tcj61lr14.apps.googleusercontent.com</string>
 
     <!-- Sign up -->
     <string name="sign_up_password_edittext">Password</string>
@@ -32,4 +33,5 @@
     <string name="error_email_already_in_use">We\'re sorry, this email is taken</string>
     <string name="error_password_confirm">Passwords don\'t match</string>
     <string name="error_invalid_username_length">Please enter 3–15 letters username</string>
+    <string name="error_invalid_email">Please enter a valid email</string>
 </resources>

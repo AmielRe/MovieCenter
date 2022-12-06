@@ -1,17 +1,14 @@
 package com.amiel.moviecenter;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
-
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -74,7 +71,7 @@ public class SignInFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(validate()) {
-                    // Success -> login with firebase
+                    FirebaseAuthHandler.getInstance().signInWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity());
                 }
             }
         });
