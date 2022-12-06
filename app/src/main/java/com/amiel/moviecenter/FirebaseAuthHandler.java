@@ -126,4 +126,8 @@ public class FirebaseAuthHandler {
 
         return email;
     }
+
+    public void logoutCurrentUser() {
+        mAuth.signOut();
+    }
 }

@@ -27,4 +27,10 @@
         android:orderInCategory="100"
         android:title="@string/menu_my_posts_text"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_logout"
+        android:orderInCategory="100"
+        android:title="@string/menu_logout_text"
+        app:showAsAction="never" />
 </menu>

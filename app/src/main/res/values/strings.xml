@@ -6,6 +6,7 @@
     <string name="menu_login_text">Login</string>
     <string name="menu_profile_text">Profile</string>
     <string name="menu_my_posts_text">My Posts</string>
+    <string name="menu_logout_text">Logout</string>
 
     <!-- Sign in -->
     <string name="sign_in_small_header_text">Please sign in to continue</string>

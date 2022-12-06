@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -81,6 +82,7 @@ public class MoviesListFragment extends Fragment {
         } else {
             menu.findItem(R.id.menu_profile).setVisible(false);
             menu.findItem(R.id.menu_my_posts).setVisible(false);
+            menu.findItem(R.id.menu_logout).setVisible(false);
         }
 
         // Initialise menu item search bar
@@ -135,10 +137,27 @@ public class MoviesListFragment extends Fragment {
                 // Here will come my_posts fragment
                 break;
 
+            case R.id.menu_logout:
+                FirebaseAuthHandler.getInstance().logoutCurrentUser();
+                getActivity().invalidateOptionsMenu();
+
             default:
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        
+        if (FirebaseAuthHandler.getInstance().isUserLoggedIn()) {
+            menu.findItem(R.id.menu_login).setVisible(false);
+        } else {
+            menu.findItem(R.id.menu_profile).setVisible(false);
+            menu.findItem(R.id.menu_my_posts).setVisible(false);
+            menu.findItem(R.id.menu_logout).setVisible(false);
+        }
     }
 }
