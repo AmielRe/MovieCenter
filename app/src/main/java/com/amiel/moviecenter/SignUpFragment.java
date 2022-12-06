@@ -7,8 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -33,6 +33,7 @@ import okhttp3.Response;
 
 public class SignUpFragment extends Fragment {
 
+    ProgressBar loadingProgressBar;
     TextInputEditText usernameEditText;
     TextInputEditText emailEditText;
     TextInputEditText passwordEditText;
@@ -57,6 +58,7 @@ public class SignUpFragment extends Fragment {
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        loadingProgressBar = view.findViewById(R.id.sign_up_loading_progress_bar);
         usernameInputLayout = view.findViewById(R.id.sign_up_username_input_layout);
         usernameEditText = view.findViewById(R.id.sign_up_username_edittext);
         emailInputLayout = view.findViewById(R.id.sign_up_email_input_layout);
@@ -135,6 +137,7 @@ public class SignUpFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(validate()) {
+                    loadingProgressBar.setVisibility(View.VISIBLE);
                     OkHttpClient client = new OkHttpClient();
 
                     Request request = new Request.Builder()
@@ -144,6 +147,7 @@ public class SignUpFragment extends Fragment {
                     client.newCall(request).enqueue(new Callback() {
                         @Override
                         public void onFailure(Call call, IOException e) {
+                            //loadingProgressBar.setVisibility(View.GONE);
                             call.cancel();
                         }
 
@@ -155,6 +159,7 @@ public class SignUpFragment extends Fragment {
                             try {
                                 json = new JSONObject(myResponse);
                             } catch (JSONException e) {
+                                loadingProgressBar.setVisibility(View.INVISIBLE);
                                 e.printStackTrace();
                             }
 
@@ -180,6 +185,7 @@ public class SignUpFragment extends Fragment {
                                                                 // Email already exists
                                                                 emailEditText.setError(getString(R.string.error_email_already_in_use));
                                                                 emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+                                                                loadingProgressBar.setVisibility(View.INVISIBLE);
                                                             }
 
                                                         }
@@ -193,11 +199,13 @@ public class SignUpFragment extends Fragment {
                                         public void run() {
                                             emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
                                             emailEditText.setError(getString(R.string.error_invalid_email));
+                                            loadingProgressBar.setVisibility(View.INVISIBLE);
                                         }
                                     });
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
+                                loadingProgressBar.setVisibility(View.INVISIBLE);
                             }
                         }
                     });
