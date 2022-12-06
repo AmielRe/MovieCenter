@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -18,7 +19,17 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.SignInMethodQueryResult;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.Objects;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class SignUpFragment extends Fragment {
 
@@ -31,6 +42,8 @@ public class SignUpFragment extends Fragment {
     TextInputLayout passwordInputLayout;
     TextInputLayout passwordConfirmInputLayout;
     Button signUpButton;
+
+    private static final String BASE_URL = "https://api.eva.pingutil.com/email?email=";
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
@@ -122,27 +135,72 @@ public class SignUpFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(validate()) {
-                    // Check email isn't already exist
-                    // We're doing it here and not in validate because it's async call
-                    FirebaseAuthHandler.getInstance().getmAuth().fetchSignInMethodsForEmail(emailEditText.getText().toString())
-                            .addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+                    OkHttpClient client = new OkHttpClient();
 
-                                    boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
+                    Request request = new Request.Builder()
+                            .url(BASE_URL + emailEditText.getText().toString())
+                            .build();
 
-                                    if (isNewUser) {
-                                        // Email doesn't already exist
-                                        emailEditText.setError(null);
-                                        FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity());
-                                    } else {
-                                        // Email already exists
-                                        emailEditText.setError(getString(R.string.error_email_already_in_use));
-                                        emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
-                                    }
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                            call.cancel();
+                        }
 
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+
+                            final String myResponse = response.body().string();
+                            JSONObject json = new JSONObject();
+                            try {
+                                json = new JSONObject(myResponse);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                            try {
+                                // Check if email is real
+                                if(json.getJSONObject("data").getBoolean("valid_syntax") && json.getJSONObject("data").getBoolean("deliverable")) {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            // If we got here, email is not fake
+                                            FirebaseAuthHandler.getInstance().getmAuth().fetchSignInMethodsForEmail(emailEditText.getText().toString())
+                                                    .addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+
+                                                            boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
+
+                                                            if (isNewUser) {
+                                                                // Email doesn't already exist
+                                                                emailEditText.setError(null);
+                                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity());
+                                                            } else {
+                                                                // Email already exists
+                                                                emailEditText.setError(getString(R.string.error_email_already_in_use));
+                                                                emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+                                                            }
+
+                                                        }
+                                                    });
+                                        }
+                                    });
                                 }
-                            });
+                                else {
+                                    getActivity().runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+                                            emailEditText.setError(getString(R.string.error_invalid_email));
+                                        }
+                                    });
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
                 }
             }
         });
