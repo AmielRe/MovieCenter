@@ -18,7 +18,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.SignInMethodQueryResult;
 
 public class FirebaseAuthHandler {
     private static volatile FirebaseAuthHandler INSTANCE = null;
@@ -75,7 +74,7 @@ public class FirebaseAuthHandler {
                 });
     }
 
-    public void createUserWithEmailAndPassword(String email, String password, Activity context) {
+    public void createUserWithEmailAndPassword(String email, String password, String username, Activity context) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(context, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -116,5 +115,19 @@ public class FirebaseAuthHandler {
 
     public Intent getSignInIntent() {
         return mSignInClient.getSignInIntent();
+    }
+
+    public String getCurrentUserEmail() {
+        String email = "";
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            email = user.getEmail();
+        }
+
+        return email;
+    }
+
+    public void logoutCurrentUser() {
+        mAuth.signOut();
     }
 }

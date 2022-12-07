@@ -6,6 +6,7 @@
     <string name="menu_login_text">Login</string>
     <string name="menu_profile_text">Profile</string>
     <string name="menu_my_posts_text">My Posts</string>
+    <string name="menu_logout_text">Logout</string>
 
     <!-- Sign in -->
     <string name="sign_in_small_header_text">Please sign in to continue</string>
@@ -34,4 +35,9 @@
     <string name="error_password_confirm">Passwords don\'t match</string>
     <string name="error_invalid_username_length">Please enter 3–15 letters username</string>
     <string name="error_invalid_email">Please enter a valid email</string>
+
+    <!-- Profile page -->
+    <string name="profile_username">Username</string>
+    <string name="profile_email">Email</string>
+    <string name="profile_save_button">SAVE</string>
 </resources>

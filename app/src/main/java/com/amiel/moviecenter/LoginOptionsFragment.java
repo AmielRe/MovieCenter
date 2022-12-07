@@ -43,13 +43,13 @@ public class LoginOptionsFragment extends Fragment {
 
         signInWithEmail.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                FragmentUtils.loadFragment(LoginOptionsFragment.this, null, new SignInFragment());
+                FragmentUtils.loadFragment(LoginOptionsFragment.this, null, new SignInFragment(), R.id.activity_login_frame_layout);
             }
         });
 
         signUp.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                FragmentUtils.loadFragment(LoginOptionsFragment.this, null, new SignUpFragment());
+                FragmentUtils.loadFragment(LoginOptionsFragment.this, null, new SignUpFragment(), R.id.activity_login_frame_layout);
             }
         });
 

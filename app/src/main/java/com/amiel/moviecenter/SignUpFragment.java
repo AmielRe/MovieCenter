@@ -180,7 +180,7 @@ public class SignUpFragment extends Fragment {
                                                             if (isNewUser) {
                                                                 // Email doesn't already exist
                                                                 emailEditText.setError(null);
-                                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity());
+                                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), usernameEditText.getText().toString(), getActivity());
                                                             } else {
                                                                 // Email already exists
                                                                 emailEditText.setError(getString(R.string.error_email_already_in_use));
