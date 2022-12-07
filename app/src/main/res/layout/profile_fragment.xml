@@ -11,21 +11,31 @@
         android:gravity="center"
         android:padding="10dp">
 
-        <ImageButton
-            android:id="@+id/activity_profile_image"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:scaleType="fitXY"
-            android:background="?selectableItemBackgroundBorderless"
-            android:padding="10dp"
-            android:src="@drawable/default_profile_image"
+        <androidx.cardview.widget.CardView
+            app:cardElevation = "16dp"
+            app:cardCornerRadius = "160dp"
+            android:foregroundGravity = "center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_width = "120dp"
+            android:layout_height = "120dp">
+
+            <ImageView
+                android:id="@+id/profile_fragment_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/default_profile_image"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.cardview.widget.CardView>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/activity_profile_username_input_layout"
+            android:id="@+id/profile_fragment_username_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
@@ -35,7 +45,7 @@
 
             <!--this is the actual edit text which takes the input-->
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/activity_profile_username_edit_text"
+                android:id="@+id/profile_fragment_username_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint=""/>
@@ -43,7 +53,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/activity_profile_email_input_layout"
+            android:id="@+id/profile_fragment_email_input_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
@@ -53,7 +63,7 @@
 
             <!--this is the actual edit text which takes the input-->
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/activity_profile_email_edit_text"
+                android:id="@+id/profile_fragment_email_edit_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint=""/>
@@ -61,7 +71,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <Button style="@style/Widget.AppCompat.Button.Colored"
-            android:id="@+id/sign_in_sign_in_button"
+            android:id="@+id/profile_fragment_save_button"
             android:layout_width="250dp"
             android:layout_height="40dp"
             android:text="@string/profile_save_button"
