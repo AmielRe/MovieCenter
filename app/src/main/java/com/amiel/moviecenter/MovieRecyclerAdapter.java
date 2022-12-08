@@ -90,4 +90,8 @@ class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> impleme
             }
         };
     }
+
+    public MovieListItem getItemAtPosition(int pos) {
+        return filteredData.get(pos);
+    }
 }
