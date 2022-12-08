@@ -41,4 +41,9 @@
     <string name="profile_email">Email</string>
     <string name="profile_save_button">SAVE</string>
     <string name="movie_details_related_posts_label">Related posts:</string>
+    <string name="new_post_movie_name_hint">Movie Name</string>
+    <string name="new_post_year_hint">Year</string>
+    <string name="new_post_movie_poster_label">Movie Poster:</string>
+    <string name="new_post_movie_image_label">Movie Image:</string>
+    <string name="new_post_how_was_your_experience_label">How was your experience?</string>
 </resources>
