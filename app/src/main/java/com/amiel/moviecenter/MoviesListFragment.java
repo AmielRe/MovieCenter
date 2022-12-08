@@ -29,7 +29,6 @@ public class MoviesListFragment extends Fragment {
 
     // Define array List for Recycler View data
     private List<MovieListItem> originalData;
-    private List<MovieListItem> filteredData;
 
     MovieRecyclerAdapter adapter;
 
@@ -67,7 +66,11 @@ public class MoviesListFragment extends Fragment {
         adapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
-                Log.d("TAG", "Row was clicked " + pos);
+                Bundle dataToAdd = new Bundle();
+                dataToAdd.putString("name", adapter.getItemAtPosition(pos).movieName);
+                dataToAdd.putString("year", adapter.getItemAtPosition(pos).movieYear);
+                dataToAdd.putInt("image", adapter.getItemAtPosition(pos).imageResID);
+                FragmentUtils.loadFragment(MoviesListFragment.this, null, new MovieDetailsFragment(), R.id.activity_main_frame_layout, dataToAdd);
             }
         });
     }
@@ -130,7 +133,7 @@ public class MoviesListFragment extends Fragment {
                 break;
 
             case R.id.menu_profile:
-                FragmentUtils.loadFragment(null, getActivity(), new ProfileFragment(), R.id.activity_main_frame_layout);
+                FragmentUtils.loadFragment(null, getActivity(), new ProfileFragment(), R.id.activity_main_frame_layout, null);
                 break;
 
             case R.id.menu_my_posts:

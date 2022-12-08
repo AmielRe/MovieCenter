@@ -12,7 +12,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        FragmentUtils.loadFragment(null, LoginActivity.this, new LoginOptionsFragment(), R.id.activity_login_frame_layout);
+        FragmentUtils.loadFragment(null, LoginActivity.this, new LoginOptionsFragment(), R.id.activity_login_frame_layout, null);
     }
 
     @Override
