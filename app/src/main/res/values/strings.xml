@@ -40,4 +40,5 @@
     <string name="profile_username">Username</string>
     <string name="profile_email">Email</string>
     <string name="profile_save_button">SAVE</string>
+    <string name="movie_details_related_posts_label">Related posts:</string>
 </resources>
