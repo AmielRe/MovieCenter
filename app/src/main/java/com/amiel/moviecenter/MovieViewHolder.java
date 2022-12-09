@@ -7,6 +7,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.amiel.moviecenter.DB.Model.Movie;
+
 class MovieViewHolder extends RecyclerView.ViewHolder{
     TextView movieName;
     TextView movieYear;
@@ -27,9 +29,9 @@ class MovieViewHolder extends RecyclerView.ViewHolder{
         });
     }
 
-    public void bind(MovieListItem movie, int pos) {
-        movieName.setText(movie.movieName);
-        movieYear.setText(movie.movieYear);
-        movieImage.setImageResource(movie.imageResID);
+    public void bind(Movie movie, int pos) {
+        movieName.setText(movie.name);
+        movieYear.setText(String.valueOf(movie.year));
+        movieImage.setImageBitmap(ImageUtils.getBitmap(movie.poster));
     }
 }

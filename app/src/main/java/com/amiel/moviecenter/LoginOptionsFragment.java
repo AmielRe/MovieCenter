@@ -79,7 +79,9 @@ public class LoginOptionsFragment extends Fragment {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
-                User newUser = new User(account.getDisplayName(), account.getEmail(), ImageUtils.getBytes(((BitmapDrawable)getActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()));
+
+                // ID is 0 because were not setting it, it's used just for retrieval
+                User newUser = new User(account.getDisplayName(), account.getEmail(), ImageUtils.getBytes(((BitmapDrawable)getActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()), 0);
                 dbManager.insertUser(newUser);
                 FirebaseAuthHandler.getInstance().signInWithGoogle(account, getActivity());
             } catch (ApiException e) {

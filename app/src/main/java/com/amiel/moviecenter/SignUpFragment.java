@@ -191,7 +191,9 @@ public class SignUpFragment extends Fragment {
                                                             if (isNewUser) {
                                                                 // Email doesn't already exist
                                                                 emailEditText.setError(null);
-                                                                User newUser = new User(usernameEditText.getText().toString(), emailEditText.getText().toString(), ImageUtils.getBytes(((BitmapDrawable)getActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()));
+
+                                                                // ID is 0 because were not setting it, it's used just for retrieval
+                                                                User newUser = new User(usernameEditText.getText().toString(), emailEditText.getText().toString(), ImageUtils.getBytes(((BitmapDrawable)getActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()), 0);
                                                                 dbManager.insertUser(newUser);
                                                                 FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), usernameEditText.getText().toString(), getActivity());
                                                             } else {
