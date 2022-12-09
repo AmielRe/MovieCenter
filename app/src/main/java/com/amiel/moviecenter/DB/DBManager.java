@@ -10,6 +10,9 @@ import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DBManager {
 
     private DBHelper dbHelper;
@@ -96,27 +99,65 @@ public class DBManager {
         database.delete(DBHelper.USERS_TABLE_NAME, DBHelper.USER_ID + "=" + id, null);
     }
 
-    public long getMovieIdByNameAndYear(String movieName, int year) {
-        Cursor cursor = database.rawQuery("SELECT id FROM " + DBHelper.MOVIES_TABLE_NAME + " WHERE " + DBHelper.MOVIE_NAME + " IN ( '" + movieName + "' ) AND " + DBHelper.MOVIE_YEAR + " IN ( '" + year + "' )" , null);
+    public Movie getMovieByNameAndYear(String movieName, int movieYear) {
+        Cursor cursor = database.rawQuery("SELECT id FROM " + DBHelper.MOVIES_TABLE_NAME + " WHERE " + DBHelper.MOVIE_NAME + " IN ( '" + movieName + "' ) AND " + DBHelper.MOVIE_YEAR + " IN ( '" + movieYear + "' )" , null);
         cursor.moveToFirst();
-        long id = cursor.getLong(0);
+        String name = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_NAME));
+        String plot = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_PLOT));
+        byte[] poster = cursor.getBlob(cursor.getColumnIndex(DBHelper.MOVIE_POSTER));
+        long id = cursor.getLong(cursor.getColumnIndex(DBHelper.MOVIE_ID));
+        float rating = cursor.getLong(cursor.getColumnIndex(DBHelper.MOVIE_RATING));
+        int year = cursor.getInt(cursor.getColumnIndex(DBHelper.MOVIE_YEAR));
         cursor.close();
-        return id;
+        return new Movie(name, year, rating, plot, poster, id);
     }
 
-    public String getUserNameByEmail(String email) {
-        Cursor cursor = database.rawQuery("SELECT username FROM " + DBHelper.USERS_TABLE_NAME + " WHERE " + DBHelper.USER_EMAIL + " IN ( '" + email + "' )", null);
+    public User getUserByEmail(String email) {
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.USERS_TABLE_NAME + " WHERE " + DBHelper.USER_EMAIL + " IN ( '" + email + "' )", null);
         cursor.moveToFirst();
-        String username = cursor.getString(0);
+        String username = cursor.getString(cursor.getColumnIndex(DBHelper.USER_USERNAME));
+        long id = cursor.getLong(cursor.getColumnIndex(DBHelper.USER_ID));
+        byte[] profileImage= cursor.getBlob(cursor.getColumnIndex(DBHelper.USER_IMAGE));
         cursor.close();
-        return username;
+
+        return new User(username, email, profileImage, id);
     }
 
-    public byte[] getUserImageByEmail(String email) {
-        Cursor cursor = database.rawQuery("SELECT image FROM " + DBHelper.USERS_TABLE_NAME + " WHERE " + DBHelper.USER_EMAIL + " IN ( '" + email + "' )", null);
-        cursor.moveToFirst();
-        byte[] image = cursor.getBlob(0);
+    public ArrayList<Movie> getAllMovies() {
+        ArrayList<Movie> allMovies = new ArrayList<>();
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.MOVIES_TABLE_NAME, null);
+        if (cursor.moveToFirst()){
+            do {
+                String name = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_NAME));
+                String plot = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_PLOT));
+                byte[] poster = cursor.getBlob(cursor.getColumnIndex(DBHelper.MOVIE_POSTER));
+                long id = cursor.getLong(cursor.getColumnIndex(DBHelper.MOVIE_ID));
+                float rating = cursor.getLong(cursor.getColumnIndex(DBHelper.MOVIE_RATING));
+                int year = cursor.getInt(cursor.getColumnIndex(DBHelper.MOVIE_YEAR));
+                Movie movie = new Movie(name, year, rating, plot, poster, id);
+                allMovies.add(movie);
+            } while (cursor.moveToNext());
+        }
         cursor.close();
-        return image;
+
+        return allMovies;
+    }
+
+    public ArrayList<Post> getAllPostsForMovie(long movieId) {
+        ArrayList<Post> allPosts = new ArrayList<>();
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.POSTS_TABLE_NAME + " WHERE " + DBHelper.POST_RELATED_MOVIE_ID + " IN ( '" + movieId + "' )", null);
+        if (cursor.moveToFirst()){
+            do {
+                String text = cursor.getString(cursor.getColumnIndex(DBHelper.POST_TEXT));
+                byte[] image = cursor.getBlob(cursor.getColumnIndex(DBHelper.POST_IMAGE));
+                long id = cursor.getLong(cursor.getColumnIndex(DBHelper.POST_ID));
+                float rating = cursor.getLong(cursor.getColumnIndex(DBHelper.POST_RATING));
+                Post post = new Post(text, movieId, rating, image, id);
+                allPosts.add(post);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        return allPosts;
     }
 }
