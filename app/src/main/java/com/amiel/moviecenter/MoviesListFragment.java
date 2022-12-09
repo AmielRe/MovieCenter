@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -44,9 +45,6 @@ import java.util.List;
 import static android.app.Activity.RESULT_OK;
 
 public class MoviesListFragment extends Fragment {
-
-    // Define array List for Recycler View data
-    private List<MovieListItem> originalData;
 
     MovieRecyclerAdapter adapter;
 
@@ -87,15 +85,11 @@ public class MoviesListFragment extends Fragment {
         list.setHasFixedSize(true);
 
         // Add items to Array List
-        originalData = new ArrayList<>();
-        originalData.add(new MovieListItem("Joker", "2019", R.drawable.joker));
-        originalData.add(new MovieListItem("Inception", "2010", R.drawable.inception));
-        originalData.add(new MovieListItem("Black Panther", "2018", R.drawable.blackpanther));
-        originalData.add(new MovieListItem("Jaws", "1975", R.drawable.jaws));
+        ArrayList<Movie> allMovies = dbManager.getAllMovies();
 
         // Set adapter to recycler view
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        adapter = new MovieRecyclerAdapter(originalData);
+        adapter = new MovieRecyclerAdapter(allMovies);
         list.setAdapter(adapter);
 
         list.addItemDecoration(new DividerItemDecoration(list.getContext(), DividerItemDecoration.VERTICAL));
@@ -104,9 +98,12 @@ public class MoviesListFragment extends Fragment {
             @Override
             public void onItemClick(int pos) {
                 Bundle dataToAdd = new Bundle();
-                dataToAdd.putString("name", adapter.getItemAtPosition(pos).movieName);
-                dataToAdd.putString("year", adapter.getItemAtPosition(pos).movieYear);
-                dataToAdd.putInt("image", adapter.getItemAtPosition(pos).imageResID);
+                dataToAdd.putString("name", adapter.getItemAtPosition(pos).name);
+                dataToAdd.putInt("year", adapter.getItemAtPosition(pos).year);
+                dataToAdd.putByteArray("image", adapter.getItemAtPosition(pos).poster);
+                dataToAdd.putLong("id", adapter.getItemAtPosition(pos).id);
+                dataToAdd.putFloat("rating", adapter.getItemAtPosition(pos).rating);
+                dataToAdd.putString("plot", adapter.getItemAtPosition(pos).plot);
                 FragmentUtils.loadFragment(MoviesListFragment.this, null, new MovieDetailsFragment(), R.id.activity_main_frame_layout, dataToAdd);
             }
         });
@@ -137,7 +134,7 @@ public class MoviesListFragment extends Fragment {
             public boolean onQueryTextSubmit(String query) {
                 // If the list contains the search query than filter the adapter
                 // using the filter method with the query as its argument
-                if (originalData.stream().anyMatch(curr -> curr.movieName.toLowerCase().contains(query.toLowerCase()))) {
+                if (adapter.filteredData.stream().anyMatch(curr -> curr.name.toLowerCase().contains(query.toLowerCase()))) {
                     adapter.getFilter().filter(query);
                 } else {
                     // Search query not found in List View
@@ -250,9 +247,9 @@ public class MoviesListFragment extends Fragment {
                     final float rating = movieRating.getRating();
                     final String text = movieExperienceText.getText().toString();
                     final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImage.getDrawable()).getBitmap());
-                    final long movieID = dbManager.getMovieIdByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
+                    final Movie movie = dbManager.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
 
-                    Post newPost = new Post(text, movieID, rating, image);
+                    Post newPost = new Post(text, movie.id, rating, image, 0); // ID is 0 because were not setting it, it's used just for retrieval
                     dbManager.insertPost(newPost);
                     builder.dismiss();
                 }
