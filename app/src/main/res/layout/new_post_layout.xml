@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layoutDirection="rtl"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/add_room_lay_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/new_post_movie_name_input_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:errorEnabled="true"
+            android:paddingTop="@dimen/text_margin">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/new_post_movie_name_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/text_margin"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="@string/new_post_movie_name_hint"
+                android:gravity="center"
+                android:inputType="text"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/new_post_movie_year_input_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:errorEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/new_post_movie_year_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/text_margin"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="@string/new_post_year_hint"
+                android:gravity="center"
+                android:inputType="numberSigned" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/new_post_movie_poster_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/text_margin"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="@dimen/text_margin"
+                android:layout_marginBottom="@dimen/text_margin"
+                android:layout_weight="1"
+                android:paddingLeft="4sp"
+                android:paddingRight="4sp"
+                android:singleLine="true"
+                android:text="@string/new_post_movie_poster_label"
+                android:textAppearance="@style/TextAppearance.Design.Counter"
+                android:textColor="?android:attr/textColorHint"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:id="@+id/new_post_movie_poster_image_view"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_marginRight="@dimen/text_margin"
+                android:layout_marginBottom="@dimen/text_margin"
+                android:layout_weight="1"
+                android:paddingLeft="4sp"
+                android:paddingRight="4sp"
+                android:background="@drawable/border"
+                android:layout_marginTop="5dp"/>
+
+            <ImageView
+                android:id="@+id/new_post_movie_poster_upload_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_upload">
+
+            </ImageView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/new_post_movie_image_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/text_margin"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="@dimen/text_margin"
+                android:layout_marginBottom="@dimen/text_margin"
+                android:layout_weight="1"
+                android:paddingLeft="4sp"
+                android:paddingRight="4sp"
+                android:singleLine="true"
+                android:text="@string/new_post_movie_image_label"
+                android:textAppearance="@style/TextAppearance.Design.Counter"
+                android:textColor="?android:attr/textColorHint"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:id="@+id/new_post_movie_image_image_view"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:layout_marginRight="@dimen/text_margin"
+                android:layout_marginBottom="@dimen/text_margin"
+                android:layout_weight="1"
+                android:background="@drawable/border"
+                android:paddingLeft="4sp"
+                android:paddingRight="4sp"
+                android:layout_marginTop="5dp"/>
+
+            <ImageView
+                android:id="@+id/new_post_movie_image_upload_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_upload">
+            </ImageView>
+
+        </LinearLayout>
+
+        <RatingBar
+            android:id="@+id/new_post_movie_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="?android:attr/ratingBarStyle"
+            android:numStars="5"
+            android:stepSize="0.5"
+            android:layout_gravity="center" />
+
+        <TextView
+            android:id="@+id/new_post_how_was_your_experience_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:labelFor="@id/new_post_how_was_your_experience_edit_text"
+            android:text="@string/new_post_how_was_your_experience_label">
+
+        </TextView>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:counterEnabled="true">
+
+            <EditText
+                android:id="@+id/new_post_how_was_your_experience_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:inputType="textMultiLine"
+                android:padding="15dp"
+                android:layout_margin="7dp"
+                android:background="@drawable/border"
+                android:autofillHints="Explain your experience"
+                android:maxLength="200">
+            </EditText>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+
+    </ScrollView>
+</androidx.core.widget.NestedScrollView>
