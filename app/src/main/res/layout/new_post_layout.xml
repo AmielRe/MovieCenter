@@ -62,7 +62,7 @@
 
             <TextView
                 android:id="@+id/new_post_movie_poster_label"
-                android:layout_width="283dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/text_margin"
                 android:layout_marginTop="5dp"
@@ -77,22 +77,20 @@
                 android:textColor="?android:attr/textColorHint"
                 android:textSize="14sp" />
 
-            <TextView
-                android:id="@+id/new_post_movie_label_text_view"
+            <ImageView
+                android:id="@+id/new_post_movie_poster_image_view"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="100dp"
                 android:layout_marginRight="@dimen/text_margin"
                 android:layout_marginBottom="@dimen/text_margin"
                 android:layout_weight="1"
                 android:paddingLeft="4sp"
                 android:paddingRight="4sp"
-                android:textSize="14sp"
-                android:textAppearance="@style/TextAppearance.Design.Counter"
-                android:textColor="?android:attr/textColorHint"
                 android:background="@drawable/border"
                 android:layout_marginTop="5dp"/>
 
             <ImageView
+                android:id="@+id/new_post_movie_poster_upload_image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@android:drawable/ic_menu_upload">
@@ -107,7 +105,7 @@
 
             <TextView
                 android:id="@+id/new_post_movie_image_label"
-                android:layout_width="283dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="@dimen/text_margin"
                 android:layout_marginTop="5dp"
@@ -122,22 +120,20 @@
                 android:textColor="?android:attr/textColorHint"
                 android:textSize="14sp" />
 
-            <TextView
-                android:id="@+id/new_post_movie_image_text_view"
+            <ImageView
+                android:id="@+id/new_post_movie_image_image_view"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="100dp"
                 android:layout_marginRight="@dimen/text_margin"
                 android:layout_marginBottom="@dimen/text_margin"
                 android:layout_weight="1"
                 android:background="@drawable/border"
                 android:paddingLeft="4sp"
                 android:paddingRight="4sp"
-                android:textAppearance="@style/TextAppearance.Design.Counter"
-                android:textColor="?android:attr/textColorHint"
-                android:textSize="14sp"
                 android:layout_marginTop="5dp"/>
 
             <ImageView
+                android:id="@+id/new_post_movie_image_upload_image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@android:drawable/ic_menu_upload">

@@ -40,10 +40,14 @@
     <string name="profile_username">Username</string>
     <string name="profile_email">Email</string>
     <string name="profile_save_button">SAVE</string>
+
+    <!-- New post -->
     <string name="movie_details_related_posts_label">Related posts:</string>
     <string name="new_post_movie_name_hint">Movie Name</string>
     <string name="new_post_year_hint">Year</string>
     <string name="new_post_movie_poster_label">Movie Poster:</string>
     <string name="new_post_movie_image_label">Movie Image:</string>
     <string name="new_post_how_was_your_experience_label">How was your experience?</string>
+    <string name="error_invalid_movie_name">Please enter movie name</string>
+    <string name="error_invalid_movie_year">Please enter movie year</string>
 </resources>
