@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.DB;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
