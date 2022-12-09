@@ -49,13 +49,14 @@ import static android.app.Activity.RESULT_OK;
 
 public class MoviesListFragment extends Fragment {
 
-    // Recycler View object
-    RecyclerView list;
-
     // Define array List for Recycler View data
     private List<MovieListItem> originalData;
 
     MovieRecyclerAdapter adapter;
+
+    // Recycler View object
+    RecyclerView list;
+
     FloatingActionButton newPostFab;
     ImageView movieImageImageView;
     ImageView moviePosterImageView;
@@ -116,17 +117,8 @@ public class MoviesListFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // Inflate menu with items using MenuInflator
-        inflater.inflate(R.menu.menu, menu);
-
-        if (FirebaseAuthHandler.getInstance().isUserLoggedIn()) {
-            menu.findItem(R.id.menu_login).setVisible(false);
-        } else {
-            menu.findItem(R.id.menu_profile).setVisible(false);
-            menu.findItem(R.id.menu_my_posts).setVisible(false);
-            menu.findItem(R.id.menu_logout).setVisible(false);
-        }
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
 
         // Initialise menu item search bar
         // with id and take its object
@@ -158,50 +150,16 @@ public class MoviesListFragment extends Fragment {
                 return false;
             }
         });
-
-        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        switch(id){
-            case R.id.menu_login:
-                startActivity(new Intent(getActivity(), LoginActivity.class));
-                getActivity().finish();
-                break;
-
-            case R.id.menu_profile:
-                FragmentUtils.loadFragment(null, getActivity(), new ProfileFragment(), R.id.activity_main_frame_layout, null);
-                break;
-
-            case R.id.menu_my_posts:
-                // Here will come my_posts fragment
-                break;
-
-            case R.id.menu_logout:
-                FirebaseAuthHandler.getInstance().logoutCurrentUser();
-                getActivity().invalidateOptionsMenu();
-
-            default:
-                break;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        
-        if (FirebaseAuthHandler.getInstance().isUserLoggedIn()) {
-            menu.findItem(R.id.menu_login).setVisible(false);
-        } else {
-            menu.findItem(R.id.menu_profile).setVisible(false);
-            menu.findItem(R.id.menu_my_posts).setVisible(false);
-            menu.findItem(R.id.menu_logout).setVisible(false);
-        }
     }
 
     private void openNewPostDialog()
