@@ -30,13 +30,13 @@ public class DBManager {
         dbHelper.close();
     }
 
-    public void insertPost(Post newPost) {
+    public long insertPost(Post newPost) {
         ContentValues contentValue = new ContentValues();
         contentValue.put(DBHelper.POST_RATING, newPost.rating);
         contentValue.put(DBHelper.POST_TEXT, newPost.text);
         contentValue.put(DBHelper.POST_IMAGE, newPost.image);
         contentValue.put(DBHelper.POST_RELATED_MOVIE_ID, newPost.movieID);
-        database.insert(DBHelper.POSTS_TABLE_NAME, null, contentValue);
+        return database.insert(DBHelper.POSTS_TABLE_NAME, null, contentValue);
     }
 
     public int updatePost(long id, Post post) {
@@ -52,14 +52,14 @@ public class DBManager {
         database.delete(DBHelper.POSTS_TABLE_NAME, DBHelper.POST_ID + "=" + id, null);
     }
 
-    public void insertMovie(Movie newMovie) {
+    public long insertMovie(Movie newMovie) {
         ContentValues contentValue = new ContentValues();
         contentValue.put(DBHelper.MOVIE_RATING, newMovie.rating);
         contentValue.put(DBHelper.MOVIE_NAME, newMovie.name);
         contentValue.put(DBHelper.MOVIE_PLOT, newMovie.plot);
         contentValue.put(DBHelper.MOVIE_POSTER, newMovie.poster);
         contentValue.put(DBHelper.MOVIE_YEAR, newMovie.year);
-        database.insert(DBHelper.MOVIES_TABLE_NAME, null, contentValue);
+        return database.insert(DBHelper.MOVIES_TABLE_NAME, null, contentValue);
     }
 
     public int updateMovie(long id, Movie movie) {
@@ -76,12 +76,12 @@ public class DBManager {
         database.delete(DBHelper.MOVIES_TABLE_NAME, DBHelper.MOVIE_ID + "=" + id, null);
     }
 
-    public void insertUser(User newUser) {
+    public long insertUser(User newUser) {
         ContentValues contentValue = new ContentValues();
         contentValue.put(DBHelper.USER_EMAIL, newUser.email);
         contentValue.put(DBHelper.USER_IMAGE, newUser.profileImage);
         contentValue.put(DBHelper.USER_USERNAME, newUser.username);
-        database.insert(DBHelper.USERS_TABLE_NAME, null, contentValue);
+        return database.insert(DBHelper.USERS_TABLE_NAME, null, contentValue);
     }
 
     public int updateUser(long id, User user) {
