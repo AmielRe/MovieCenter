@@ -1,7 +1,7 @@
 package com.amiel.moviecenter;
 
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +13,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.Model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
@@ -43,6 +45,7 @@ public class SignUpFragment extends Fragment {
     TextInputLayout passwordInputLayout;
     TextInputLayout passwordConfirmInputLayout;
     Button signUpButton;
+    private DBManager dbManager;
 
     private static final String BASE_URL = "https://api.eva.pingutil.com/email?email=";
 
@@ -51,7 +54,15 @@ public class SignUpFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
+        dbManager = new DBManager(getActivity());
+        dbManager.open();
         return inflater.inflate(R.layout.sign_up_fragment, parent, false);
+    }
+
+    @Override
+    public void onDestroyView() {
+        dbManager.close();
+        super.onDestroyView();
     }
 
     // This event is triggered soon after onCreateView().
@@ -180,6 +191,8 @@ public class SignUpFragment extends Fragment {
                                                             if (isNewUser) {
                                                                 // Email doesn't already exist
                                                                 emailEditText.setError(null);
+                                                                User newUser = new User(usernameEditText.getText().toString(), emailEditText.getText().toString(), ImageUtils.getBytes(((BitmapDrawable)getActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()));
+                                                                dbManager.insertUser(newUser);
                                                                 FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), usernameEditText.getText().toString(), getActivity());
                                                             } else {
                                                                 // Email already exists
