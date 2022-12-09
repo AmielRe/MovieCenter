@@ -9,16 +9,18 @@ import android.widget.Filterable;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.amiel.moviecenter.DB.Model.Movie;
+
 import java.util.ArrayList;
 import java.util.List;
 
 class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> implements Filterable {
 
     OnItemClickListener listener;
-    List<MovieListItem> originalData;
-    List<MovieListItem> filteredData;
+    List<Movie> originalData;
+    List<Movie> filteredData;
 
-    public MovieRecyclerAdapter(List<MovieListItem> originalData) {
+    public MovieRecyclerAdapter(List<Movie> originalData) {
         this.originalData = originalData;
         this.filteredData = originalData;
     }
@@ -31,12 +33,12 @@ class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> impleme
     @Override
     public MovieViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_item,parent,false);
-        return new MovieViewHolder(view,listener);
+        return new MovieViewHolder(view, listener);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
-        MovieListItem movie = filteredData.get(position);
+        Movie movie = filteredData.get(position);
         holder.bind(movie, position);
     }
 
@@ -62,14 +64,14 @@ class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> impleme
                 }
                 else
                 {
-                    ArrayList<MovieListItem> filterResultsData = new ArrayList<>();
+                    ArrayList<Movie> filterResultsData = new ArrayList<>();
 
-                    for(MovieListItem data : originalData)
+                    for(Movie data : originalData)
                     {
                         // In this loop, you'll filter through originalData and compare each item to charSequence.
                         // If you find a match, add it to your new ArrayList
                         // I'm not sure how you're going to do comparison, so you'll need to fill out this conditional
-                        if(data.movieName.toLowerCase().contains(charSequence.toString().toLowerCase()))
+                        if(data.name.toLowerCase().contains(charSequence.toString().toLowerCase()))
                         {
                             filterResultsData.add(data);
                         }
@@ -85,13 +87,13 @@ class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> impleme
             @Override
             protected void publishResults(CharSequence charSequence, FilterResults filterResults)
             {
-                filteredData = (ArrayList<MovieListItem>)filterResults.values;
+                filteredData = (ArrayList<Movie>)filterResults.values;
                 notifyDataSetChanged();
             }
         };
     }
 
-    public MovieListItem getItemAtPosition(int pos) {
+    public Movie getItemAtPosition(int pos) {
         return filteredData.get(pos);
     }
 }

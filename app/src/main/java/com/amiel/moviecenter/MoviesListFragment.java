@@ -5,18 +5,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,7 +24,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.FileProvider;
 import androidx.core.view.MenuItemCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
@@ -32,25 +31,20 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.Model.Movie;
+import com.amiel.moviecenter.DB.Model.Post;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static android.app.Activity.RESULT_OK;
 
 public class MoviesListFragment extends Fragment {
-
-    // Define array List for Recycler View data
-    private List<MovieListItem> originalData;
 
     MovieRecyclerAdapter adapter;
 
@@ -63,15 +57,23 @@ public class MoviesListFragment extends Fragment {
 
     private static final int GALLERY_REQUEST_CODE_POSTER = 2;
     private static final int GALLERY_REQUEST_CODE_IMAGE = 3;
-    private static final int APP_PERMISSIONS_CODE = 100;
+
+    private DBManager dbManager;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        setHasOptionsMenu(true);
+        dbManager = new DBManager(getActivity());
+        dbManager.open();
         return inflater.inflate(R.layout.movie_list_fragment, parent, false);
+    }
+
+    @Override
+    public void onDestroyView() {
+        dbManager.close();
+        super.onDestroyView();
     }
 
     // This event is triggered soon after onCreateView().
@@ -83,15 +85,11 @@ public class MoviesListFragment extends Fragment {
         list.setHasFixedSize(true);
 
         // Add items to Array List
-        originalData = new ArrayList<>();
-        originalData.add(new MovieListItem("Joker", "2019", R.drawable.joker));
-        originalData.add(new MovieListItem("Inception", "2010", R.drawable.inception));
-        originalData.add(new MovieListItem("Black Panther", "2018", R.drawable.blackpanther));
-        originalData.add(new MovieListItem("Jaws", "1975", R.drawable.jaws));
+        ArrayList<Movie> allMovies = dbManager.getAllMovies();
 
         // Set adapter to recycler view
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        adapter = new MovieRecyclerAdapter(originalData);
+        adapter = new MovieRecyclerAdapter(allMovies);
         list.setAdapter(adapter);
 
         list.addItemDecoration(new DividerItemDecoration(list.getContext(), DividerItemDecoration.VERTICAL));
@@ -100,9 +98,12 @@ public class MoviesListFragment extends Fragment {
             @Override
             public void onItemClick(int pos) {
                 Bundle dataToAdd = new Bundle();
-                dataToAdd.putString("name", adapter.getItemAtPosition(pos).movieName);
-                dataToAdd.putString("year", adapter.getItemAtPosition(pos).movieYear);
-                dataToAdd.putInt("image", adapter.getItemAtPosition(pos).imageResID);
+                dataToAdd.putString("name", adapter.getItemAtPosition(pos).name);
+                dataToAdd.putInt("year", adapter.getItemAtPosition(pos).year);
+                dataToAdd.putByteArray("image", adapter.getItemAtPosition(pos).poster);
+                dataToAdd.putLong("id", adapter.getItemAtPosition(pos).id);
+                dataToAdd.putFloat("rating", adapter.getItemAtPosition(pos).rating);
+                dataToAdd.putString("plot", adapter.getItemAtPosition(pos).plot);
                 FragmentUtils.loadFragment(MoviesListFragment.this, null, new MovieDetailsFragment(), R.id.activity_main_frame_layout, dataToAdd);
             }
         });
@@ -133,7 +134,7 @@ public class MoviesListFragment extends Fragment {
             public boolean onQueryTextSubmit(String query) {
                 // If the list contains the search query than filter the adapter
                 // using the filter method with the query as its argument
-                if (originalData.stream().anyMatch(curr -> curr.movieName.toLowerCase().contains(query.toLowerCase()))) {
+                if (adapter.filteredData.stream().anyMatch(curr -> curr.name.toLowerCase().contains(query.toLowerCase()))) {
                     adapter.getFilter().filter(query);
                 } else {
                     // Search query not found in List View
@@ -172,6 +173,8 @@ public class MoviesListFragment extends Fragment {
         final TextInputLayout movieYearLayout = scrollViewLayout.findViewById(R.id.new_post_movie_year_input_layout);
         final ImageView movieImage = scrollViewLayout.findViewById(R.id.new_post_movie_image_upload_image);
         final ImageView moviePoster = scrollViewLayout.findViewById(R.id.new_post_movie_poster_upload_image);
+        final RatingBar movieRating = scrollViewLayout.findViewById(R.id.new_post_movie_rating);
+        final EditText movieExperienceText = scrollViewLayout.findViewById(R.id.new_post_how_was_your_experience_edit_text);
         movieImageImageView = scrollViewLayout.findViewById(R.id.new_post_movie_image_image_view);
         moviePosterImageView = scrollViewLayout.findViewById(R.id.new_post_movie_poster_image_view);
 
@@ -241,27 +244,14 @@ public class MoviesListFragment extends Fragment {
             public void onClick(View view) {
                 if(movieName.getError() == null && movieYear.getError() == null)
                 {
-                    /*AsyncTask.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            Room newRoom = new Room();
-                            newRoom.roomName = Objects.requireNonNull(roomName.getText()).toString();
-                            newRoom.currentCapacity = 0;
-                            newRoom.maxCapacity = Integer.parseInt(Objects.requireNonNull(maxCapacity.getText()).toString());
+                    final float rating = movieRating.getRating();
+                    final String text = movieExperienceText.getText().toString();
+                    final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImage.getDrawable()).getBitmap());
+                    final Movie movie = dbManager.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
 
-                            newRoom.roomType = typeRadioGroup.indexOfChild(typeRadioGroup.findViewById(typeRadioGroup.getCheckedRadioButtonId()));
-                            newRoom.roomGender = genderRadioGroup.indexOfChild(genderRadioGroup.findViewById(genderRadioGroup.getCheckedRadioButtonId()));
-
-                            // Insert Data
-                            DBHandler.addRoom(newRoom);
-
-                            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
-                            Objects.requireNonNull(fragment).onResume();
-                        }
-                    });*/
+                    Post newPost = new Post(text, movie.id, rating, image, 0); // ID is 0 because were not setting it, it's used just for retrieval
+                    dbManager.insertPost(newPost);
                     builder.dismiss();
-                } else {
-                    //Toast.makeText(getApplicationContext(),getString(R.string.error_fill_missing_fields),Toast.LENGTH_SHORT).show();
                 }
             }
         });

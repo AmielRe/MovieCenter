@@ -1,5 +1,6 @@
 package com.amiel.moviecenter;
 
+import android.media.Image;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -8,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,6 +20,8 @@ public class MovieDetailsFragment extends Fragment {
     TextView movieName;
     TextView movieYear;
     ImageView movieImage;
+    RatingBar movieRating;
+    TextView moviePlot;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
@@ -34,10 +38,14 @@ public class MovieDetailsFragment extends Fragment {
         movieName = view.findViewById(R.id.movie_details_movie_name);
         movieYear = view.findViewById(R.id.movie_details_movie_year);
         movieImage = view.findViewById(R.id.movie_details_movie_image);
+        movieRating = view.findViewById(R.id.movie_details_movie_rating);
+        moviePlot = view.findViewById(R.id.movie_details_movie_description);
 
         movieName.setText(getArguments().getString("name"));
         movieYear.setText(getArguments().getString("year"));
-        movieImage.setImageResource(getArguments().getInt("image"));
+        movieImage.setImageBitmap(ImageUtils.getBitmap(getArguments().getByteArray("image")));
+        movieRating.setRating(getArguments().getFloat("rating"));
+        moviePlot.setText(getArguments().getString("plot"));
     }
 
     @Override
