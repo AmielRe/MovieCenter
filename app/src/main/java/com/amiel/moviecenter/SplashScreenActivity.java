@@ -24,10 +24,8 @@ public class SplashScreenActivity extends AppCompatActivity {
         super.onStart();
         Intent i;
         if(FirebaseAuthHandler.getInstance().isUserLoggedIn()){
-            Toast.makeText(this, "EXIST", Toast.LENGTH_SHORT).show();
             i = new Intent(SplashScreenActivity.this, MainActivity.class);
         } else {
-            Toast.makeText(this, "EXIST", Toast.LENGTH_SHORT).show();
             i = new Intent(SplashScreenActivity.this, LoginActivity.class);
         }
 
