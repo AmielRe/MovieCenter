@@ -5,18 +5,18 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,7 +24,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.FileProvider;
 import androidx.core.view.MenuItemCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
@@ -32,18 +31,15 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.Model.Post;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -63,15 +59,23 @@ public class MoviesListFragment extends Fragment {
 
     private static final int GALLERY_REQUEST_CODE_POSTER = 2;
     private static final int GALLERY_REQUEST_CODE_IMAGE = 3;
-    private static final int APP_PERMISSIONS_CODE = 100;
+
+    private DBManager dbManager;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        setHasOptionsMenu(true);
+        dbManager = new DBManager(getActivity());
+        dbManager.open();
         return inflater.inflate(R.layout.movie_list_fragment, parent, false);
+    }
+
+    @Override
+    public void onDestroyView() {
+        dbManager.close();
+        super.onDestroyView();
     }
 
     // This event is triggered soon after onCreateView().
@@ -172,6 +176,8 @@ public class MoviesListFragment extends Fragment {
         final TextInputLayout movieYearLayout = scrollViewLayout.findViewById(R.id.new_post_movie_year_input_layout);
         final ImageView movieImage = scrollViewLayout.findViewById(R.id.new_post_movie_image_upload_image);
         final ImageView moviePoster = scrollViewLayout.findViewById(R.id.new_post_movie_poster_upload_image);
+        final RatingBar movieRating = scrollViewLayout.findViewById(R.id.new_post_movie_rating);
+        final EditText movieExperienceText = scrollViewLayout.findViewById(R.id.new_post_how_was_your_experience_edit_text);
         movieImageImageView = scrollViewLayout.findViewById(R.id.new_post_movie_image_image_view);
         moviePosterImageView = scrollViewLayout.findViewById(R.id.new_post_movie_poster_image_view);
 
@@ -241,27 +247,14 @@ public class MoviesListFragment extends Fragment {
             public void onClick(View view) {
                 if(movieName.getError() == null && movieYear.getError() == null)
                 {
-                    /*AsyncTask.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            Room newRoom = new Room();
-                            newRoom.roomName = Objects.requireNonNull(roomName.getText()).toString();
-                            newRoom.currentCapacity = 0;
-                            newRoom.maxCapacity = Integer.parseInt(Objects.requireNonNull(maxCapacity.getText()).toString());
+                    final float rating = movieRating.getRating();
+                    final String text = movieExperienceText.getText().toString();
+                    final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImage.getDrawable()).getBitmap());
+                    final long movieID = dbManager.getMovieIdByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
 
-                            newRoom.roomType = typeRadioGroup.indexOfChild(typeRadioGroup.findViewById(typeRadioGroup.getCheckedRadioButtonId()));
-                            newRoom.roomGender = genderRadioGroup.indexOfChild(genderRadioGroup.findViewById(genderRadioGroup.getCheckedRadioButtonId()));
-
-                            // Insert Data
-                            DBHandler.addRoom(newRoom);
-
-                            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
-                            Objects.requireNonNull(fragment).onResume();
-                        }
-                    });*/
+                    Post newPost = new Post(text, movieID, rating, image);
+                    dbManager.insertPost(newPost);
                     builder.dismiss();
-                } else {
-                    //Toast.makeText(getApplicationContext(),getString(R.string.error_fill_missing_fields),Toast.LENGTH_SHORT).show();
                 }
             }
         });
