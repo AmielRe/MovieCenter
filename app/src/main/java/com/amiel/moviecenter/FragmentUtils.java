@@ -17,7 +17,7 @@ public class FragmentUtils {
     private static void loadFragment(FragmentManager fm, Fragment fragment, int frameLayoutId, Bundle dataToAdd) {
         // create a FragmentTransaction to begin the transaction and replace the Fragment
         FragmentTransaction fragmentTransaction = fm.beginTransaction();
-        fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right);
+        fragmentTransaction.setCustomAnimations(android.R.anim.slide_in_left, android.R.anim.slide_out_right, android.R.anim.slide_in_left, android.R.anim.slide_out_right);
         if(dataToAdd != null) {
             fragment.setArguments(dataToAdd);
         }
