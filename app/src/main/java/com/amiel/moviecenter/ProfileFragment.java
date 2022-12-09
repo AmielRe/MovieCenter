@@ -17,16 +17,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.SearchView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
-import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 
+import com.amiel.moviecenter.DB.DBManager;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -48,6 +46,7 @@ public class ProfileFragment extends Fragment {
     TextInputLayout usernameInputLayout;
     ImageView profileImageButton;
     Button saveDetailsButton;
+    DBManager dbManager;
 
     private static final int APP_PERMISSIONS_CODE = 100;
     private static final int CAMERA_REQUEST_CODE = 1;
@@ -58,7 +57,15 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
+        dbManager = new DBManager(getActivity());
+        dbManager.open();
         return inflater.inflate(R.layout.profile_fragment, parent, false);
+    }
+
+    @Override
+    public void onDestroyView() {
+        dbManager.close();
+        super.onDestroyView();
     }
 
     // This event is triggered soon after onCreateView().
@@ -73,7 +80,8 @@ public class ProfileFragment extends Fragment {
         saveDetailsButton = view.findViewById(R.id.profile_fragment_save_button);
 
         emailEditText.setText(FirebaseAuthHandler.getInstance().getCurrentUserEmail());
-        usernameEditText.setText("Amiel"); // Temp string
+        usernameEditText.setText(dbManager.getUserNameByEmail(emailEditText.getText().toString()));
+        profileImageButton.setImageBitmap(ImageUtils.getBitmap(dbManager.getUserImageByEmail(emailEditText.getText().toString())));
 
         profileImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
