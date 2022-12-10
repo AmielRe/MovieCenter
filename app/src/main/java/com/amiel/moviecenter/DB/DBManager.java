@@ -11,7 +11,6 @@ import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class DBManager {
 
@@ -103,26 +102,31 @@ public class DBManager {
 
     public Movie getMovieByNameAndYear(String movieName, int movieYear) {
         Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.MOVIES_TABLE_NAME + " WHERE " + DBHelper.MOVIE_NAME + " IN ( '" + movieName + "' ) AND " + DBHelper.MOVIE_YEAR + " IN ( '" + movieYear + "' )" , null);
-        cursor.moveToFirst();
-        String name = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_NAME));
-        String plot = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_PLOT));
-        byte[] poster = cursor.getBlob(cursor.getColumnIndex(DBHelper.MOVIE_POSTER));
-        long id = cursor.getLong(cursor.getColumnIndex(DBHelper.MOVIE_ID));
-        float rating = cursor.getLong(cursor.getColumnIndex(DBHelper.MOVIE_RATING));
-        int year = cursor.getInt(cursor.getColumnIndex(DBHelper.MOVIE_YEAR));
-        cursor.close();
-        return new Movie(name, year, rating, plot, poster, id);
+        if(cursor.moveToFirst()) {
+            String name = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_NAME));
+            String plot = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_PLOT));
+            byte[] poster = cursor.getBlob(cursor.getColumnIndex(DBHelper.MOVIE_POSTER));
+            long id = cursor.getLong(cursor.getColumnIndex(DBHelper.MOVIE_ID));
+            float rating = cursor.getLong(cursor.getColumnIndex(DBHelper.MOVIE_RATING));
+            int year = cursor.getInt(cursor.getColumnIndex(DBHelper.MOVIE_YEAR));
+            cursor.close();
+            return new Movie(name, year, rating, plot, poster, id);
+        }
+        return null;
     }
 
     public User getUserByEmail(String email) {
         Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.USERS_TABLE_NAME + " WHERE " + DBHelper.USER_EMAIL + " IN ( '" + email + "' )", null);
-        cursor.moveToFirst();
-        String username = cursor.getString(cursor.getColumnIndex(DBHelper.USER_USERNAME));
-        long id = cursor.getLong(cursor.getColumnIndex(DBHelper.USER_ID));
-        byte[] profileImage= cursor.getBlob(cursor.getColumnIndex(DBHelper.USER_IMAGE));
-        cursor.close();
+        if(cursor.moveToFirst()) {
+            String username = cursor.getString(cursor.getColumnIndex(DBHelper.USER_USERNAME));
+            long id = cursor.getLong(cursor.getColumnIndex(DBHelper.USER_ID));
+            byte[] profileImage= cursor.getBlob(cursor.getColumnIndex(DBHelper.USER_IMAGE));
+            cursor.close();
 
-        return new User(username, email, profileImage, id);
+            return new User(username, email, profileImage, id);
+        }
+
+        return null;
     }
 
     public ArrayList<Movie> getAllMovies() {
