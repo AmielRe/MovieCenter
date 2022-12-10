@@ -160,4 +160,11 @@ public class DBManager {
 
         return allPosts;
     }
+
+    public boolean isMovieExist(String name) {
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.MOVIES_TABLE_NAME + " WHERE " + DBHelper.MOVIE_NAME + " IN ( '" + name + "' )", null);
+        boolean isExist = cursor.moveToFirst();
+        cursor.close();
+        return isExist;
+    }
 }
