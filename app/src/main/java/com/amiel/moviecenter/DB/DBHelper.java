@@ -31,6 +31,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String POST_TEXT = "text";
     public static final String POST_IMAGE = "image";
     public static final String POST_RELATED_MOVIE_ID = "movieID";
+    public static final String POST_RELATED_USER_ID = "userID";
 
     // Database Information
     static final String DB_NAME = "MOVIE_CENTER.DB";
@@ -49,7 +50,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String CREATE_POSTS_TABLE = "create table " + POSTS_TABLE_NAME + "(" + POST_ID
             + " INTEGER PRIMARY KEY AUTOINCREMENT, " + POST_RATING + " REAL NOT NULL, " + POST_TEXT + " TEXT NOT NULL, "
-            + POST_IMAGE + " BLOB NOT NULL, " + POST_RELATED_MOVIE_ID + " INTEGER NOT NULL);";
+            + POST_IMAGE + " BLOB NOT NULL, " + POST_RELATED_MOVIE_ID + " INTEGER NOT NULL," + POST_RELATED_USER_ID + " INTEGER NOT NULL);";
 
     public DBHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);

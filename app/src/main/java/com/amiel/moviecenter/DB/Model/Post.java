@@ -7,13 +7,14 @@ public class Post {
     public long movieID;
     public float rating;
     public byte[] image;
+    public long userID;
 
     public Post()
     {
 
     }
 
-    public Post(String text, long movieID, float rating, byte[] image, long id)
+    public Post(String text, long movieID, float rating, byte[] image, long userID, long id)
     {
         this.text = text;
         this.movieID = movieID;

@@ -96,4 +96,15 @@ class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> impleme
     public Movie getItemAtPosition(int pos) {
         return filteredData.get(pos);
     }
+
+    public void updateMovieRating(Movie updatedMovie) {
+        for(Movie data : originalData)
+        {
+            if(data.name.toLowerCase().contains(updatedMovie.name.toLowerCase()))
+            {
+                originalData.set(originalData.indexOf(data), updatedMovie);
+                return;
+            }
+        }
+    }
 }

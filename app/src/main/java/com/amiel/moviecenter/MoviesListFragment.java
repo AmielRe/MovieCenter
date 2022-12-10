@@ -1,10 +1,12 @@
 package com.amiel.moviecenter;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,13 +36,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.amiel.moviecenter.DB.DBManager;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
+import com.amiel.moviecenter.DB.Model.User;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -57,8 +70,12 @@ public class MoviesListFragment extends Fragment {
 
     private static final int GALLERY_REQUEST_CODE_POSTER = 2;
     private static final int GALLERY_REQUEST_CODE_IMAGE = 3;
+    private static final String BASE_MOVIE_URL = "https://imdb-api.com/API/AdvancedSearch/k_4wqqdznf?title=%s&has=plot";
 
     private DBManager dbManager;
+    String moviePlot;
+    byte[] moviePosterByteArray;
+    ProgressDialog progressDialog;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
@@ -83,6 +100,13 @@ public class MoviesListFragment extends Fragment {
         // initialise ListView with id
         list = view.findViewById(R.id.main_recycler_list_movies);
         list.setHasFixedSize(true);
+        newPostFab = view.findViewById(R.id.movie_list_fab);
+
+        if(!FirebaseAuthHandler.getInstance().isUserLoggedIn()) {
+            newPostFab.setVisibility(View.INVISIBLE);
+        } else {
+            newPostFab.setVisibility(View.VISIBLE);
+        }
 
         // Add items to Array List
         ArrayList<Movie> allMovies = dbManager.getAllMovies();
@@ -108,7 +132,6 @@ public class MoviesListFragment extends Fragment {
             }
         });
 
-        newPostFab = view.findViewById(R.id.movie_list_fab);
         newPostFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -207,13 +230,125 @@ public class MoviesListFragment extends Fragment {
             }
         });
 
-        moviePoster.setOnClickListener(new View.OnClickListener() {
+        movieName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void onClick(View v) {
-                if(isMissingPermissions()) {
-                    requestAppPermission(GALLERY_REQUEST_CODE_POSTER);
+            public void onFocusChange(View v, boolean hasFocus) {
+                if ( !hasFocus && movieName.getText().toString().length() > 0 ) {
+
+                    progressDialog = new ProgressDialog(getActivity());
+                    progressDialog.setMessage("");
+                    progressDialog.setTitle("Searching for movie...");
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    progressDialog.setCancelable(false);
+                    progressDialog.show();
+
+                    if(!dbManager.isMovieExist(movieName.getText().toString())) {
+
+                        OkHttpClient client = new OkHttpClient();
+
+                        Request request = new Request.Builder()
+                                .url(String.format(BASE_MOVIE_URL, movieName.getText().toString()))
+                                .build();
+
+                        client.newCall(request).enqueue(new Callback() {
+                            @Override
+                            public void onFailure(Call call, IOException e) {
+                                progressDialog.dismiss();
+                                Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                                call.cancel();
+                            }
+
+                            @Override
+                            public void onResponse(Call call, Response response) throws IOException {
+
+                                final String myResponse = response.body().string();
+                                JSONObject json = new JSONObject();
+                                try {
+                                    json = new JSONObject(myResponse);
+                                    JSONObject resultsJSON = (JSONObject) json.getJSONArray("results").get(0);
+                                    moviePlot = resultsJSON.getString("plot");
+                                    String year = resultsJSON.getString("description").replaceAll("[^0-9]", "");
+                                    String moviePosterUrl = resultsJSON.getString("image");
+                                    String title = resultsJSON.getString("title");
+
+                                    Request request = new Request.Builder()
+                                            .url(moviePosterUrl)
+                                            .build();
+
+                                    client.newCall(request).enqueue(new Callback() {
+                                        @Override
+                                        public void onFailure(Call call, IOException e) {
+                                            progressDialog.dismiss();
+                                            Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                                            call.cancel();
+                                        }
+
+                                        @Override
+                                        public void onResponse(Call call, Response response) throws IOException {
+                                            InputStream inputStream = response.body().byteStream();
+                                            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                                            moviePosterByteArray = ImageUtils.getBytes(bitmap);
+                                            getActivity().runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    moviePosterImageView.setImageBitmap(bitmap);
+                                                    moviePosterImageView.setBackground(null);
+                                                    moviePoster.setOnClickListener(null);
+                                                    movieYear.setText(year);
+                                                    movieYear.setEnabled(false);
+                                                    movieName.setText(title);
+                                                    progressDialog.dismiss();
+                                                    Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                        }
+                                    });
+
+                                } catch (JSONException e) {
+                                    progressDialog.dismiss();
+                                    Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
                 } else {
-                    selectImage(GALLERY_REQUEST_CODE_POSTER);
+                    if(movieName.getText().toString().length() > 0 && movieYear.getText().toString().length() > 0) {
+                        try {
+                            Movie movie = dbManager.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
+                            moviePosterImageView.setImageBitmap(ImageUtils.getBitmap(movie.poster));
+                            moviePosterImageView.setBackground(null);
+                            moviePlot = movie.plot;
+                            moviePoster.setOnClickListener(null);
+                            progressDialog.dismiss();
+                            Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
+                        } catch(Exception e) {
+                            progressDialog.dismiss();
+                            Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
+
+        movieYear.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(!hasFocus && movieName.getText().toString().length() > 0 && movieYear.getText().toString().length() > 0) {
+                    try {
+                        Movie movie = dbManager.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
+                        moviePosterImageView.setImageBitmap(ImageUtils.getBitmap(movie.poster));
+                        moviePosterImageView.setBackground(null);
+                        moviePlot = movie.plot;
+                        moviePoster.setOnClickListener(null);
+                        progressDialog.dismiss();
+                        Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
+                    } catch(Exception e) {
+                        progressDialog.dismiss();
+                        Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -225,6 +360,17 @@ public class MoviesListFragment extends Fragment {
                     requestAppPermission(GALLERY_REQUEST_CODE_IMAGE);
                 } else {
                     selectImage(GALLERY_REQUEST_CODE_IMAGE);
+                }
+            }
+        });
+
+        moviePoster.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isMissingPermissions()) {
+                    requestAppPermission(GALLERY_REQUEST_CODE_POSTER);
+                } else {
+                    selectImage(GALLERY_REQUEST_CODE_POSTER);
                 }
             }
         });
@@ -244,13 +390,27 @@ public class MoviesListFragment extends Fragment {
             public void onClick(View view) {
                 if(movieName.getError() == null && movieYear.getError() == null)
                 {
+                    // If new movie - insert it
+                    if(!dbManager.isMovieExist(movieName.getText().toString())) {
+                        Movie newMovie = new Movie(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString().replaceAll("[^0-9]", "")), movieRating.getRating(), moviePlot,  ImageUtils.getBytes(((BitmapDrawable) moviePosterImageView.getDrawable()).getBitmap()), 0);
+                        dbManager.insertMovie(newMovie);
+                    }
+
                     final float rating = movieRating.getRating();
                     final String text = movieExperienceText.getText().toString();
-                    final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImage.getDrawable()).getBitmap());
+                    final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImageImageView.getDrawable()).getBitmap());
                     final Movie movie = dbManager.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
+                    final User user = dbManager.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail());
 
-                    Post newPost = new Post(text, movie.id, rating, image, 0); // ID is 0 because were not setting it, it's used just for retrieval
+                    // Insert new post
+                    Post newPost = new Post(text, movie.id, rating, image, user.id, 0); // ID is 0 because were not setting it, it's used just for retrieval
                     dbManager.insertPost(newPost);
+
+                    // Update movie rating
+                    Movie updatedMovie = new Movie(movie.name, movie.year, (movie.rating + movieRating.getRating()) / 2, movie.plot, movie.poster, movie.id);
+                    dbManager.updateMovie(movie.id, updatedMovie);
+                    adapter.updateMovieRating(updatedMovie);
+                    adapter.notifyDataSetChanged();
                     builder.dismiss();
                 }
             }
@@ -308,5 +468,11 @@ public class MoviesListFragment extends Fragment {
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        adapter.notifyDataSetChanged();
     }
 }

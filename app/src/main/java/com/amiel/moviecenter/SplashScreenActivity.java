@@ -8,14 +8,20 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.Model.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class SplashScreenActivity extends AppCompatActivity {
 
+    private DBManager dbManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        dbManager = new DBManager(this);
+        dbManager.open();
         setContentView(R.layout.activity_splash);
     }
 
@@ -24,7 +30,11 @@ public class SplashScreenActivity extends AppCompatActivity {
         super.onStart();
         Intent i;
         if(FirebaseAuthHandler.getInstance().isUserLoggedIn()){
-            i = new Intent(SplashScreenActivity.this, MainActivity.class);
+            if(dbManager.isUserExist(FirebaseAuthHandler.getInstance().getCurrentUserEmail())) {
+                i = new Intent(SplashScreenActivity.this, MainActivity.class);
+            } else {
+                i = new Intent(SplashScreenActivity.this, LoginActivity.class);
+            }
         } else {
             i = new Intent(SplashScreenActivity.this, LoginActivity.class);
         }
