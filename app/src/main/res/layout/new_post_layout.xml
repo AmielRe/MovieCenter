@@ -175,7 +175,7 @@
                 android:layout_margin="7dp"
                 android:background="@drawable/border"
                 android:autofillHints="Explain your experience"
-                android:maxLength="200">
+                android:maxLength="400">
             </EditText>
 
         </com.google.android.material.textfield.TextInputLayout>
