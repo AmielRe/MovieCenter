@@ -1,5 +1,6 @@
 package com.amiel.moviecenter;
 
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -43,7 +44,10 @@ public class MovieDetailsFragment extends Fragment {
 
         movieName.setText(getArguments().getString("name"));
         movieYear.setText(getArguments().getString("year"));
-        movieImage.setImageBitmap(ImageUtils.getBitmap(getArguments().getByteArray("image")));
+        Bitmap movieBitmap = ImageUtils.getBitmap(getArguments().getByteArray("image"));
+        if(movieBitmap != null) {
+            movieImage.setImageBitmap(movieBitmap);
+        }
         movieRating.setRating(getArguments().getFloat("rating"));
         moviePlot.setText(getArguments().getString("plot"));
     }

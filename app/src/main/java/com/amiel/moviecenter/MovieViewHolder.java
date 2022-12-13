@@ -1,5 +1,6 @@
 package com.amiel.moviecenter;
 
+import android.graphics.Bitmap;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,6 +33,9 @@ class MovieViewHolder extends RecyclerView.ViewHolder{
     public void bind(Movie movie, int pos) {
         movieName.setText(movie.name);
         movieYear.setText(String.valueOf(movie.year));
-        movieImage.setImageBitmap(ImageUtils.getBitmap(movie.poster));
+        Bitmap movieBitmap = ImageUtils.getBitmap(movie.poster);
+        if(movieBitmap != null) {
+            movieImage.setImageBitmap(movieBitmap);
+        }
     }
 }

@@ -146,6 +146,7 @@ public class ImageUtils {
     }
 
     public static Bitmap getBitmap(byte[] imageByteArray) {
+        if(imageByteArray == null) return null;
         return BitmapFactory.decodeByteArray(imageByteArray , 0, imageByteArray.length);
     }
 }
