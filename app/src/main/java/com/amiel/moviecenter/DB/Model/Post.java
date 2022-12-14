@@ -21,5 +21,6 @@ public class Post {
         this.rating = rating;
         this.image = image;
         this.id = id;
+        this.userID = userID;
     }
 }
