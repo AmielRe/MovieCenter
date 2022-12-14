@@ -138,6 +138,7 @@ public class ImageUtils {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
             byte[] bytesData = stream.toByteArray();
             stream.close();
+            bytesData = imageRescale(bytesData);
             return bytesData;
         } catch(Exception e) {
             e.printStackTrace();
@@ -148,5 +149,18 @@ public class ImageUtils {
     public static Bitmap getBitmap(byte[] imageByteArray) {
         if(imageByteArray == null) return null;
         return BitmapFactory.decodeByteArray(imageByteArray , 0, imageByteArray.length);
+    }
+
+    private static byte[] imageRescale(byte[] image){
+
+        while (image.length > 500000){
+            Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
+            Bitmap resized = Bitmap.createScaledBitmap(bitmap, (int)(bitmap.getWidth()*0.8), (int)(bitmap.getHeight()*0.8), true);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            resized.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            image = stream.toByteArray();
+        }
+        return image;
+
     }
 }
