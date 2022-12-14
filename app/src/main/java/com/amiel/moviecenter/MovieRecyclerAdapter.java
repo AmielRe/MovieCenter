@@ -61,7 +61,7 @@ class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> impleme
                 // If there's nothing to filter on, return the original data for your list
                 if(charSequence == null || charSequence.length() == 0)
                 {
-                    results.values = originalData;
+                    results.values = new ArrayList<>(originalData);
                     results.count = originalData.size();
                 }
                 else
