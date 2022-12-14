@@ -32,6 +32,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.amiel.moviecenter.DB.DBManager;
 import com.amiel.moviecenter.DB.Model.Movie;
@@ -63,6 +64,7 @@ public class MoviesListFragment extends Fragment {
 
     // Recycler View object
     RecyclerView list;
+    SwipeRefreshLayout swipeRefreshLayout;
 
     FloatingActionButton newPostFab;
     ImageView movieImageImageView;
@@ -84,6 +86,7 @@ public class MoviesListFragment extends Fragment {
         // Defines the xml file for the fragment
         dbManager = new DBManager(getActivity());
         dbManager.open();
+        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.movie_list_fragment, parent, false);
     }
 
@@ -101,6 +104,7 @@ public class MoviesListFragment extends Fragment {
         list = view.findViewById(R.id.main_recycler_list_movies);
         list.setHasFixedSize(true);
         newPostFab = view.findViewById(R.id.movie_list_fab);
+        swipeRefreshLayout = view.findViewById(R.id.movie_list_swipe_refresh_layout);
 
         if(!FirebaseAuthHandler.getInstance().isUserLoggedIn()) {
             newPostFab.setVisibility(View.INVISIBLE);
@@ -108,13 +112,18 @@ public class MoviesListFragment extends Fragment {
             newPostFab.setVisibility(View.VISIBLE);
         }
 
-        // Add items to Array List
-        ArrayList<Movie> allMovies = dbManager.getAllMovies();
-
         // Set adapter to recycler view
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        adapter = new MovieRecyclerAdapter(allMovies);
+        adapter = new MovieRecyclerAdapter(dbManager.getAllMovies());
         list.setAdapter(adapter);
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                updateMovies();
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
 
         list.addItemDecoration(new DividerItemDecoration(list.getContext(), DividerItemDecoration.VERTICAL));
 
@@ -128,7 +137,7 @@ public class MoviesListFragment extends Fragment {
                 dataToAdd.putLong("id", adapter.getItemAtPosition(pos).id);
                 dataToAdd.putFloat("rating", adapter.getItemAtPosition(pos).rating);
                 dataToAdd.putString("plot", adapter.getItemAtPosition(pos).plot);
-                FragmentUtils.loadFragment(MoviesListFragment.this, null, new MovieDetailsFragment(), R.id.activity_main_frame_layout, dataToAdd);
+                FragmentUtils.loadFragment(MoviesListFragment.this, null, new MovieDetailsFragment(), R.id.activity_main_frame_layout, dataToAdd, true);
             }
         });
 
@@ -316,8 +325,11 @@ public class MoviesListFragment extends Fragment {
                     if(movieName.getText().toString().length() > 0 && movieYear.getText().toString().length() > 0) {
                         try {
                             Movie movie = dbManager.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
-                            moviePosterImageView.setImageBitmap(ImageUtils.getBitmap(movie.poster));
-                            moviePosterImageView.setBackground(null);
+                            Bitmap movieBitmap = ImageUtils.getBitmap(movie.poster);
+                            if(movieBitmap != null) {
+                                moviePosterImageView.setImageBitmap(movieBitmap);
+                                moviePosterImageView.setBackground(null);
+                            }
                             moviePlot = movie.plot;
                             moviePoster.setOnClickListener(null);
                             progressDialog.dismiss();
@@ -338,7 +350,11 @@ public class MoviesListFragment extends Fragment {
                 if(!hasFocus && movieName.getText().toString().length() > 0 && movieYear.getText().toString().length() > 0) {
                     try {
                         Movie movie = dbManager.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
-                        moviePosterImageView.setImageBitmap(ImageUtils.getBitmap(movie.poster));
+                        Bitmap movieBitmap = ImageUtils.getBitmap(movie.poster);
+                        if(movieBitmap != null) {
+                            moviePosterImageView.setImageBitmap(movieBitmap);
+                            moviePosterImageView.setBackground(null);
+                        }
                         moviePosterImageView.setBackground(null);
                         moviePlot = movie.plot;
                         moviePoster.setOnClickListener(null);
@@ -383,6 +399,13 @@ public class MoviesListFragment extends Fragment {
                 .setCancelable(false)
                 .create();
         builder.show();
+
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                updateMovies();
+            }
+        });
 
         //Setting up OnClickListener on positive button of AlertDialog
         builder.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
@@ -472,7 +495,14 @@ public class MoviesListFragment extends Fragment {
 
     @Override
     public void onResume() {
+        updateMovies();
         super.onResume();
+    }
+
+    public void updateMovies() {
+        ArrayList<Movie> allMovies = dbManager.getAllMovies();
+        adapter.clear();
+        adapter.addAll(allMovies);
         adapter.notifyDataSetChanged();
     }
 }

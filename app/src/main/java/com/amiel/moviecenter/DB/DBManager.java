@@ -101,7 +101,7 @@ public class DBManager {
     }
 
     public Movie getMovieByNameAndYear(String movieName, int movieYear) {
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.MOVIES_TABLE_NAME + " WHERE " + DBHelper.MOVIE_NAME + " IN ( '" + movieName + "' ) AND " + DBHelper.MOVIE_YEAR + " IN ( '" + movieYear + "' )" , null);
+        Cursor cursor = database.query(DBHelper.MOVIES_TABLE_NAME, null, DBHelper.MOVIE_NAME + " = ? AND " + DBHelper.MOVIE_YEAR + " = ?", new String[] {movieName, String.valueOf(movieYear)}, null,null, null);
         if(cursor.moveToFirst()) {
             String name = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_NAME));
             String plot = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_PLOT));
@@ -116,7 +116,7 @@ public class DBManager {
     }
 
     public User getUserByEmail(String email) {
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.USERS_TABLE_NAME + " WHERE " + DBHelper.USER_EMAIL + " IN ( '" + email + "' )", null);
+        Cursor cursor = database.query(DBHelper.USERS_TABLE_NAME, null, DBHelper.USER_EMAIL + " = ?", new String[] {email}, null,null, null);
         if(cursor.moveToFirst()) {
             String username = cursor.getString(cursor.getColumnIndex(DBHelper.USER_USERNAME));
             long id = cursor.getLong(cursor.getColumnIndex(DBHelper.USER_ID));
@@ -131,7 +131,7 @@ public class DBManager {
 
     public ArrayList<Movie> getAllMovies() {
         ArrayList<Movie> allMovies = new ArrayList<>();
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.MOVIES_TABLE_NAME, null);
+        Cursor cursor = database.query(DBHelper.MOVIES_TABLE_NAME, null, null, null,null, null, null);
         if (cursor.moveToFirst()){
             do {
                 String name = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_NAME));
@@ -151,7 +151,7 @@ public class DBManager {
 
     public ArrayList<Post> getAllPostsForMovie(long movieId) {
         ArrayList<Post> allPosts = new ArrayList<>();
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.POSTS_TABLE_NAME + " WHERE " + DBHelper.POST_RELATED_MOVIE_ID + " IN ( '" + movieId + "' )", null);
+        Cursor cursor = database.query(DBHelper.POSTS_TABLE_NAME, null, DBHelper.POST_RELATED_MOVIE_ID + " = ?", new String[] {String.valueOf(movieId)}, null,null, null);
         if (cursor.moveToFirst()){
             do {
                 String text = cursor.getString(cursor.getColumnIndex(DBHelper.POST_TEXT));
@@ -169,14 +169,14 @@ public class DBManager {
     }
 
     public boolean isMovieExist(String name) {
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.MOVIES_TABLE_NAME + " WHERE " + DBHelper.MOVIE_NAME + " IN ( '" + name + "' )", null);
+        Cursor cursor = database.query(DBHelper.MOVIES_TABLE_NAME, null, DBHelper.MOVIE_NAME + " = ?", new String[] {name}, null,null, null);
         boolean isExist = cursor.moveToFirst();
         cursor.close();
         return isExist;
     }
 
     public boolean isUserExist(String email) {
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.USERS_TABLE_NAME + " WHERE " + DBHelper.USER_EMAIL + " IN ( '" + email + "' )", null);
+        Cursor cursor = database.query(DBHelper.USERS_TABLE_NAME, null, DBHelper.USER_EMAIL + " = ?", new String[] {email}, null,null, null);
         boolean isExist = cursor.moveToFirst();
         cursor.close();
         return isExist;
@@ -189,7 +189,7 @@ public class DBManager {
 
     public ArrayList<Post> getAllPostsOfUser(long userID) {
         ArrayList<Post> allPosts = new ArrayList<>();
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DBHelper.POSTS_TABLE_NAME + " WHERE " + DBHelper.POST_RELATED_USER_ID + " IN ( '" + userID + "' )", null);
+        Cursor cursor = database.query(DBHelper.POSTS_TABLE_NAME, null, DBHelper.POST_RELATED_USER_ID + " = ?", new String[] {String.valueOf(userID)}, null,null, null);
         if (cursor.moveToFirst()){
             do {
                 String text = cursor.getString(cursor.getColumnIndex(DBHelper.POST_TEXT));

@@ -21,8 +21,10 @@ class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> impleme
     List<Movie> filteredData;
 
     public MovieRecyclerAdapter(List<Movie> originalData) {
-        this.originalData = originalData;
-        this.filteredData = originalData;
+        this.originalData = new ArrayList<>();
+        this.filteredData = new ArrayList<>();
+        this.originalData.addAll(originalData);
+        this.filteredData.addAll(originalData);
     }
 
     void setOnItemClickListener(OnItemClickListener listener){
@@ -106,5 +108,19 @@ class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> impleme
                 return;
             }
         }
+    }
+
+    // Clean all elements of the recycler
+    public void clear() {
+        originalData.clear();
+        filteredData.clear();
+        notifyDataSetChanged();
+    }
+
+    // Add a list of items -- change to type used
+    public void addAll(List<Movie> list) {
+        originalData.addAll(list);
+        filteredData.addAll(list);
+        notifyDataSetChanged();
     }
 }

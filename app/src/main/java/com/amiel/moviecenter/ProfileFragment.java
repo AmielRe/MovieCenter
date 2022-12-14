@@ -88,7 +88,10 @@ public class ProfileFragment extends Fragment {
 
         emailEditText.setText(email);
         usernameEditText.setText(currentUser.username);
-        profileImageButton.setImageBitmap(ImageUtils.getBitmap(currentUser.profileImage));
+        Bitmap profileBitmap = ImageUtils.getBitmap(currentUser.profileImage);
+        if(profileBitmap != null) {
+            profileImageButton.setImageBitmap(ImageUtils.getBitmap(currentUser.profileImage));
+        }
 
         profileImageButton.setOnClickListener(new View.OnClickListener() {
             @Override

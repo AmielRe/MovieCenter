@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        FragmentUtils.loadFragment(null, MainActivity.this, new MoviesListFragment(), R.id.activity_main_frame_layout, null);
+        FragmentUtils.loadFragment(null, MainActivity.this, new MoviesListFragment(), R.id.activity_main_frame_layout, null, false);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.menu_profile:
-                FragmentUtils.loadFragment(null, this, new ProfileFragment(), R.id.activity_main_frame_layout, null);
+                FragmentUtils.loadFragment(null, this, new ProfileFragment(), R.id.activity_main_frame_layout, null, true);
                 break;
 
             case R.id.menu_my_posts:
