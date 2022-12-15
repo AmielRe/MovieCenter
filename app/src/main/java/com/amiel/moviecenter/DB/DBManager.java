@@ -115,6 +115,20 @@ public class DBManager {
         return null;
     }
 
+    public Movie getMovieById(long movieID) {
+        Cursor cursor = database.query(DBHelper.MOVIES_TABLE_NAME, null, DBHelper.MOVIE_ID + " = ? ", new String[] { String.valueOf(movieID)}, null,null, null);
+        if(cursor.moveToFirst()) {
+            String name = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_NAME));
+            String plot = cursor.getString(cursor.getColumnIndex(DBHelper.MOVIE_PLOT));
+            byte[] poster = cursor.getBlob(cursor.getColumnIndex(DBHelper.MOVIE_POSTER));
+            float rating = cursor.getLong(cursor.getColumnIndex(DBHelper.MOVIE_RATING));
+            int year = cursor.getInt(cursor.getColumnIndex(DBHelper.MOVIE_YEAR));
+            cursor.close();
+            return new Movie(name, year, rating, plot, poster, movieID);
+        }
+        return null;
+    }
+
     public User getUserByEmail(String email) {
         Cursor cursor = database.query(DBHelper.USERS_TABLE_NAME, null, DBHelper.USER_EMAIL + " = ?", new String[] {email}, null,null, null);
         if(cursor.moveToFirst()) {
