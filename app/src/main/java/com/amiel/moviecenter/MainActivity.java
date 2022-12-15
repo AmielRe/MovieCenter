@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case R.id.menu_my_posts:
-                // Here will come my_posts fragment
+                FragmentUtils.loadFragment(null, this, new MyPostsFragment(), R.id.activity_main_frame_layout, null, true);
                 break;
 
             case R.id.menu_logout:
