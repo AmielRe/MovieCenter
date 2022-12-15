@@ -64,6 +64,7 @@ public class ProfileFragment extends Fragment {
         // Defines the xml file for the fragment
         dbManager = new DBManager(getActivity());
         dbManager.open();
+        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.profile_fragment, parent, false);
     }
 
