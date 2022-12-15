@@ -129,6 +129,20 @@ public class DBManager {
         return null;
     }
 
+    public User getUserById(long userID) {
+        Cursor cursor = database.query(DBHelper.USERS_TABLE_NAME, null, DBHelper.USER_ID + " = ?", new String[] {String.valueOf(userID)}, null,null, null);
+        if(cursor.moveToFirst()) {
+            String username = cursor.getString(cursor.getColumnIndex(DBHelper.USER_USERNAME));
+            String email = cursor.getString(cursor.getColumnIndex(DBHelper.USER_EMAIL));
+            byte[] profileImage= cursor.getBlob(cursor.getColumnIndex(DBHelper.USER_IMAGE));
+            cursor.close();
+
+            return new User(username, email, profileImage, userID);
+        }
+
+        return null;
+    }
+
     public ArrayList<Movie> getAllMovies() {
         ArrayList<Movie> allMovies = new ArrayList<>();
         Cursor cursor = database.query(DBHelper.MOVIES_TABLE_NAME, null, null, null,null, null, null);

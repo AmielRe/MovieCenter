@@ -1,7 +1,6 @@
 package com.amiel.moviecenter;
 
 import android.graphics.Bitmap;
-import android.media.Image;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,6 +14,15 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.Model.Post;
+import com.amiel.moviecenter.DB.Model.User;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MovieDetailsFragment extends Fragment {
 
@@ -24,11 +32,19 @@ public class MovieDetailsFragment extends Fragment {
     RatingBar movieRating;
     TextView moviePlot;
 
+    // Recycler View object
+    RecyclerView list;
+    PostDetailsRecyclerAdapter adapter;
+
+    private DBManager dbManager;
+
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
+        dbManager = new DBManager(getActivity());
+        dbManager.open();
         return inflater.inflate(R.layout.movie_details_fragment, parent, false);
     }
 
@@ -42,8 +58,23 @@ public class MovieDetailsFragment extends Fragment {
         movieRating = view.findViewById(R.id.movie_details_movie_rating);
         moviePlot = view.findViewById(R.id.movie_details_movie_description);
 
+        list = view.findViewById(R.id.movie_details_recycler_view);
+        list.setHasFixedSize(true);
+
+        // Set adapter to recycler view
+        list.setLayoutManager(new LinearLayoutManager(getActivity()));
+        List<Post> postsOnMovie = dbManager.getAllPostsForMovie(getArguments().getLong("id"));
+        List<PostDetailsItem> postsItems = new ArrayList<>();
+        for(Post post : postsOnMovie) {
+            User relatedUser = dbManager.getUserById(post.userID);
+            postsItems.add(new PostDetailsItem(relatedUser.username, post.text, relatedUser.profileImage, post.rating));
+        }
+
+        adapter = new PostDetailsRecyclerAdapter(postsItems);
+        list.setAdapter(adapter);
+
         movieName.setText(getArguments().getString("name"));
-        movieYear.setText(getArguments().getString("year"));
+        movieYear.setText(String.valueOf(getArguments().getInt("year")));
         Bitmap movieBitmap = ImageUtils.getBitmap(getArguments().getByteArray("image"));
         if(movieBitmap != null) {
             movieImage.setImageBitmap(movieBitmap);

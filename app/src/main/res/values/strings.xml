@@ -50,4 +50,7 @@
     <string name="new_post_how_was_your_experience_label">How was your experience?</string>
     <string name="error_invalid_movie_name">Please enter movie name</string>
     <string name="error_invalid_movie_year">Please enter movie year</string>
+
+    <!-- Post -->
+    <string name="username">@%1$s</string>
 </resources>
