@@ -11,6 +11,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.amiel.moviecenter.DB.DBManager;
@@ -56,6 +57,7 @@ public class SignUpFragment extends Fragment {
         // Defines the xml file for the fragment
         dbManager = new DBManager(getActivity());
         dbManager.open();
+        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
         return inflater.inflate(R.layout.sign_up_fragment, parent, false);
     }
 

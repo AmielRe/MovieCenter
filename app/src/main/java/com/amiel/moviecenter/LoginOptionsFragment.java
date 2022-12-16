@@ -9,7 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import com.amiel.moviecenter.DB.DBManager;
 import com.amiel.moviecenter.DB.Model.User;
@@ -34,6 +36,7 @@ public class LoginOptionsFragment extends Fragment {
         FirebaseAuthHandler.getInstance().initGoogleAuth(getString(R.string.web_client_id), getActivity());
         dbManager = new DBManager(getActivity());
         dbManager.open();
+        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
         // Defines the xml file for the fragment
         return inflater.inflate(R.layout.login_options_fragment, parent, false);
     }
@@ -54,13 +57,13 @@ public class LoginOptionsFragment extends Fragment {
 
         signInWithEmail.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                FragmentUtils.loadFragment(LoginOptionsFragment.this, null, new SignInFragment(), R.id.activity_login_frame_layout, null, true);
+                Navigation.findNavController(view).navigate(R.id.signInFragment);
             }
         });
 
         signUp.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                FragmentUtils.loadFragment(LoginOptionsFragment.this, null, new SignUpFragment(), R.id.activity_login_frame_layout, null, true);
+                Navigation.findNavController(view).navigate(R.id.signUpFragment);
             }
         });
 
