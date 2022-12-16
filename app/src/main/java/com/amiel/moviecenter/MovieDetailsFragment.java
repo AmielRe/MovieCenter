@@ -63,7 +63,7 @@ public class MovieDetailsFragment extends Fragment {
 
         // Set adapter to recycler view
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        List<Post> postsOnMovie = dbManager.getAllPostsForMovie(getArguments().getLong("id"));
+        List<Post> postsOnMovie = dbManager.getAllPostsForMovie(MovieDetailsFragmentArgs.fromBundle(getArguments()).getId());
         List<PostDetailsItem> postsItems = new ArrayList<>();
         for(Post post : postsOnMovie) {
             User relatedUser = dbManager.getUserById(post.userID);
@@ -73,14 +73,14 @@ public class MovieDetailsFragment extends Fragment {
         adapter = new PostDetailsRecyclerAdapter(postsItems);
         list.setAdapter(adapter);
 
-        movieName.setText(getArguments().getString("name"));
-        movieYear.setText(String.valueOf(getArguments().getInt("year")));
-        Bitmap movieBitmap = ImageUtils.getBitmap(getArguments().getByteArray("image"));
+        movieName.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getName());
+        movieYear.setText(String.valueOf(MovieDetailsFragmentArgs.fromBundle(getArguments()).getYear()));
+        Bitmap movieBitmap = MovieDetailsFragmentArgs.fromBundle(getArguments()).getImage();
         if(movieBitmap != null) {
             movieImage.setImageBitmap(movieBitmap);
         }
-        movieRating.setRating(getArguments().getFloat("rating"));
-        moviePlot.setText(getArguments().getString("plot"));
+        movieRating.setRating(MovieDetailsFragmentArgs.fromBundle(getArguments()).getRating());
+        moviePlot.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getPlot());
     }
 
     @Override

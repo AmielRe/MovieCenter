@@ -21,14 +21,6 @@ class PostDetailsViewHolder extends RecyclerView.ViewHolder{
         postText = itemView.findViewById(R.id.movie_post_row_item_post_text);
         userImage = itemView.findViewById(R.id.movie_post_row_item_user_image);
         rating = itemView.findViewById(R.id.movie_post_row_item_post_rating);
-
-        itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int pos = getAdapterPosition();
-                listener.onItemClick(pos);
-            }
-        });
     }
 
     public void bind(PostDetailsItem post, int pos) {
