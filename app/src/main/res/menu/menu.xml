@@ -7,23 +7,23 @@
     <item
         android:id="@+id/search_bar"
         android:title="@string/menu_search_text"
-        app:actionViewClass="android.widget.SearchView"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="ifRoom|withText" />
 
     <item
-        android:id="@+id/menu_login"
+        android:id="@+id/loginOptionsFragment"
         android:orderInCategory="100"
         android:title="@string/menu_login_text"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/menu_profile"
+        android:id="@+id/profileFragment"
         android:orderInCategory="100"
         android:title="@string/menu_profile_text"
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/menu_my_posts"
+        android:id="@+id/myPostsFragment"
         android:orderInCategory="100"
         android:title="@string/menu_my_posts_text"
         app:showAsAction="never" />
