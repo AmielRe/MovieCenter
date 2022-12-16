@@ -2,6 +2,8 @@ package com.amiel.moviecenter;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,16 +21,18 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RatingBar;
-import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.view.MenuItemCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.MenuProvider;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -55,6 +59,7 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import androidx.appcompat.widget.SearchView;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -86,7 +91,62 @@ public class MoviesListFragment extends Fragment {
         // Defines the xml file for the fragment
         dbManager = new DBManager(getActivity());
         dbManager.open();
-        setHasOptionsMenu(true);
+
+        // Disable and hide back button from movies list fragment
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayShowCustomEnabled(false);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menu.clear();
+                menuInflater.inflate(R.menu.menu, menu);
+
+                // Initialise menu item search bar
+                // with id and take its object
+                MenuItem search = menu.findItem(R.id.search_bar);
+                SearchView searchView = (SearchView) search.getActionView();
+
+                SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+                searchView.setSearchableInfo( searchManager.getSearchableInfo(getActivity().getComponentName()));
+                searchView.setQueryHint(getResources().getString(R.string.search_movie_hint));
+
+                // attach setOnQueryTextListener
+                // to search view defined above
+                searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                    // Override onQueryTextSubmit method which is call when submit query is searched
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        // If the list contains the search query than filter the adapter
+                        // using the filter method with the query as its argument
+                        if (adapter.filteredData.stream().anyMatch(curr -> curr.name.toLowerCase().contains(query.toLowerCase()))) {
+                            adapter.getFilter().filter(query);
+                        } else {
+                            // Search query not found in List View
+                            Toast.makeText(getActivity(), "Not found", Toast.LENGTH_LONG).show();
+                        }
+                        return false;
+                    }
+
+                    // This method is overridden to filter the adapter according
+                    // to a search query when the user is typing search
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        adapter.getFilter().filter(newText);
+                        return false;
+                    }
+                });
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+
+                // Handle option Menu Here
+                return false;
+            }
+        }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+
         return inflater.inflate(R.layout.movie_list_fragment, parent, false);
     }
 
@@ -130,14 +190,9 @@ public class MoviesListFragment extends Fragment {
         adapter.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int pos) {
-                Bundle dataToAdd = new Bundle();
-                dataToAdd.putString("name", adapter.getItemAtPosition(pos).name);
-                dataToAdd.putInt("year", adapter.getItemAtPosition(pos).year);
-                dataToAdd.putByteArray("image", adapter.getItemAtPosition(pos).poster);
-                dataToAdd.putLong("id", adapter.getItemAtPosition(pos).id);
-                dataToAdd.putFloat("rating", adapter.getItemAtPosition(pos).rating);
-                dataToAdd.putString("plot", adapter.getItemAtPosition(pos).plot);
-                FragmentUtils.loadFragment(MoviesListFragment.this, null, new MovieDetailsFragment(), R.id.activity_main_frame_layout, dataToAdd, true);
+                Movie clickedMovie = adapter.getItemAtPosition(pos);
+                MoviesListFragmentDirections.ActionMoviesListFragmentToMovieDetailsFragment action = MoviesListFragmentDirections.actionMoviesListFragmentToMovieDetailsFragment(clickedMovie.id, clickedMovie.name, clickedMovie.year, clickedMovie.rating, clickedMovie.plot, ImageUtils.getBitmap(clickedMovie.poster));
+                Navigation.findNavController(view).navigate(action);
             }
         });
 
@@ -147,52 +202,6 @@ public class MoviesListFragment extends Fragment {
                 openNewPostDialog();
             }
         });
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-
-        // Initialise menu item search bar
-        // with id and take its object
-        MenuItem searchViewItem = menu.findItem(R.id.search_bar);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchViewItem);
-
-        // attach setOnQueryTextListener
-        // to search view defined above
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            // Override onQueryTextSubmit method which is call when submit query is searched
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                // If the list contains the search query than filter the adapter
-                // using the filter method with the query as its argument
-                if (adapter.filteredData.stream().anyMatch(curr -> curr.name.toLowerCase().contains(query.toLowerCase()))) {
-                    adapter.getFilter().filter(query);
-                } else {
-                    // Search query not found in List View
-                    Toast.makeText(getActivity(), "Not found", Toast.LENGTH_LONG).show();
-                }
-                return false;
-            }
-
-            // This method is overridden to filter the adapter according
-            // to a search query when the user is typing search
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
-                return false;
-            }
-        });
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
     }
 
     private void openNewPostDialog()
