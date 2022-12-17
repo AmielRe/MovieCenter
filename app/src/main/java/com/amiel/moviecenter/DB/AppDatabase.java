@@ -21,7 +21,7 @@ public abstract class AppDatabase extends androidx.room.RoomDatabase {
     public abstract MovieDao movieDao();
     public abstract PostDao postDao();
 
-    private static AppDatabase instance;
+    private static volatile AppDatabase instance;
 
     static AppDatabase getInstance(final Context context){
         if (instance == null) {

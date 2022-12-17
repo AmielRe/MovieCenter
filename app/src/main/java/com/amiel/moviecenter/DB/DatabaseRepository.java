@@ -5,6 +5,9 @@ import android.content.Context;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.amiel.moviecenter.DB.AsyncTask.DeleteAsyncTask;
+import com.amiel.moviecenter.DB.AsyncTask.InsertAsyncTask;
+import com.amiel.moviecenter.DB.AsyncTask.UpdateAsyncTask;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
@@ -20,7 +23,7 @@ public class DatabaseRepository {
     }
 
     public MutableLiveData<long[]> insertMovieTask(Movie movie){
-        MutableLiveData<long[]> liveData = new MutableLiveData();
+        MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.movieDao()).execute(movie);
         return liveData;
     }
@@ -51,7 +54,7 @@ public class DatabaseRepository {
 
 
     public MutableLiveData<long[]> insertPostTask(Post post){
-        MutableLiveData<long[]> liveData = new MutableLiveData();
+        MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.postDao()).execute(post);
         return liveData;
     }
@@ -74,7 +77,7 @@ public class DatabaseRepository {
 
 
     public MutableLiveData<long[]> insertUserTask(User user){
-        MutableLiveData<long[]> liveData = new MutableLiveData();
+        MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.userDao()).execute(user);
         return liveData;
     }

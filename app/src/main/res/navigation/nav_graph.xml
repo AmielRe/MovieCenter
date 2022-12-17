@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/loginOptionsFragment"
-        android:name="com.amiel.moviecenter.LoginOptionsFragment"
+        android:name="com.amiel.moviecenter.Authentication.LoginOptions.LoginOptionsFragment"
         tools:layout="@layout/login_options_fragment" >
         <action
             android:id="@+id/action_loginOptionsFragment_to_signInFragment"
@@ -97,7 +97,7 @@
         tools:layout="@layout/profile_fragment" />
     <fragment
         android:id="@+id/signInFragment"
-        android:name="com.amiel.moviecenter.SignInFragment"
+        android:name="com.amiel.moviecenter.Authentication.SignIn.SignInFragment"
         tools:layout="@layout/sign_in_fragment" >
         <action
             android:id="@+id/action_signInFragment_to_moviesListFragment"
@@ -109,7 +109,7 @@
     </fragment>
     <fragment
         android:id="@+id/signUpFragment"
-        android:name="com.amiel.moviecenter.SignUpFragment"
+        android:name="com.amiel.moviecenter.Authentication.SignUp.SignUpFragment"
         tools:layout="@layout/sign_up_fragment" >
         <action
             android:id="@+id/action_signUpFragment_to_moviesListFragment"

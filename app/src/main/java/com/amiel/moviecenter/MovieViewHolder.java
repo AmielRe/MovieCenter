@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.amiel.moviecenter.DB.Model.Movie;
+import com.amiel.moviecenter.Utils.ImageUtils;
 
 class MovieViewHolder extends RecyclerView.ViewHolder{
     TextView movieName;
