@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.Authentication;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -7,8 +7,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 
+import com.amiel.moviecenter.Authentication.LoginOptions.LoginOptionsFragmentDirections;
+import com.amiel.moviecenter.Authentication.SignIn.SignInFragmentDirections;
+import com.amiel.moviecenter.Authentication.SignUp.SignUpFragmentDirections;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -23,9 +25,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 public class FirebaseAuthHandler {
     private static volatile FirebaseAuthHandler INSTANCE = null;
-    private FirebaseAuth mAuth;
+    private final FirebaseAuth mAuth;
     private GoogleSignInClient mSignInClient;
-    public static final int RC_SIGN_IN = 1234;
 
     private FirebaseAuthHandler() {
         // Initialize Firebase Auth
@@ -56,38 +57,32 @@ public class FirebaseAuthHandler {
 
     public void signInWithEmailAndPassword(String email, String password, Activity context, NavController navController) {
         mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(context, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d("TAG", "signInWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            navController.navigate(SignInFragmentDirections.actionSignInFragmentToMoviesListFragment());
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w("TAG", "signInWithEmail:failure", task.getException());
-                            Toast.makeText(context, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
+            .addOnCompleteListener(context, task -> {
+                if (task.isSuccessful()) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.d("TAG", "signInWithEmail:success");
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    navController.navigate(SignInFragmentDirections.actionSignInFragmentToMoviesListFragment());
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w("TAG", "signInWithEmail:failure", task.getException());
+                    Toast.makeText(context, "Authentication failed.",
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 
-    public void createUserWithEmailAndPassword(String email, String password, String username, Activity context, NavController navController) {
+    public void createUserWithEmailAndPassword(String email, String password, Activity context, NavController navController) {
         mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(context, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            navController.navigate(SignUpFragmentDirections.actionSignUpFragmentToMoviesListFragment());
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Toast.makeText(context, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
+                .addOnCompleteListener(context, task -> {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        navController.navigate(SignUpFragmentDirections.actionSignUpFragmentToMoviesListFragment());
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Toast.makeText(context, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -103,11 +98,11 @@ public class FirebaseAuthHandler {
     public void signInWithGoogle(GoogleSignInAccount acct, Activity context, NavController navController) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
-                .addOnSuccessListener(context, authResult -> {
-                    navController.navigate(LoginOptionsFragmentDirections.actionLoginOptionsFragmentToMoviesListFragment());
-                })
-                .addOnFailureListener(context, e -> Toast.makeText(context, "Authentication failed.",
-                        Toast.LENGTH_SHORT).show());
+            .addOnSuccessListener(context, authResult -> {
+                navController.navigate(LoginOptionsFragmentDirections.actionLoginOptionsFragmentToMoviesListFragment());
+            })
+            .addOnFailureListener(context, e -> Toast.makeText(context, "Authentication failed.",
+                    Toast.LENGTH_SHORT).show());
     }
 
     public Intent getSignInIntent() {
