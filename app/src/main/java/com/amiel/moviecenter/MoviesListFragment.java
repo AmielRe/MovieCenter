@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,13 +33,14 @@ import androidx.core.view.MenuProvider;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.Observer;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
@@ -79,7 +81,7 @@ public class MoviesListFragment extends Fragment {
     private static final int GALLERY_REQUEST_CODE_IMAGE = 3;
     private static final String BASE_MOVIE_URL = "https://imdb-api.com/API/AdvancedSearch/k_4wqqdznf?title=%s&has=plot";
 
-    private DBManager dbManager;
+    private DatabaseRepository db;
     String moviePlot;
     byte[] moviePosterByteArray;
     ProgressDialog progressDialog;
@@ -89,8 +91,7 @@ public class MoviesListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        dbManager = new DBManager(getActivity());
-        dbManager.open();
+        db = new DatabaseRepository(getActivity());
 
         // Disable and hide back button from movies list fragment
         ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayShowCustomEnabled(false);
@@ -120,7 +121,7 @@ public class MoviesListFragment extends Fragment {
                     public boolean onQueryTextSubmit(String query) {
                         // If the list contains the search query than filter the adapter
                         // using the filter method with the query as its argument
-                        if (adapter.filteredData.stream().anyMatch(curr -> curr.name.toLowerCase().contains(query.toLowerCase()))) {
+                        if (adapter.filteredData.stream().anyMatch(curr -> curr.getName().toLowerCase().contains(query.toLowerCase()))) {
                             adapter.getFilter().filter(query);
                         } else {
                             // Search query not found in List View
@@ -133,7 +134,9 @@ public class MoviesListFragment extends Fragment {
                     // to a search query when the user is typing search
                     @Override
                     public boolean onQueryTextChange(String newText) {
-                        adapter.getFilter().filter(newText);
+                        if(adapter != null) {
+                            adapter.getFilter().filter(newText);
+                        }
                         return false;
                     }
                 });
@@ -148,12 +151,6 @@ public class MoviesListFragment extends Fragment {
         }, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         return inflater.inflate(R.layout.movie_list_fragment, parent, false);
-    }
-
-    @Override
-    public void onDestroyView() {
-        dbManager.close();
-        super.onDestroyView();
     }
 
     // This event is triggered soon after onCreateView().
@@ -173,26 +170,28 @@ public class MoviesListFragment extends Fragment {
         }
 
         // Set adapter to recycler view
-        list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        adapter = new MovieRecyclerAdapter(dbManager.getAllMovies());
-        list.setAdapter(adapter);
+        db.getAllMoviesTask().observe(getActivity(), movies -> {
+            list.setLayoutManager(new LinearLayoutManager(getActivity()));
+            adapter = new MovieRecyclerAdapter(movies);
+            list.setAdapter(adapter);
+
+            list.addItemDecoration(new DividerItemDecoration(list.getContext(), DividerItemDecoration.VERTICAL));
+
+            adapter.setOnItemClickListener(new OnItemClickListener() {
+                @Override
+                public void onItemClick(int pos) {
+                    Movie clickedMovie = adapter.getItemAtPosition(pos);
+                    MoviesListFragmentDirections.ActionMoviesListFragmentToMovieDetailsFragment action = MoviesListFragmentDirections.actionMoviesListFragmentToMovieDetailsFragment(clickedMovie.getId(), clickedMovie.getName(), clickedMovie.getYear(), clickedMovie.getRating(), clickedMovie.getPlot(), ImageUtils.getBitmap(clickedMovie.getPoster()));
+                    Navigation.findNavController(view).navigate(action);
+                }
+            });
+        });
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 updateMovies();
                 swipeRefreshLayout.setRefreshing(false);
-            }
-        });
-
-        list.addItemDecoration(new DividerItemDecoration(list.getContext(), DividerItemDecoration.VERTICAL));
-
-        adapter.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(int pos) {
-                Movie clickedMovie = adapter.getItemAtPosition(pos);
-                MoviesListFragmentDirections.ActionMoviesListFragmentToMovieDetailsFragment action = MoviesListFragmentDirections.actionMoviesListFragmentToMovieDetailsFragment(clickedMovie.id, clickedMovie.name, clickedMovie.year, clickedMovie.rating, clickedMovie.plot, ImageUtils.getBitmap(clickedMovie.poster));
-                Navigation.findNavController(view).navigate(action);
             }
         });
 
@@ -260,95 +259,95 @@ public class MoviesListFragment extends Fragment {
                     progressDialog.setCancelable(false);
                     progressDialog.show();
 
-                    if(!dbManager.isMovieExist(movieName.getText().toString())) {
-
-                        OkHttpClient client = new OkHttpClient();
-
-                        Request request = new Request.Builder()
-                                .url(String.format(BASE_MOVIE_URL, movieName.getText().toString()))
-                                .build();
-
-                        client.newCall(request).enqueue(new Callback() {
-                            @Override
-                            public void onFailure(Call call, IOException e) {
+                    db.getMovieByName(movieName.getText().toString()).observe(getActivity(), movie -> {
+                        if (movie != null && movieYear.getText().toString().length() > 0) {
+                            try {
+                                db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getActivity(), movieByNameAndYear -> {
+                                    Bitmap movieBitmap = ImageUtils.getBitmap(movieByNameAndYear.getPoster());
+                                    if (movieBitmap != null) {
+                                        moviePosterImageView.setImageBitmap(movieBitmap);
+                                        moviePosterImageView.setBackground(null);
+                                    }
+                                    moviePlot = movieByNameAndYear.getPlot();
+                                    moviePoster.setOnClickListener(null);
+                                    progressDialog.dismiss();
+                                    Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
+                                });
+                            } catch (Exception e) {
                                 progressDialog.dismiss();
                                 Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                                call.cancel();
+                                e.printStackTrace();
                             }
+                        } else {
+                            OkHttpClient client = new OkHttpClient();
 
-                            @Override
-                            public void onResponse(Call call, Response response) throws IOException {
+                            Request request = new Request.Builder()
+                                    .url(String.format(BASE_MOVIE_URL, movieName.getText().toString()))
+                                    .build();
 
-                                final String myResponse = response.body().string();
-                                JSONObject json = new JSONObject();
-                                try {
-                                    json = new JSONObject(myResponse);
-                                    JSONObject resultsJSON = (JSONObject) json.getJSONArray("results").get(0);
-                                    moviePlot = resultsJSON.getString("plot");
-                                    String year = resultsJSON.getString("description").replaceAll("[^0-9]", "");
-                                    String moviePosterUrl = resultsJSON.getString("image");
-                                    String title = resultsJSON.getString("title");
-
-                                    Request request = new Request.Builder()
-                                            .url(moviePosterUrl)
-                                            .build();
-
-                                    client.newCall(request).enqueue(new Callback() {
-                                        @Override
-                                        public void onFailure(Call call, IOException e) {
-                                            progressDialog.dismiss();
-                                            Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                                            call.cancel();
-                                        }
-
-                                        @Override
-                                        public void onResponse(Call call, Response response) throws IOException {
-                                            InputStream inputStream = response.body().byteStream();
-                                            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                                            moviePosterByteArray = ImageUtils.getBytes(bitmap);
-                                            getActivity().runOnUiThread(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    moviePosterImageView.setImageBitmap(bitmap);
-                                                    moviePosterImageView.setBackground(null);
-                                                    moviePoster.setOnClickListener(null);
-                                                    movieYear.setText(year);
-                                                    movieYear.setEnabled(false);
-                                                    movieName.setText(title);
-                                                    progressDialog.dismiss();
-                                                    Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
-                                        }
-                                    });
-
-                                } catch (JSONException e) {
+                            client.newCall(request).enqueue(new Callback() {
+                                @Override
+                                public void onFailure(Call call, IOException e) {
                                     progressDialog.dismiss();
                                     Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                                    e.printStackTrace();
+                                    call.cancel();
                                 }
-                            }
-                        });
-                    }
-                } else {
-                    if(movieName.getText().toString().length() > 0 && movieYear.getText().toString().length() > 0) {
-                        try {
-                            Movie movie = dbManager.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
-                            Bitmap movieBitmap = ImageUtils.getBitmap(movie.poster);
-                            if(movieBitmap != null) {
-                                moviePosterImageView.setImageBitmap(movieBitmap);
-                                moviePosterImageView.setBackground(null);
-                            }
-                            moviePlot = movie.plot;
-                            moviePoster.setOnClickListener(null);
-                            progressDialog.dismiss();
-                            Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
-                        } catch(Exception e) {
-                            progressDialog.dismiss();
-                            Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
+
+                                @Override
+                                public void onResponse(Call call, Response response) throws IOException {
+
+                                    final String myResponse = response.body().string();
+                                    JSONObject json = new JSONObject();
+                                    try {
+                                        json = new JSONObject(myResponse);
+                                        JSONObject resultsJSON = (JSONObject) json.getJSONArray("results").get(0);
+                                        moviePlot = resultsJSON.getString("plot");
+                                        String year = resultsJSON.getString("description").replaceAll("[^0-9]", "");
+                                        String moviePosterUrl = resultsJSON.getString("image");
+                                        String title = resultsJSON.getString("title");
+
+                                        Request request = new Request.Builder()
+                                                .url(moviePosterUrl)
+                                                .build();
+
+                                        client.newCall(request).enqueue(new Callback() {
+                                            @Override
+                                            public void onFailure(Call call, IOException e) {
+                                                progressDialog.dismiss();
+                                                Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                                                call.cancel();
+                                            }
+
+                                            @Override
+                                            public void onResponse(Call call, Response response) throws IOException {
+                                                InputStream inputStream = response.body().byteStream();
+                                                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                                                moviePosterByteArray = ImageUtils.getBytes(bitmap);
+                                                getActivity().runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        moviePosterImageView.setImageBitmap(bitmap);
+                                                        moviePosterImageView.setBackground(null);
+                                                        moviePoster.setOnClickListener(null);
+                                                        movieYear.setText(year);
+                                                        movieYear.setEnabled(false);
+                                                        movieName.setText(title);
+                                                        progressDialog.dismiss();
+                                                        Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
+                                            }
+                                        });
+
+                                    } catch (JSONException e) {
+                                        progressDialog.dismiss();
+                                        Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
                         }
-                    }
+                    });
                 }
             }
         });
@@ -358,17 +357,20 @@ public class MoviesListFragment extends Fragment {
             public void onFocusChange(View v, boolean hasFocus) {
                 if(!hasFocus && movieName.getText().toString().length() > 0 && movieYear.getText().toString().length() > 0) {
                     try {
-                        Movie movie = dbManager.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
-                        Bitmap movieBitmap = ImageUtils.getBitmap(movie.poster);
-                        if(movieBitmap != null) {
-                            moviePosterImageView.setImageBitmap(movieBitmap);
-                            moviePosterImageView.setBackground(null);
-                        }
-                        moviePosterImageView.setBackground(null);
-                        moviePlot = movie.plot;
-                        moviePoster.setOnClickListener(null);
-                        progressDialog.dismiss();
-                        Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
+                        db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getActivity(), movie -> {
+                            if(movie != null) {
+                                Bitmap movieBitmap = ImageUtils.getBitmap(movie.getPoster());
+                                if(movieBitmap != null) {
+                                    moviePosterImageView.setImageBitmap(movieBitmap);
+                                    moviePosterImageView.setBackground(null);
+                                }
+                                moviePosterImageView.setBackground(null);
+                                moviePlot = movie.getPlot();
+                                moviePoster.setOnClickListener(null);
+                                progressDialog.dismiss();
+                                Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     } catch(Exception e) {
                         progressDialog.dismiss();
                         Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
@@ -423,27 +425,37 @@ public class MoviesListFragment extends Fragment {
                 if(movieName.getError() == null && movieYear.getError() == null)
                 {
                     // If new movie - insert it
-                    if(!dbManager.isMovieExist(movieName.getText().toString())) {
-                        Movie newMovie = new Movie(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString().replaceAll("[^0-9]", "")), movieRating.getRating(), moviePlot,  ImageUtils.getBytes(((BitmapDrawable) moviePosterImageView.getDrawable()).getBitmap()), 0);
-                        dbManager.insertMovie(newMovie);
-                    }
+                    db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getActivity(), movie -> {
+                        if(movie == null) {
+                            Movie newMovie = new Movie(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString().replaceAll("[^0-9]", "")), movieRating.getRating(), moviePlot,  ImageUtils.getBytes(((BitmapDrawable) moviePosterImageView.getDrawable()).getBitmap()), 0);
+                            db.insertMovieTask(newMovie).observe(getActivity(), ids -> {
+                                final float rating = newMovie.getRating();
+                                final String text = movieExperienceText.getText().toString();
+                                final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImageImageView.getDrawable()).getBitmap());
+                                db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getActivity(), user -> {
+                                    // Insert new post
+                                    Post newPost = new Post(text, ids[0], rating, image, user.getId(), 0); // ID is 0 because were not setting it, it's used just for retrieval
+                                    db.insertPostTask(newPost);
+                                });
+                            });
+                        } else {
+                            final float rating = movie.getRating();
+                            final String text = movieExperienceText.getText().toString();
+                            final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImageImageView.getDrawable()).getBitmap());
+                            db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getActivity(), user -> {
+                                // Insert new post
+                                Post newPost = new Post(text, movie.getId(), rating, image, user.getId(), 0); // ID is 0 because were not setting it, it's used just for retrieval
+                                db.insertPostTask(newPost);
+                            });
 
-                    final float rating = movieRating.getRating();
-                    final String text = movieExperienceText.getText().toString();
-                    final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImageImageView.getDrawable()).getBitmap());
-                    final Movie movie = dbManager.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString()));
-                    final User user = dbManager.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail());
-
-                    // Insert new post
-                    Post newPost = new Post(text, movie.id, rating, image, user.id, 0); // ID is 0 because were not setting it, it's used just for retrieval
-                    dbManager.insertPost(newPost);
-
-                    // Update movie rating
-                    Movie updatedMovie = new Movie(movie.name, movie.year, (movie.rating + movieRating.getRating()) / 2, movie.plot, movie.poster, movie.id);
-                    dbManager.updateMovie(movie.id, updatedMovie);
-                    adapter.updateMovieRating(updatedMovie);
-                    adapter.notifyDataSetChanged();
-                    builder.dismiss();
+                            // Update movie rating
+                            Movie updatedMovie = new Movie(movie.getName(), movie.getYear(), (movie.getRating() + movieRating.getRating()) / 2, movie.getPlot(), movie.getPoster(), movie.getId());
+                            db.updateMovieTask(updatedMovie);
+                            adapter.updateMovieRating(updatedMovie);
+                            adapter.notifyDataSetChanged();
+                            builder.dismiss();
+                        }
+                    });
                 }
             }
         });
@@ -509,9 +521,10 @@ public class MoviesListFragment extends Fragment {
     }
 
     public void updateMovies() {
-        ArrayList<Movie> allMovies = dbManager.getAllMovies();
-        adapter.clear();
-        adapter.addAll(allMovies);
-        adapter.notifyDataSetChanged();
+        db.getAllMoviesTask().observe(getActivity(), movies -> {
+            adapter.clear();
+            adapter.addAll(movies);
+            adapter.notifyDataSetChanged();
+        });
     }
 }

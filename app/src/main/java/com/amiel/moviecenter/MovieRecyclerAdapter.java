@@ -73,7 +73,7 @@ class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> impleme
                         // In this loop, you'll filter through originalData and compare each item to charSequence.
                         // If you find a match, add it to your new ArrayList
                         // I'm not sure how you're going to do comparison, so you'll need to fill out this conditional
-                        if(data.name.toLowerCase().contains(charSequence.toString().toLowerCase()))
+                        if(data.getName().toLowerCase().contains(charSequence.toString().toLowerCase()))
                         {
                             filterResultsData.add(data);
                         }
@@ -102,7 +102,7 @@ class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> impleme
     public void updateMovieRating(Movie updatedMovie) {
         for(Movie data : originalData)
         {
-            if(data.name.toLowerCase().contains(updatedMovie.name.toLowerCase()))
+            if(data.getName().toLowerCase().contains(updatedMovie.getName().toLowerCase()))
             {
                 originalData.set(originalData.indexOf(data), updatedMovie);
                 return;

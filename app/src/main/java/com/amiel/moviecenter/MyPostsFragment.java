@@ -11,12 +11,16 @@ import android.widget.EditText;
 import android.widget.RatingBar;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.DatabaseRepository;
+import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
+import com.amiel.moviecenter.DB.Model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,23 +35,16 @@ public class MyPostsFragment extends Fragment {
     RatingBar postRating;
     EditText postText;
 
-    DBManager dbManager;
+    DatabaseRepository db;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        dbManager = new DBManager(getActivity());
-        dbManager.open();
+        db = new DatabaseRepository(getActivity());
         setHasOptionsMenu(true);
         return inflater.inflate(R.layout.my_posts_fragment, parent, false);
-    }
-
-    @Override
-    public void onDestroyView() {
-        dbManager.close();
-        super.onDestroyView();
     }
 
     // This event is triggered soon after onCreateView().
@@ -61,20 +58,23 @@ public class MyPostsFragment extends Fragment {
 
         // Set adapter to recycler view
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        List<Post> userPosts = dbManager.getAllPostsOfUser(FirebaseAuthHandler.getInstance().getCurrentUserEmail());
-        List<MyPostRowItem> postsRowItems = new ArrayList<>();
-        for(Post currPost : userPosts) {
-            MyPostRowItem postRowItem = new MyPostRowItem(currPost.text, currPost.rating, dbManager.getMovieById(currPost.movieID).name);
-            postsRowItems.add(postRowItem);
-        }
-
-        adapter = new MyPostsRecyclerAdapter(postsRowItems);
-        list.setAdapter(adapter);
-
-        adapter.setOnItemClickListener(new OnItemClickListener() {
+        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getActivity(), new Observer<User>() {
             @Override
-            public void onItemClick(int pos) {
-                // Open edit dialog
+            public void onChanged(@Nullable User user) {
+                db.getAllPostsOfUser(user.getId()).observe(getActivity(), new Observer<List<Post>>() {
+                    @Override
+                    public void onChanged(List<Post> posts) {
+                        List<MyPostRowItem> postsRowItems = new ArrayList<>();
+                        for(Post currPost : posts) {
+                            db.getMovieById(currPost.getMovieID()).observe(getActivity(), movie -> {
+                                MyPostRowItem postRowItem = new MyPostRowItem(currPost.text, currPost.rating, movie.getName());
+                                postsRowItems.add(postRowItem);
+                                adapter = new MyPostsRecyclerAdapter(postsRowItems);
+                                list.setAdapter(adapter);
+                            });
+                        }
+                    }
+                });
             }
         });
     }

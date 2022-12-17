@@ -14,10 +14,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
 
@@ -36,15 +37,14 @@ public class MovieDetailsFragment extends Fragment {
     RecyclerView list;
     PostDetailsRecyclerAdapter adapter;
 
-    private DBManager dbManager;
+    private DatabaseRepository db;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        dbManager = new DBManager(getActivity());
-        dbManager.open();
+        db = new DatabaseRepository(getActivity());
         return inflater.inflate(R.layout.movie_details_fragment, parent, false);
     }
 
@@ -63,15 +63,16 @@ public class MovieDetailsFragment extends Fragment {
 
         // Set adapter to recycler view
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        List<Post> postsOnMovie = dbManager.getAllPostsForMovie(MovieDetailsFragmentArgs.fromBundle(getArguments()).getId());
-        List<PostDetailsItem> postsItems = new ArrayList<>();
-        for(Post post : postsOnMovie) {
-            User relatedUser = dbManager.getUserById(post.userID);
-            postsItems.add(new PostDetailsItem(relatedUser.username, post.text, relatedUser.profileImage, post.rating));
-        }
-
-        adapter = new PostDetailsRecyclerAdapter(postsItems);
-        list.setAdapter(adapter);
+        db.getAllPostsForMovie(MovieDetailsFragmentArgs.fromBundle(getArguments()).getId()).observe(getActivity(), posts -> {
+            List<PostDetailsItem> postsItems = new ArrayList<>();
+            for(Post post : posts) {
+                db.getUserById(post.getUserID()).observe(getActivity(), user -> {
+                    postsItems.add(new PostDetailsItem(user.getUsername(), post.getText(), user.getProfileImage(), post.getRating()));
+                    adapter = new PostDetailsRecyclerAdapter(postsItems);
+                    list.setAdapter(adapter);
+                });
+            }
+        });
 
         movieName.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getName());
         movieYear.setText(String.valueOf(MovieDetailsFragmentArgs.fromBundle(getArguments()).getYear()));
