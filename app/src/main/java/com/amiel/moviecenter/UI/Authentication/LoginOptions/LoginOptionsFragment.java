@@ -1,4 +1,4 @@
-package com.amiel.moviecenter.Authentication.LoginOptions;
+package com.amiel.moviecenter.UI.Authentication.LoginOptions;
 
 import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
@@ -9,8 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,7 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.amiel.moviecenter.Authentication.FirebaseAuthHandler;
+import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;

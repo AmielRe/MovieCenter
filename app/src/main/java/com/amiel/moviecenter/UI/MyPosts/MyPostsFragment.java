@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.MyPosts;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,7 +17,8 @@ import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amiel.moviecenter.Authentication.FirebaseAuthHandler;
+import com.amiel.moviecenter.R;
+import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
@@ -58,25 +59,17 @@ public class MyPostsFragment extends Fragment {
 
         // Set adapter to recycler view
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getActivity(), new Observer<User>() {
-            @Override
-            public void onChanged(@Nullable User user) {
-                db.getAllPostsOfUser(user.getId()).observe(getActivity(), new Observer<List<Post>>() {
-                    @Override
-                    public void onChanged(List<Post> posts) {
-                        List<MyPostRowItem> postsRowItems = new ArrayList<>();
-                        for(Post currPost : posts) {
-                            db.getMovieById(currPost.getMovieID()).observe(getActivity(), movie -> {
-                                MyPostRowItem postRowItem = new MyPostRowItem(currPost.text, currPost.rating, movie.getName());
-                                postsRowItems.add(postRowItem);
-                                adapter = new MyPostsRecyclerAdapter(postsRowItems);
-                                list.setAdapter(adapter);
-                            });
-                        }
-                    }
+        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getActivity(), user -> db.getAllPostsOfUser(user.getId()).observe(getActivity(), posts -> {
+            List<MyPostRowItem> postsRowItems = new ArrayList<>();
+            for(Post currPost : posts) {
+                db.getMovieById(currPost.getMovieID()).observe(getActivity(), movie -> {
+                    MyPostRowItem postRowItem = new MyPostRowItem(currPost.text, currPost.rating, movie.getName());
+                    postsRowItems.add(postRowItem);
+                    adapter = new MyPostsRecyclerAdapter(postsRowItems);
+                    list.setAdapter(adapter);
                 });
             }
-        });
+        }));
     }
 
     @Override

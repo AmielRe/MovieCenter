@@ -12,7 +12,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 
-import com.amiel.moviecenter.Authentication.FirebaseAuthHandler;
+import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 
 public class MainActivity extends AppCompatActivity {
 

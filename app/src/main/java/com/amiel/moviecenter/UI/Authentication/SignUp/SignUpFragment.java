@@ -1,4 +1,4 @@
-package com.amiel.moviecenter.Authentication.SignUp;
+package com.amiel.moviecenter.UI.Authentication.SignUp;
 
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -10,24 +10,20 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.amiel.moviecenter.Authentication.FirebaseAuthHandler;
+import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.TextValidator;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.auth.SignInMethodQueryResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;

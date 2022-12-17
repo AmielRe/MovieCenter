@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.Profile;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -26,7 +26,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
-import com.amiel.moviecenter.Authentication.FirebaseAuthHandler;
+import com.amiel.moviecenter.BuildConfig;
+import com.amiel.moviecenter.R;
+import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.Utils.ImageUtils;
@@ -89,23 +91,15 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        profileImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectImage();
-            }
-        });
+        profileImageButton.setOnClickListener(v -> selectImage());
 
-        saveDetailsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    currentUser.profileImage = ImageUtils.getBytes(((BitmapDrawable)profileImageButton.getDrawable()).getBitmap());
-                    currentUser.username = usernameEditText.getText().toString();
-                    db.updateUserTask(currentUser);
-                } catch(Exception e) {
-                    Toast.makeText(getActivity(), "Failed to save details...", Toast.LENGTH_SHORT).show();
-                }
+        saveDetailsButton.setOnClickListener(v -> {
+            try {
+                currentUser.profileImage = ImageUtils.getBytes(((BitmapDrawable)profileImageButton.getDrawable()).getBitmap());
+                currentUser.username = usernameEditText.getText().toString();
+                db.updateUserTask(currentUser);
+            } catch(Exception e) {
+                Toast.makeText(getActivity(), "Failed to save details...", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -152,10 +146,6 @@ public class ProfileFragment extends Fragment {
                         res.compress(Bitmap.CompressFormat.JPEG, 85, outFile);
                         outFile.flush();
                         outFile.close();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

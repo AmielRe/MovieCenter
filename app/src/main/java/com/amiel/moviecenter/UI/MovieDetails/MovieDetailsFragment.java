@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.MovieDetails;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -14,13 +14,12 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.Post;
-import com.amiel.moviecenter.DB.Model.User;
+import com.amiel.moviecenter.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,9 +76,7 @@ public class MovieDetailsFragment extends Fragment {
         movieName.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getName());
         movieYear.setText(String.valueOf(MovieDetailsFragmentArgs.fromBundle(getArguments()).getYear()));
         Bitmap movieBitmap = MovieDetailsFragmentArgs.fromBundle(getArguments()).getImage();
-        if(movieBitmap != null) {
-            movieImage.setImageBitmap(movieBitmap);
-        }
+        movieImage.setImageBitmap(movieBitmap);
         movieRating.setRating(MovieDetailsFragmentArgs.fromBundle(getArguments()).getRating());
         moviePlot.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getPlot());
     }

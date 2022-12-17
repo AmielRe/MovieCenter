@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.MoviesList;
 
 import android.graphics.Bitmap;
 import android.view.View;
@@ -9,25 +9,24 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.amiel.moviecenter.DB.Model.Movie;
+import com.amiel.moviecenter.OnItemClickListener;
+import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.Utils.ImageUtils;
 
-class MovieViewHolder extends RecyclerView.ViewHolder{
+class MoviesListViewHolder extends RecyclerView.ViewHolder{
     TextView movieName;
     TextView movieYear;
     ImageView movieImage;
 
-    public MovieViewHolder(@NonNull View itemView, OnItemClickListener listener) {
+    public MoviesListViewHolder(@NonNull View itemView, OnItemClickListener listener) {
         super(itemView);
         movieName = itemView.findViewById(R.id.row_item_movie_name);
         movieYear = itemView.findViewById(R.id.row_item_movie_year);
         movieImage = itemView.findViewById(R.id.row_item_movie_image);
 
-        itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int pos = getAdapterPosition();
-                listener.onItemClick(pos);
-            }
+        itemView.setOnClickListener(view -> {
+            int pos = getAdapterPosition();
+            listener.onItemClick(pos);
         });
     }
 

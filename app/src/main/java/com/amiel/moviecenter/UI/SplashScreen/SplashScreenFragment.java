@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.SplashScreen;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -6,15 +6,18 @@ import androidx.navigation.NavController;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.amiel.moviecenter.Authentication.FirebaseAuthHandler;
+import com.amiel.moviecenter.R;
+import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 
+@SuppressLint("CustomSplashScreen")
 public class SplashScreenFragment extends Fragment {
 
     private DatabaseRepository db;
@@ -43,12 +46,9 @@ public class SplashScreenFragment extends Fragment {
                 directions = SplashScreenFragmentDirections.actionSplashScreenFragmentToLoginOptionsFragment();
             }
 
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    // This method will be executed once the timer is over
-                    navController.navigate(directions);
-                }
+            new Handler().postDelayed(() -> {
+                // This method will be executed once the timer is over
+                navController.navigate(directions);
             }, 2000);
         });
     }

@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.MovieDetails;
 
 public class PostDetailsItem {
 
@@ -6,11 +6,6 @@ public class PostDetailsItem {
     public String postText;
     public byte[] userImage;
     public float rating;
-
-    public PostDetailsItem()
-    {
-
-    }
 
     public PostDetailsItem(String username, String postText, byte[] userImage, float rating)
     {

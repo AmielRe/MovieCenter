@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.MovieDetails;
 
 import android.graphics.Bitmap;
 import android.view.View;
@@ -9,6 +9,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.amiel.moviecenter.OnItemClickListener;
+import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.Utils.ImageUtils;
 
 class PostDetailsViewHolder extends RecyclerView.ViewHolder{
