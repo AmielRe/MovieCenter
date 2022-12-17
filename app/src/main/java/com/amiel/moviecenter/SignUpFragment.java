@@ -13,8 +13,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
-import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -46,7 +48,7 @@ public class SignUpFragment extends Fragment {
     TextInputLayout passwordInputLayout;
     TextInputLayout passwordConfirmInputLayout;
     Button signUpButton;
-    private DBManager dbManager;
+    private DatabaseRepository db;
 
     private static final String BASE_URL = "https://api.eva.pingutil.com/email?email=";
 
@@ -55,16 +57,9 @@ public class SignUpFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        dbManager = new DBManager(getActivity());
-        dbManager.open();
+        db = new DatabaseRepository(getActivity());
         ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
         return inflater.inflate(R.layout.sign_up_fragment, parent, false);
-    }
-
-    @Override
-    public void onDestroyView() {
-        dbManager.close();
-        super.onDestroyView();
     }
 
     // This event is triggered soon after onCreateView().
@@ -196,8 +191,9 @@ public class SignUpFragment extends Fragment {
 
                                                                 // ID is 0 because were not setting it, it's used just for retrieval
                                                                 User newUser = new User(usernameEditText.getText().toString(), emailEditText.getText().toString(), ImageUtils.getBytes(((BitmapDrawable)getActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()), 0);
-                                                                dbManager.insertUser(newUser);
-                                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), usernameEditText.getText().toString(), getActivity());
+                                                                db.insertUserTask(newUser);
+                                                                NavController navController = Navigation.findNavController(getActivity(), view.getId());
+                                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), usernameEditText.getText().toString(), getActivity(), navController);
                                                             } else {
                                                                 // Email already exists
                                                                 emailEditText.setError(getString(R.string.error_email_already_in_use));

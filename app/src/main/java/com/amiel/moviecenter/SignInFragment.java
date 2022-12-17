@@ -10,6 +10,9 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -73,7 +76,8 @@ public class SignInFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(validate()) {
-                    FirebaseAuthHandler.getInstance().signInWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity());
+                    NavController navController = Navigation.findNavController(getActivity(), view.getId());
+                    FirebaseAuthHandler.getInstance().signInWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity(), navController);
                 }
             }
         });

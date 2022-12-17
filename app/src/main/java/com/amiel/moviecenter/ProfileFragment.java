@@ -27,7 +27,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
-import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.User;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -50,7 +50,7 @@ public class ProfileFragment extends Fragment {
     TextInputLayout usernameInputLayout;
     ImageView profileImageButton;
     Button saveDetailsButton;
-    DBManager dbManager;
+    DatabaseRepository db;
     User currentUser;
 
     private static final int APP_PERMISSIONS_CODE = 100;
@@ -62,16 +62,9 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        dbManager = new DBManager(getActivity());
-        dbManager.open();
+        db = new DatabaseRepository(getActivity());
         setHasOptionsMenu(true);
         return inflater.inflate(R.layout.profile_fragment, parent, false);
-    }
-
-    @Override
-    public void onDestroyView() {
-        dbManager.close();
-        super.onDestroyView();
     }
 
     // This event is triggered soon after onCreateView().
@@ -85,14 +78,15 @@ public class ProfileFragment extends Fragment {
         profileImageButton = view.findViewById(R.id.profile_fragment_image);
         saveDetailsButton = view.findViewById(R.id.profile_fragment_save_button);
         String email = FirebaseAuthHandler.getInstance().getCurrentUserEmail();
-        currentUser = dbManager.getUserByEmail(email);
-
-        emailEditText.setText(email);
-        usernameEditText.setText(currentUser.username);
-        Bitmap profileBitmap = ImageUtils.getBitmap(currentUser.profileImage);
-        if(profileBitmap != null) {
-            profileImageButton.setImageBitmap(ImageUtils.getBitmap(currentUser.profileImage));
-        }
+        db.getUserByEmail(email).observe(getActivity(), user -> {
+            currentUser = user;
+            emailEditText.setText(email);
+            usernameEditText.setText(currentUser.username);
+            Bitmap profileBitmap = ImageUtils.getBitmap(currentUser.profileImage);
+            if(profileBitmap != null) {
+                profileImageButton.setImageBitmap(ImageUtils.getBitmap(currentUser.profileImage));
+            }
+        });
 
         profileImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,7 +101,7 @@ public class ProfileFragment extends Fragment {
                 try {
                     currentUser.profileImage = ImageUtils.getBytes(((BitmapDrawable)profileImageButton.getDrawable()).getBitmap());
                     currentUser.username = usernameEditText.getText().toString();
-                    dbManager.updateUser(currentUser.id, currentUser);
+                    db.updateUserTask(currentUser);
                 } catch(Exception e) {
                     Toast.makeText(getActivity(), "Failed to save details...", Toast.LENGTH_SHORT).show();
                 }

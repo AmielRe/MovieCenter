@@ -31,9 +31,9 @@ class MovieViewHolder extends RecyclerView.ViewHolder{
     }
 
     public void bind(Movie movie, int pos) {
-        movieName.setText(movie.name);
-        movieYear.setText(String.valueOf(movie.year));
-        Bitmap movieBitmap = ImageUtils.getBitmap(movie.poster);
+        movieName.setText(movie.getName());
+        movieYear.setText(String.valueOf(movie.getYear()));
+        Bitmap movieBitmap = ImageUtils.getBitmap(movie.getPoster());
         if(movieBitmap != null) {
             movieImage.setImageBitmap(movieBitmap);
         }
