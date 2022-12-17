@@ -6,6 +6,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -52,7 +54,7 @@ public class FirebaseAuthHandler {
         return currentUser != null;
     }
 
-    public void signInWithEmailAndPassword(String email, String password, Activity context) {
+    public void signInWithEmailAndPassword(String email, String password, Activity context, NavController navController) {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(context, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -61,9 +63,7 @@ public class FirebaseAuthHandler {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("TAG", "signInWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Intent i = new Intent(context, MainActivity.class);
-                            context.startActivity(i);
-                            context.finish();
+                            navController.navigate(SignInFragmentDirections.actionSignInFragmentToMoviesListFragment());
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("TAG", "signInWithEmail:failure", task.getException());
@@ -74,7 +74,7 @@ public class FirebaseAuthHandler {
                 });
     }
 
-    public void createUserWithEmailAndPassword(String email, String password, String username, Activity context) {
+    public void createUserWithEmailAndPassword(String email, String password, String username, Activity context, NavController navController) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(context, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -82,9 +82,7 @@ public class FirebaseAuthHandler {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             FirebaseUser user = mAuth.getCurrentUser();
-                            Intent i = new Intent(context, MainActivity.class);
-                            context.startActivity(i);
-                            context.finish();
+                            navController.navigate(SignUpFragmentDirections.actionSignUpFragmentToMoviesListFragment());
                         } else {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(context, "Authentication failed.",
@@ -102,12 +100,11 @@ public class FirebaseAuthHandler {
         mSignInClient = GoogleSignIn.getClient(context, gso);
     }
 
-    public void signInWithGoogle(GoogleSignInAccount acct, Activity context) {
+    public void signInWithGoogle(GoogleSignInAccount acct, Activity context, NavController navController) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
                 .addOnSuccessListener(context, authResult -> {
-                    context.startActivity(new Intent(context, MainActivity.class));
-                    context.finish();
+                    navController.navigate(LoginOptionsFragmentDirections.actionLoginOptionsFragmentToMoviesListFragment());
                 })
                 .addOnFailureListener(context, e -> Toast.makeText(context, "Authentication failed.",
                         Toast.LENGTH_SHORT).show());

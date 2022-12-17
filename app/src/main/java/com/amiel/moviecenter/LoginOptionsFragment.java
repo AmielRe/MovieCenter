@@ -11,9 +11,10 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.amiel.moviecenter.DB.DBManager;
+import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.User;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -27,24 +28,17 @@ public class LoginOptionsFragment extends Fragment {
     Button signInWithEmail;
     Button signInWithGoogle;
     Button signUp;
-    private DBManager dbManager;
+    private DatabaseRepository db;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         FirebaseAuthHandler.getInstance().initGoogleAuth(getString(R.string.web_client_id), getActivity());
-        dbManager = new DBManager(getActivity());
-        dbManager.open();
+        db = new DatabaseRepository(getActivity());
         ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
         // Defines the xml file for the fragment
         return inflater.inflate(R.layout.login_options_fragment, parent, false);
-    }
-
-    @Override
-    public void onDestroyView() {
-        dbManager.close();
-        super.onDestroyView();
     }
 
     // This event is triggered soon after onCreateView().
@@ -85,8 +79,9 @@ public class LoginOptionsFragment extends Fragment {
 
                 // ID is 0 because were not setting it, it's used just for retrieval
                 User newUser = new User(account.getDisplayName(), account.getEmail(), ImageUtils.getBytes(((BitmapDrawable)getActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()), 0);
-                dbManager.insertUser(newUser);
-                FirebaseAuthHandler.getInstance().signInWithGoogle(account, getActivity());
+                db.insertUserTask(newUser);
+                NavController navController = Navigation.findNavController(getActivity(), getView().getId());
+                FirebaseAuthHandler.getInstance().signInWithGoogle(account, getActivity(), navController);
             } catch (ApiException e) {
                 Log.w("TAG", "Google sign in failed", e);
             }
