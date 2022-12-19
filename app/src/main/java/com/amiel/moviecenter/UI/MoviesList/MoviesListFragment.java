@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +33,7 @@ import androidx.core.view.MenuProvider;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -44,8 +46,11 @@ import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
+import com.amiel.moviecenter.UI.Profile.ProfileViewModel;
+import com.amiel.moviecenter.Utils.DialogUtils;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.TextValidator;
+import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -69,12 +74,14 @@ import static android.app.Activity.RESULT_OK;
 
 public class MoviesListFragment extends Fragment {
 
+    MoviesListViewModel moviesListViewModel;
     MoviesListRecyclerAdapter adapter;
 
     // Recycler View object
     RecyclerView list;
     SwipeRefreshLayout swipeRefreshLayout;
 
+    AlertDialog progressDialog;
     FloatingActionButton newPostFab;
     ImageView movieImageImageView;
     ImageView moviePosterImageView;
@@ -83,17 +90,12 @@ public class MoviesListFragment extends Fragment {
     private static final int GALLERY_REQUEST_CODE_IMAGE = 3;
     private static final String BASE_IMDB_MOVIE_URL = "https://imdb-api.com/API/AdvancedSearch/k_4wqqdznf?title=%s&has=plot";
 
-    private DatabaseRepository db;
-    String moviePlot;
-    byte[] moviePosterByteArray;
-    ProgressDialog progressDialog;
-
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        db = new DatabaseRepository(getActivity());
+        //db = new DatabaseRepository(getActivity());
 
         // Disable and hide back button from movies list fragment
         ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayShowCustomEnabled(false);
@@ -164,6 +166,8 @@ public class MoviesListFragment extends Fragment {
         list.setHasFixedSize(true);
         newPostFab = view.findViewById(R.id.movie_list_fab);
         swipeRefreshLayout = view.findViewById(R.id.movie_list_swipe_refresh_layout);
+        moviesListViewModel = new ViewModelProvider(this).get(MoviesListViewModel.class);
+        progressDialog = DialogUtils.setProgressDialog(getContext(), "Loading...");
 
         if(!FirebaseAuthHandler.getInstance().isUserLoggedIn()) {
             newPostFab.setVisibility(View.INVISIBLE);
@@ -172,7 +176,7 @@ public class MoviesListFragment extends Fragment {
         }
 
         // Set adapter to recycler view
-        db.getAllMoviesTask().observe(getViewLifecycleOwner(), movies -> {
+        moviesListViewModel.getMovies().observe(getViewLifecycleOwner(), movies -> {
             list.setLayoutManager(new LinearLayoutManager(getActivity()));
             adapter = new MoviesListRecyclerAdapter(movies);
             list.setAdapter(adapter);
@@ -241,23 +245,18 @@ public class MoviesListFragment extends Fragment {
         movieName.setOnFocusChangeListener((v, hasFocus) -> {
             if ( !hasFocus && movieName.getText().toString().length() > 0 ) {
 
-                progressDialog = new ProgressDialog(getActivity());
-                progressDialog.setMessage("");
-                progressDialog.setTitle("Searching for movie...");
-                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                progressDialog.setCancelable(false);
                 progressDialog.show();
 
-                db.getMovieByName(movieName.getText().toString()).observe(getViewLifecycleOwner(), movie -> {
+                moviesListViewModel.getMovieByName(movieName.getText().toString()).observe(getViewLifecycleOwner(), movie -> {
                     if (movie != null && movieYear.getText().toString().length() > 0) {
                         try {
-                            db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getViewLifecycleOwner(), movieByNameAndYear -> {
+                            moviesListViewModel.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getViewLifecycleOwner(), movieByNameAndYear -> {
                                 Bitmap movieBitmap = ImageUtils.getBitmap(movieByNameAndYear.getPoster());
                                 if (movieBitmap != null) {
                                     moviePosterImageView.setImageBitmap(movieBitmap);
                                     moviePosterImageView.setBackground(null);
                                 }
-                                moviePlot = movieByNameAndYear.getPlot();
+                                moviesListViewModel.setNewMoviePlot(movieByNameAndYear.getPlot());
                                 moviePoster.setOnClickListener(null);
                                 progressDialog.dismiss();
                                 Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
@@ -277,20 +276,22 @@ public class MoviesListFragment extends Fragment {
                         client.newCall(request).enqueue(new Callback() {
                             @Override
                             public void onFailure(Call call, IOException e) {
-                                progressDialog.dismiss();
-                                Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                                getActivity().runOnUiThread(() -> {
+                                    progressDialog.dismiss();
+                                    Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                                });
                                 call.cancel();
                             }
 
                             @Override
-                            public void onResponse(Call call, Response response) throws IOException {
+                            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
 
                                 final String myResponse = response.body().string();
                                 JSONObject json = new JSONObject();
                                 try {
                                     json = new JSONObject(myResponse);
                                     JSONObject resultsJSON = (JSONObject) json.getJSONArray("results").get(0);
-                                    moviePlot = resultsJSON.getString("plot");
+                                    moviesListViewModel.setNewMoviePlot(resultsJSON.getString("plot"));
                                     String year = resultsJSON.getString("description").replaceAll("[^0-9]", "");
                                     String moviePosterUrl = resultsJSON.getString("image");
                                     String title = resultsJSON.getString("title");
@@ -302,8 +303,10 @@ public class MoviesListFragment extends Fragment {
                                     client.newCall(request).enqueue(new Callback() {
                                         @Override
                                         public void onFailure(Call call, IOException e) {
-                                            progressDialog.dismiss();
-                                            Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                                            getActivity().runOnUiThread(() -> {
+                                                progressDialog.dismiss();
+                                                Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                                            });
                                             call.cancel();
                                         }
 
@@ -311,7 +314,6 @@ public class MoviesListFragment extends Fragment {
                                         public void onResponse(Call call, Response response) {
                                             InputStream inputStream = response.body().byteStream();
                                             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                                            moviePosterByteArray = ImageUtils.getBytes(bitmap);
                                             getActivity().runOnUiThread(() -> {
                                                 moviePosterImageView.setImageBitmap(bitmap);
                                                 moviePosterImageView.setBackground(null);
@@ -326,8 +328,10 @@ public class MoviesListFragment extends Fragment {
                                     });
 
                                 } catch (JSONException e) {
-                                    progressDialog.dismiss();
-                                    Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                                    getActivity().runOnUiThread(() -> {
+                                        progressDialog.dismiss();
+                                        Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                                    });
                                     e.printStackTrace();
                                 }
                             }
@@ -339,8 +343,9 @@ public class MoviesListFragment extends Fragment {
 
         movieYear.setOnFocusChangeListener((v, hasFocus) -> {
             if(!hasFocus && movieName.getText().toString().length() > 0 && movieYear.getText().toString().length() > 0) {
+                progressDialog.show();
                 try {
-                    db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
+                    moviesListViewModel.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
                         if(movie != null) {
                             Bitmap movieBitmap = ImageUtils.getBitmap(movie.getPoster());
                             if(movieBitmap != null) {
@@ -348,7 +353,7 @@ public class MoviesListFragment extends Fragment {
                                 moviePosterImageView.setBackground(null);
                             }
                             moviePosterImageView.setBackground(null);
-                            moviePlot = movie.getPlot();
+                            moviesListViewModel.setNewMoviePlot(movie.getPlot());
                             moviePoster.setOnClickListener(null);
                             progressDialog.dismiss();
                             Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
@@ -378,7 +383,7 @@ public class MoviesListFragment extends Fragment {
             }
         });
 
-        //Finally building an AlertDialog
+        // Finally building an AlertDialog
         final AlertDialog builder = new AlertDialog.Builder(getActivity())
                 .setPositiveButton("Post", null)
                 .setNegativeButton("Cancel", null)
@@ -393,37 +398,41 @@ public class MoviesListFragment extends Fragment {
         builder.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(view -> {
             if(movieName.getError() == null && movieYear.getError() == null)
             {
+                progressDialog.show();
+
                 // If new movie - insert it
-                db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
+                moviesListViewModel.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
                     if(movie == null) {
-                        Movie newMovie = new Movie(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString().replaceAll("[^0-9]", "")), movieRating.getRating(), moviePlot,  ImageUtils.getBytes(((BitmapDrawable) moviePosterImageView.getDrawable()).getBitmap()), 0);
-                        db.insertMovieTask(newMovie).observe(getViewLifecycleOwner(), ids -> {
+                        Movie newMovie = new Movie(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString().replaceAll("[^0-9]", "")), movieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(((BitmapDrawable) moviePosterImageView.getDrawable()).getBitmap()), 0);
+                        moviesListViewModel.insertMovie(newMovie).observe(getViewLifecycleOwner(), ids -> {
                             final float rating = newMovie.getRating();
                             final String text = movieExperienceText.getText().toString();
                             final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImageImageView.getDrawable()).getBitmap());
-                            db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
+                            moviesListViewModel.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
                                 // Insert new post
                                 Post newPost = new Post(text, ids[0], rating, image, user.getId(), 0); // ID is 0 because were not setting it, it's used just for retrieval
-                                db.insertPostTask(newPost);
+                                moviesListViewModel.insertPost(newPost);
                             });
                         });
                     } else {
                         final float rating = movie.getRating();
                         final String text = movieExperienceText.getText().toString();
                         final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImageImageView.getDrawable()).getBitmap());
-                        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
+                        moviesListViewModel.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
                             // Insert new post
                             Post newPost = new Post(text, movie.getId(), rating, image, user.getId(), 0); // ID is 0 because were not setting it, it's used just for retrieval
-                            db.insertPostTask(newPost);
+                            moviesListViewModel.insertPost(newPost);
                         });
 
                         // Update movie rating
                         Movie updatedMovie = new Movie(movie.getName(), movie.getYear(), (movie.getRating() + movieRating.getRating()) / 2, movie.getPlot(), movie.getPoster(), movie.getId());
-                        db.updateMovieTask(updatedMovie);
+                        moviesListViewModel.updateMovie(updatedMovie);
                         adapter.updateMovieRating(updatedMovie);
                         adapter.notifyDataSetChanged();
-                        builder.dismiss();
                     }
+
+                    builder.dismiss();
+                    progressDialog.dismiss();
                 });
             }
         });
@@ -491,7 +500,7 @@ public class MoviesListFragment extends Fragment {
     }
 
     public void updateMovies() {
-        db.getAllMoviesTask().observe(getViewLifecycleOwner(), movies -> {
+        moviesListViewModel.getMovies().observe(getViewLifecycleOwner(), movies -> {
             adapter.clear();
             adapter.addAll(movies);
             adapter.notifyDataSetChanged();

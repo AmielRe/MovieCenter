@@ -13,14 +13,13 @@ import com.amiel.moviecenter.DB.Model.User;
 
 public class ProfileViewModel extends AndroidViewModel {
 
-    private LiveData<User> user;
+    private final LiveData<User> user;
     DatabaseRepository mRepository;
 
     public ProfileViewModel(Application app, String userEmail) {
         super(app);
         mRepository = new DatabaseRepository(app);
         user = mRepository.getUserByEmail(userEmail);
-        //user = mRepository.getUserByEmail(userEmail);
     }
 
     public LiveData<User> getUser() {
