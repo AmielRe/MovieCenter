@@ -12,18 +12,23 @@ import android.widget.RatingBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import java.util.Map;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
+import com.amiel.moviecenter.UI.Profile.ProfileViewModel;
+import com.amiel.moviecenter.Utils.ViewModelFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,14 +43,13 @@ public class MyPostsFragment extends Fragment {
     RatingBar postRating;
     EditText postText;
 
-    DatabaseRepository db;
+    MyPostsViewModel myPostsViewModel;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        db = new DatabaseRepository(getActivity());
         return inflater.inflate(R.layout.my_posts_fragment, parent, false);
     }
 
@@ -57,20 +61,21 @@ public class MyPostsFragment extends Fragment {
         postText = view.findViewById(R.id.my_post_row_item_post_text);
         list = view.findViewById(R.id.my_posts_recycler_view);
         list.setHasFixedSize(true);
+        myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(getActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
 
         // Set adapter to recycler view
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> db.getAllPostsOfUser(user.getId()).observe(getActivity(), posts -> {
+        myPostsViewModel.getPosts().observe(getViewLifecycleOwner(), posts -> {
             List<MyPostRowItem> postsRowItems = new ArrayList<>();
-            for(Post currPost : posts) {
-                db.getMovieById(currPost.getMovieID()).observe(getViewLifecycleOwner(), movie -> {
-                    MyPostRowItem postRowItem = new MyPostRowItem(currPost.text, currPost.rating, movie.getName());
+            for(Map.Entry<Movie, List<Post>> currEntry : posts.entrySet()) {
+                for(Post currPost : currEntry.getValue()) {
+                    MyPostRowItem postRowItem = new MyPostRowItem(currPost.text, currPost.rating, currEntry.getKey().getName());
                     postsRowItems.add(postRowItem);
-                    adapter = new MyPostsRecyclerAdapter(postsRowItems);
-                    list.setAdapter(adapter);
-                });
+                }
+                adapter = new MyPostsRecyclerAdapter(postsRowItems);
+                list.setAdapter(adapter);
             }
-        }));
+        });
 
         requireActivity().addMenuProvider(new MenuProvider() {
             @Override
