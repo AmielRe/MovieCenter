@@ -59,10 +59,10 @@ public class MyPostsFragment extends Fragment {
 
         // Set adapter to recycler view
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getActivity(), user -> db.getAllPostsOfUser(user.getId()).observe(getActivity(), posts -> {
+        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> db.getAllPostsOfUser(user.getId()).observe(getActivity(), posts -> {
             List<MyPostRowItem> postsRowItems = new ArrayList<>();
             for(Post currPost : posts) {
-                db.getMovieById(currPost.getMovieID()).observe(getActivity(), movie -> {
+                db.getMovieById(currPost.getMovieID()).observe(getViewLifecycleOwner(), movie -> {
                     MyPostRowItem postRowItem = new MyPostRowItem(currPost.text, currPost.rating, movie.getName());
                     postsRowItems.add(postRowItem);
                     adapter = new MyPostsRecyclerAdapter(postsRowItems);

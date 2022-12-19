@@ -38,7 +38,7 @@ public class SplashScreenFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         NavController navController = Navigation.findNavController(getActivity(), view.getId());
 
-        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getActivity(), user -> {
+        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
             NavDirections directions;
             if(user != null && FirebaseAuthHandler.getInstance().isUserLoggedIn()) {
                 directions = SplashScreenFragmentDirections.actionSplashScreenFragmentToMoviesListFragment();

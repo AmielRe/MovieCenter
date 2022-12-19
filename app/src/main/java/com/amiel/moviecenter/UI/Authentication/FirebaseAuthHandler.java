@@ -7,9 +7,9 @@ import android.widget.Toast;
 
 import androidx.navigation.NavController;
 
-import com.amiel.moviecenter.Authentication.LoginOptions.LoginOptionsFragmentDirections;
-import com.amiel.moviecenter.Authentication.SignIn.SignInFragmentDirections;
-import com.amiel.moviecenter.Authentication.SignUp.SignUpFragmentDirections;
+import com.amiel.moviecenter.UI.Authentication.LoginOptions.LoginOptionsFragmentDirections;
+import com.amiel.moviecenter.UI.Authentication.SignUp.SignUpFragmentDirections;
+import com.amiel.moviecenter.UI.Authentication.SignIn.SignInFragmentDirections;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;

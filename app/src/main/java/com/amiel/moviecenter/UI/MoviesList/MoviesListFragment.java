@@ -172,7 +172,7 @@ public class MoviesListFragment extends Fragment {
         }
 
         // Set adapter to recycler view
-        db.getAllMoviesTask().observe(getActivity(), movies -> {
+        db.getAllMoviesTask().observe(getViewLifecycleOwner(), movies -> {
             list.setLayoutManager(new LinearLayoutManager(getActivity()));
             adapter = new MoviesListRecyclerAdapter(movies);
             list.setAdapter(adapter);
@@ -248,10 +248,10 @@ public class MoviesListFragment extends Fragment {
                 progressDialog.setCancelable(false);
                 progressDialog.show();
 
-                db.getMovieByName(movieName.getText().toString()).observe(getActivity(), movie -> {
+                db.getMovieByName(movieName.getText().toString()).observe(getViewLifecycleOwner(), movie -> {
                     if (movie != null && movieYear.getText().toString().length() > 0) {
                         try {
-                            db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getActivity(), movieByNameAndYear -> {
+                            db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getViewLifecycleOwner(), movieByNameAndYear -> {
                                 Bitmap movieBitmap = ImageUtils.getBitmap(movieByNameAndYear.getPoster());
                                 if (movieBitmap != null) {
                                     moviePosterImageView.setImageBitmap(movieBitmap);
@@ -340,7 +340,7 @@ public class MoviesListFragment extends Fragment {
         movieYear.setOnFocusChangeListener((v, hasFocus) -> {
             if(!hasFocus && movieName.getText().toString().length() > 0 && movieYear.getText().toString().length() > 0) {
                 try {
-                    db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getActivity(), movie -> {
+                    db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
                         if(movie != null) {
                             Bitmap movieBitmap = ImageUtils.getBitmap(movie.getPoster());
                             if(movieBitmap != null) {
@@ -394,14 +394,14 @@ public class MoviesListFragment extends Fragment {
             if(movieName.getError() == null && movieYear.getError() == null)
             {
                 // If new movie - insert it
-                db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getActivity(), movie -> {
+                db.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
                     if(movie == null) {
                         Movie newMovie = new Movie(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString().replaceAll("[^0-9]", "")), movieRating.getRating(), moviePlot,  ImageUtils.getBytes(((BitmapDrawable) moviePosterImageView.getDrawable()).getBitmap()), 0);
-                        db.insertMovieTask(newMovie).observe(getActivity(), ids -> {
+                        db.insertMovieTask(newMovie).observe(getViewLifecycleOwner(), ids -> {
                             final float rating = newMovie.getRating();
                             final String text = movieExperienceText.getText().toString();
                             final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImageImageView.getDrawable()).getBitmap());
-                            db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getActivity(), user -> {
+                            db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
                                 // Insert new post
                                 Post newPost = new Post(text, ids[0], rating, image, user.getId(), 0); // ID is 0 because were not setting it, it's used just for retrieval
                                 db.insertPostTask(newPost);
@@ -411,7 +411,7 @@ public class MoviesListFragment extends Fragment {
                         final float rating = movie.getRating();
                         final String text = movieExperienceText.getText().toString();
                         final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImageImageView.getDrawable()).getBitmap());
-                        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getActivity(), user -> {
+                        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
                             // Insert new post
                             Post newPost = new Post(text, movie.getId(), rating, image, user.getId(), 0); // ID is 0 because were not setting it, it's used just for retrieval
                             db.insertPostTask(newPost);
@@ -484,12 +484,14 @@ public class MoviesListFragment extends Fragment {
 
     @Override
     public void onResume() {
-        updateMovies();
+        if(adapter != null) {
+            updateMovies();
+        }
         super.onResume();
     }
 
     public void updateMovies() {
-        db.getAllMoviesTask().observe(getActivity(), movies -> {
+        db.getAllMoviesTask().observe(getViewLifecycleOwner(), movies -> {
             adapter.clear();
             adapter.addAll(movies);
             adapter.notifyDataSetChanged();

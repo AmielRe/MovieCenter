@@ -62,10 +62,10 @@ public class MovieDetailsFragment extends Fragment {
 
         // Set adapter to recycler view
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        db.getAllPostsForMovie(MovieDetailsFragmentArgs.fromBundle(getArguments()).getId()).observe(getActivity(), posts -> {
+        db.getAllPostsForMovie(MovieDetailsFragmentArgs.fromBundle(getArguments()).getId()).observe(getViewLifecycleOwner(), posts -> {
             List<PostDetailsItem> postsItems = new ArrayList<>();
             for(Post post : posts) {
-                db.getUserById(post.getUserID()).observe(getActivity(), user -> {
+                db.getUserById(post.getUserID()).observe(getViewLifecycleOwner(), user -> {
                     postsItems.add(new PostDetailsItem(user.getUsername(), post.getText(), user.getProfileImage(), post.getRating()));
                     adapter = new PostDetailsRecyclerAdapter(postsItems);
                     list.setAdapter(adapter);
