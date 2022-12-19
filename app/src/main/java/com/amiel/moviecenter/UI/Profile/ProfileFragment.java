@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
@@ -65,7 +66,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.profile_fragment, parent, false);
     }
 
@@ -81,6 +81,21 @@ public class ProfileFragment extends Fragment {
         saveDetailsButton = view.findViewById(R.id.profile_fragment_save_button);
         String email = FirebaseAuthHandler.getInstance().getCurrentUserEmail();
         profileViewModel = new ViewModelProvider(this, new ViewModelFactory(getActivity().getApplication(), email)).get(ProfileViewModel.class);
+
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menu.findItem(R.id.search_bar).setVisible(false);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                return false;
+            }
+
+            @Override
+            public void onPrepareMenu(@NonNull Menu menu) {}
+        });
 
         profileViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
             emailEditText.setText(email);
@@ -107,21 +122,6 @@ public class ProfileFragment extends Fragment {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
@@ -142,7 +142,7 @@ public class ProfileFragment extends Fragment {
                             + "Phoenix" + File.separator + "default";
                     f.delete();
                     OutputStream outFile = null;
-                    File file = new File(path, String.valueOf(System.currentTimeMillis()) + ".jpg");
+                    File file = new File(path, System.currentTimeMillis() + ".jpg");
                     try {
                         outFile = new FileOutputStream(file);
                         res.compress(Bitmap.CompressFormat.JPEG, 85, outFile);
@@ -170,25 +170,22 @@ public class ProfileFragment extends Fragment {
         final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Choose profile picture");
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int item) {
-                if (options[item].equals("Take Photo"))
-                {
-                    if(isMissingPermissions()) {
-                        requestAppPermission();
-                    } else {
-                        startCameraIntent();
-                    }
+        builder.setItems(options, (dialog, item) -> {
+            if (options[item].equals("Take Photo"))
+            {
+                if(isMissingPermissions()) {
+                    requestAppPermission();
+                } else {
+                    startCameraIntent();
                 }
-                else if (options[item].equals("Choose from Gallery"))
-                {
-                    Intent intent = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(intent, GALLERY_REQUEST_CODE);
-                }
-                else if (options[item].equals("Cancel")) {
-                    dialog.dismiss();
-                }
+            }
+            else if (options[item].equals("Choose from Gallery"))
+            {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent, GALLERY_REQUEST_CODE);
+            }
+            else if (options[item].equals("Cancel")) {
+                dialog.dismiss();
             }
         });
         builder.show();
