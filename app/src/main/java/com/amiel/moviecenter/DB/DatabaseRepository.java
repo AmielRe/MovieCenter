@@ -13,6 +13,7 @@ import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
 
 import java.util.List;
+import java.util.Map;
 
 public class DatabaseRepository {
 
@@ -71,10 +72,9 @@ public class DatabaseRepository {
         return mDatabase.postDao().getAllPostsForMovie(movieId);
     }
 
-    public LiveData<List<Post>> getAllPostsOfUser(long userId) {
-        return mDatabase.postDao().getAllPostsOfUser(userId);
+    public LiveData<Map<Movie, List<Post>>> getAllPostsOfUserWithMovie(String userEmail) {
+        return mDatabase.postDao().getAllPostsOfUserWithMovie(userEmail);
     }
-
 
     public MutableLiveData<long[]> insertUserTask(User user){
         MutableLiveData<long[]> liveData = new MutableLiveData<>();
