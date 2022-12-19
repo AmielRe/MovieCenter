@@ -25,18 +25,19 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.amiel.moviecenter.BuildConfig;
+import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
-import com.amiel.moviecenter.DB.DatabaseRepository;
-import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.Utils.ImageUtils;
+import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -47,14 +48,13 @@ import static android.app.Activity.RESULT_OK;
 
 public class ProfileFragment extends Fragment {
 
+    ProfileViewModel profileViewModel;
     TextInputEditText emailEditText;
     TextInputEditText usernameEditText;
     TextInputLayout emailInputLayout;
     TextInputLayout usernameInputLayout;
     ImageView profileImageButton;
     Button saveDetailsButton;
-    DatabaseRepository db;
-    User currentUser;
 
     private static final int APP_PERMISSIONS_CODE = 100;
     private static final int CAMERA_REQUEST_CODE = 1;
@@ -65,7 +65,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        db = new DatabaseRepository(getActivity());
         setHasOptionsMenu(true);
         return inflater.inflate(R.layout.profile_fragment, parent, false);
     }
@@ -81,13 +80,15 @@ public class ProfileFragment extends Fragment {
         profileImageButton = view.findViewById(R.id.profile_fragment_image);
         saveDetailsButton = view.findViewById(R.id.profile_fragment_save_button);
         String email = FirebaseAuthHandler.getInstance().getCurrentUserEmail();
-        db.getUserByEmail(email).observe(getActivity(), user -> {
-            currentUser = user;
+        profileViewModel = new ViewModelProvider(this, new ViewModelFactory(getActivity().getApplication(), email)).get(ProfileViewModel.class);
+
+        profileViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
             emailEditText.setText(email);
-            usernameEditText.setText(currentUser.username);
-            Bitmap profileBitmap = ImageUtils.getBitmap(currentUser.profileImage);
+            usernameEditText.setText(user.username);
+            usernameEditText.setSelection(usernameEditText.getText().length());
+            Bitmap profileBitmap = ImageUtils.getBitmap(user.profileImage);
             if(profileBitmap != null) {
-                profileImageButton.setImageBitmap(ImageUtils.getBitmap(currentUser.profileImage));
+                profileImageButton.setImageBitmap(ImageUtils.getBitmap(user.profileImage));
             }
         });
 
@@ -95,9 +96,10 @@ public class ProfileFragment extends Fragment {
 
         saveDetailsButton.setOnClickListener(v -> {
             try {
-                currentUser.profileImage = ImageUtils.getBytes(((BitmapDrawable)profileImageButton.getDrawable()).getBitmap());
-                currentUser.username = usernameEditText.getText().toString();
-                db.updateUserTask(currentUser);
+                User updatedUser = profileViewModel.getUser().getValue();
+                updatedUser.setUsername(usernameEditText.getText().toString());
+                updatedUser.setProfileImage(ImageUtils.getBytes(((BitmapDrawable)profileImageButton.getDrawable()).getBitmap()));
+                profileViewModel.updateUser(updatedUser);
             } catch(Exception e) {
                 Toast.makeText(getActivity(), "Failed to save details...", Toast.LENGTH_SHORT).show();
             }
