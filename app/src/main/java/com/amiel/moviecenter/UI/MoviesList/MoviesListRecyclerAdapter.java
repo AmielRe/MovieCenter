@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.MoviesList;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,17 +10,19 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.amiel.moviecenter.DB.Model.Movie;
+import com.amiel.moviecenter.OnItemClickListener;
+import com.amiel.moviecenter.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
-class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> implements Filterable {
+class MoviesListRecyclerAdapter extends RecyclerView.Adapter<MoviesListViewHolder> implements Filterable {
 
     OnItemClickListener listener;
     List<Movie> originalData;
     List<Movie> filteredData;
 
-    public MovieRecyclerAdapter(List<Movie> originalData) {
+    public MoviesListRecyclerAdapter(List<Movie> originalData) {
         this.originalData = new ArrayList<>();
         this.filteredData = new ArrayList<>();
         this.originalData.addAll(originalData);
@@ -33,13 +35,13 @@ class MovieRecyclerAdapter extends RecyclerView.Adapter<MovieViewHolder> impleme
 
     @NonNull
     @Override
-    public MovieViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MoviesListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.row_item,parent,false);
-        return new MovieViewHolder(view, listener);
+        return new MoviesListViewHolder(view, listener);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MovieViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MoviesListViewHolder holder, int position) {
         Movie movie = filteredData.get(position);
         holder.bind(movie, position);
     }

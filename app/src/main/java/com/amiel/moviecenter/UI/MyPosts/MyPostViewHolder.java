@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.MyPosts;
 
 import android.view.View;
 import android.widget.EditText;
@@ -8,6 +8,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.amiel.moviecenter.OnItemClickListener;
+import com.amiel.moviecenter.R;
+import com.amiel.moviecenter.UI.MyPosts.MyPostRowItem;
 
 public class MyPostViewHolder extends RecyclerView.ViewHolder{
     RatingBar postRating;
@@ -20,12 +24,9 @@ public class MyPostViewHolder extends RecyclerView.ViewHolder{
         postText = itemView.findViewById(R.id.my_post_row_item_post_text);
         postMovieName = itemView.findViewById(R.id.my_post_row_item_post_movie_name);
 
-        itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int pos = getAdapterPosition();
-                listener.onItemClick(pos);
-            }
+        itemView.setOnClickListener(view -> {
+            int pos = getAdapterPosition();
+            listener.onItemClick(pos);
         });
     }
 

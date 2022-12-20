@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.Utils;
 
 import android.text.Editable;
 import android.text.TextWatcher;

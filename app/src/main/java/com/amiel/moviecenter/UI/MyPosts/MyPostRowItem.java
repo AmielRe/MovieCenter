@@ -1,15 +1,10 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.MyPosts;
 
 public class MyPostRowItem {
 
     public String postText;
     public float rating;
     public String postMovieName;
-
-    public MyPostRowItem()
-    {
-
-    }
 
     public MyPostRowItem(String postText, float rating, String postMovieName)
     {

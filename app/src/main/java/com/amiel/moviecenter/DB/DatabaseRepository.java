@@ -5,11 +5,15 @@ import android.content.Context;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.amiel.moviecenter.DB.AsyncTask.DeleteAsyncTask;
+import com.amiel.moviecenter.DB.AsyncTask.InsertAsyncTask;
+import com.amiel.moviecenter.DB.AsyncTask.UpdateAsyncTask;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
 
 import java.util.List;
+import java.util.Map;
 
 public class DatabaseRepository {
 
@@ -20,7 +24,7 @@ public class DatabaseRepository {
     }
 
     public MutableLiveData<long[]> insertMovieTask(Movie movie){
-        MutableLiveData<long[]> liveData = new MutableLiveData();
+        MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.movieDao()).execute(movie);
         return liveData;
     }
@@ -37,21 +41,12 @@ public class DatabaseRepository {
         return mDatabase.movieDao().getMovieByNameAndYear(name, year);
     }
 
-    public LiveData<Movie> getMovieById(long id) {
-        return mDatabase.movieDao().getMovieById(id);
-    }
-
     public LiveData<Movie> getMovieByName(String name) {
         return mDatabase.movieDao().getMovieByName(name);
     }
 
-    public void deleteMovieTask(Movie movie){
-        new DeleteAsyncTask<>(mDatabase.movieDao()).execute(movie);
-    }
-
-
     public MutableLiveData<long[]> insertPostTask(Post post){
-        MutableLiveData<long[]> liveData = new MutableLiveData();
+        MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.postDao()).execute(post);
         return liveData;
     }
@@ -60,21 +55,16 @@ public class DatabaseRepository {
         new UpdateAsyncTask<>(mDatabase.postDao()).execute(post);
     }
 
-    public void deletePostTask(Post post){
-        new DeleteAsyncTask<>(mDatabase.postDao()).execute(post);
+    public LiveData<Map<User,List<Post>>> getAllPostsForMovieWithUser(long movieId) {
+        return mDatabase.postDao().getAllPostsForMovieWithUser(movieId);
     }
 
-    public LiveData<List<Post>> getAllPostsForMovie(long movieId) {
-        return mDatabase.postDao().getAllPostsForMovie(movieId);
+    public LiveData<Map<Movie, List<Post>>> getAllPostsOfUserWithMovie(String userEmail) {
+        return mDatabase.postDao().getAllPostsOfUserWithMovie(userEmail);
     }
-
-    public LiveData<List<Post>> getAllPostsOfUser(long userId) {
-        return mDatabase.postDao().getAllPostsOfUser(userId);
-    }
-
 
     public MutableLiveData<long[]> insertUserTask(User user){
-        MutableLiveData<long[]> liveData = new MutableLiveData();
+        MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.userDao()).execute(user);
         return liveData;
     }
@@ -83,15 +73,7 @@ public class DatabaseRepository {
         new UpdateAsyncTask<>(mDatabase.userDao()).execute(user);
     }
 
-    public void deleteUserTask(User user){
-        new DeleteAsyncTask<>(mDatabase.userDao()).execute(user);
-    }
-
     public LiveData<User> getUserByEmail(String email) {
         return mDatabase.userDao().getUserByEmail(email);
-    }
-
-    public LiveData<User> getUserById(long id) {
-        return mDatabase.userDao().getUserById(id);
     }
 }

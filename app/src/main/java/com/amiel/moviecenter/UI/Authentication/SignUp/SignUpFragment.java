@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.Authentication.SignUp;
 
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -10,19 +10,20 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.User;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.amiel.moviecenter.R;
+import com.amiel.moviecenter.Utils.ImageUtils;
+import com.amiel.moviecenter.Utils.TextValidator;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.auth.SignInMethodQueryResult;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -50,7 +51,7 @@ public class SignUpFragment extends Fragment {
     Button signUpButton;
     private DatabaseRepository db;
 
-    private static final String BASE_URL = "https://api.eva.pingutil.com/email?email=";
+    private static final String CHECK_EMAIL_BASE_URL = "https://api.eva.pingutil.com/email?email=";
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
@@ -95,9 +96,7 @@ public class SignUpFragment extends Fragment {
                 if(text.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(text).matches()) {
                     emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
                     emailEditText.setError(getString(R.string.error_invalid_email_length));
-                } //else if() {
-                    // This else if will be used later to verify email is not already taken
-                /*}*/ else {
+                } else {
                     emailEditText.setError(null);
                     emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
                     emailInputLayout.setEndIconDrawable(R.drawable.ic_check_circle_black_24dp);
@@ -140,89 +139,74 @@ public class SignUpFragment extends Fragment {
             }
         });
 
-        signUpButton.setOnClickListener(new View.OnClickListener() {
+        signUpButton.setOnClickListener(v -> {
+            if(validate()) {
+                loadingProgressBar.setVisibility(View.VISIBLE);
+                OkHttpClient client = new OkHttpClient();
 
-            @Override
-            public void onClick(View v) {
-                if(validate()) {
-                    loadingProgressBar.setVisibility(View.VISIBLE);
-                    OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder()
+                        .url(CHECK_EMAIL_BASE_URL + emailEditText.getText().toString())
+                        .build();
 
-                    Request request = new Request.Builder()
-                            .url(BASE_URL + emailEditText.getText().toString())
-                            .build();
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                        loadingProgressBar.setVisibility(View.INVISIBLE);
+                        call.cancel();
+                    }
 
-                    client.newCall(request).enqueue(new Callback() {
-                        @Override
-                        public void onFailure(Call call, IOException e) {
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+
+                        final String myResponse = response.body().string();
+                        JSONObject json = new JSONObject();
+                        try {
+                            json = new JSONObject(myResponse);
+                        } catch (JSONException e) {
                             loadingProgressBar.setVisibility(View.INVISIBLE);
-                            call.cancel();
+                            e.printStackTrace();
                         }
 
-                        @Override
-                        public void onResponse(Call call, Response response) throws IOException {
+                        try {
+                            // Check if email is real
+                            if(json.getJSONObject("data").getBoolean("valid_syntax") && json.getJSONObject("data").getBoolean("deliverable")) {
+                                getActivity().runOnUiThread(() -> {
+                                    // If we got here, email is not fake
+                                    FirebaseAuthHandler.getInstance().getmAuth().fetchSignInMethodsForEmail(emailEditText.getText().toString())
+                                        .addOnCompleteListener(task -> {
+                                            boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
 
-                            final String myResponse = response.body().string();
-                            JSONObject json = new JSONObject();
-                            try {
-                                json = new JSONObject(myResponse);
-                            } catch (JSONException e) {
-                                loadingProgressBar.setVisibility(View.INVISIBLE);
-                                e.printStackTrace();
+                                            if (isNewUser) {
+                                                // Email doesn't already exist
+                                                emailEditText.setError(null);
+
+                                                // ID is 0 because were not setting it, it's used just for retrieval
+                                                User newUser = new User(usernameEditText.getText().toString(), emailEditText.getText().toString(), ImageUtils.getBytes(((BitmapDrawable) ContextCompat.getDrawable(getActivity(),R.drawable.default_profile_image)).getBitmap()), 0);
+                                                db.insertUserTask(newUser);
+                                                NavController navController = Navigation.findNavController(getActivity(), view.getId());
+                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity(), navController);
+                                            } else {
+                                                // Email already exists
+                                                emailEditText.setError(getString(R.string.error_email_already_in_use));
+                                                emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+                                                loadingProgressBar.setVisibility(View.INVISIBLE);
+                                            }
+                                        });
+                                });
                             }
-
-                            try {
-                                // Check if email is real
-                                if(json.getJSONObject("data").getBoolean("valid_syntax") && json.getJSONObject("data").getBoolean("deliverable")) {
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            // If we got here, email is not fake
-                                            FirebaseAuthHandler.getInstance().getmAuth().fetchSignInMethodsForEmail(emailEditText.getText().toString())
-                                                    .addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
-                                                        @Override
-                                                        public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
-
-                                                            boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
-
-                                                            if (isNewUser) {
-                                                                // Email doesn't already exist
-                                                                emailEditText.setError(null);
-
-                                                                // ID is 0 because were not setting it, it's used just for retrieval
-                                                                User newUser = new User(usernameEditText.getText().toString(), emailEditText.getText().toString(), ImageUtils.getBytes(((BitmapDrawable)getActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()), 0);
-                                                                db.insertUserTask(newUser);
-                                                                NavController navController = Navigation.findNavController(getActivity(), view.getId());
-                                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), usernameEditText.getText().toString(), getActivity(), navController);
-                                                            } else {
-                                                                // Email already exists
-                                                                emailEditText.setError(getString(R.string.error_email_already_in_use));
-                                                                emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
-                                                                loadingProgressBar.setVisibility(View.INVISIBLE);
-                                                            }
-
-                                                        }
-                                                    });
-                                        }
-                                    });
-                                }
-                                else {
-                                    getActivity().runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
-                                            emailEditText.setError(getString(R.string.error_invalid_email));
-                                            loadingProgressBar.setVisibility(View.INVISIBLE);
-                                        }
-                                    });
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                                loadingProgressBar.setVisibility(View.INVISIBLE);
+                            else {
+                                getActivity().runOnUiThread(() -> {
+                                    emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+                                    emailEditText.setError(getString(R.string.error_invalid_email));
+                                    loadingProgressBar.setVisibility(View.INVISIBLE);
+                                });
                             }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            loadingProgressBar.setVisibility(View.INVISIBLE);
                         }
-                    });
-                }
+                    }
+                });
             }
         });
     }

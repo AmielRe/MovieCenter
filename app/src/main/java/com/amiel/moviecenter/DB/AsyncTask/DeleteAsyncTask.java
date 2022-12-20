@@ -1,4 +1,4 @@
-package com.amiel.moviecenter.DB;
+package com.amiel.moviecenter.DB.AsyncTask;
 
 import android.os.AsyncTask;
 

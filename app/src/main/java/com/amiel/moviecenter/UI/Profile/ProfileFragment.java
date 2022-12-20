@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.UI.Profile;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -25,15 +24,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 
-import com.amiel.moviecenter.DB.DatabaseRepository;
+import com.amiel.moviecenter.BuildConfig;
 import com.amiel.moviecenter.DB.Model.User;
+import com.amiel.moviecenter.R;
+import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
+import com.amiel.moviecenter.Utils.ImageUtils;
+import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,14 +49,13 @@ import static android.app.Activity.RESULT_OK;
 
 public class ProfileFragment extends Fragment {
 
+    ProfileViewModel profileViewModel;
     TextInputEditText emailEditText;
     TextInputEditText usernameEditText;
     TextInputLayout emailInputLayout;
     TextInputLayout usernameInputLayout;
     ImageView profileImageButton;
     Button saveDetailsButton;
-    DatabaseRepository db;
-    User currentUser;
 
     private static final int APP_PERMISSIONS_CODE = 100;
     private static final int CAMERA_REQUEST_CODE = 1;
@@ -62,8 +66,6 @@ public class ProfileFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        db = new DatabaseRepository(getActivity());
-        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.profile_fragment, parent, false);
     }
 
@@ -78,50 +80,45 @@ public class ProfileFragment extends Fragment {
         profileImageButton = view.findViewById(R.id.profile_fragment_image);
         saveDetailsButton = view.findViewById(R.id.profile_fragment_save_button);
         String email = FirebaseAuthHandler.getInstance().getCurrentUserEmail();
-        db.getUserByEmail(email).observe(getActivity(), user -> {
-            currentUser = user;
+        profileViewModel = new ViewModelProvider(this, new ViewModelFactory(getActivity().getApplication(), email)).get(ProfileViewModel.class);
+
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menu.findItem(R.id.search_bar).setVisible(false);
+            }
+
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                return false;
+            }
+
+            @Override
+            public void onPrepareMenu(@NonNull Menu menu) {}
+        });
+
+        profileViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
             emailEditText.setText(email);
-            usernameEditText.setText(currentUser.username);
-            Bitmap profileBitmap = ImageUtils.getBitmap(currentUser.profileImage);
+            usernameEditText.setText(user.username);
+            usernameEditText.setSelection(usernameEditText.getText().length());
+            Bitmap profileBitmap = ImageUtils.getBitmap(user.profileImage);
             if(profileBitmap != null) {
-                profileImageButton.setImageBitmap(ImageUtils.getBitmap(currentUser.profileImage));
+                profileImageButton.setImageBitmap(ImageUtils.getBitmap(user.profileImage));
             }
         });
 
-        profileImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                selectImage();
+        profileImageButton.setOnClickListener(v -> selectImage());
+
+        saveDetailsButton.setOnClickListener(v -> {
+            try {
+                User updatedUser = profileViewModel.getUser().getValue();
+                updatedUser.setUsername(usernameEditText.getText().toString());
+                updatedUser.setProfileImage(ImageUtils.getBytes(((BitmapDrawable)profileImageButton.getDrawable()).getBitmap()));
+                profileViewModel.updateUser(updatedUser);
+            } catch(Exception e) {
+                Toast.makeText(getActivity(), "Failed to save details...", Toast.LENGTH_SHORT).show();
             }
         });
-
-        saveDetailsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    currentUser.profileImage = ImageUtils.getBytes(((BitmapDrawable)profileImageButton.getDrawable()).getBitmap());
-                    currentUser.username = usernameEditText.getText().toString();
-                    db.updateUserTask(currentUser);
-                } catch(Exception e) {
-                    Toast.makeText(getActivity(), "Failed to save details...", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -145,16 +142,12 @@ public class ProfileFragment extends Fragment {
                             + "Phoenix" + File.separator + "default";
                     f.delete();
                     OutputStream outFile = null;
-                    File file = new File(path, String.valueOf(System.currentTimeMillis()) + ".jpg");
+                    File file = new File(path, System.currentTimeMillis() + ".jpg");
                     try {
                         outFile = new FileOutputStream(file);
                         res.compress(Bitmap.CompressFormat.JPEG, 85, outFile);
                         outFile.flush();
                         outFile.close();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -177,25 +170,22 @@ public class ProfileFragment extends Fragment {
         final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Choose profile picture");
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int item) {
-                if (options[item].equals("Take Photo"))
-                {
-                    if(isMissingPermissions()) {
-                        requestAppPermission();
-                    } else {
-                        startCameraIntent();
-                    }
+        builder.setItems(options, (dialog, item) -> {
+            if (options[item].equals("Take Photo"))
+            {
+                if(isMissingPermissions()) {
+                    requestAppPermission();
+                } else {
+                    startCameraIntent();
                 }
-                else if (options[item].equals("Choose from Gallery"))
-                {
-                    Intent intent = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(intent, GALLERY_REQUEST_CODE);
-                }
-                else if (options[item].equals("Cancel")) {
-                    dialog.dismiss();
-                }
+            }
+            else if (options[item].equals("Choose from Gallery"))
+            {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent, GALLERY_REQUEST_CODE);
+            }
+            else if (options[item].equals("Cancel")) {
+                dialog.dismiss();
             }
         });
         builder.show();

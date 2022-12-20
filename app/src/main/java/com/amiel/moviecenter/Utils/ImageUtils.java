@@ -1,4 +1,4 @@
-package com.amiel.moviecenter;
+package com.amiel.moviecenter.Utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -20,7 +20,7 @@ public class ImageUtils {
      * @param context       The current context
      * @param selectedImage The Image URI
      * @return Bitmap image results
-     * @throws IOException
+     * @throws IOException In case of IOException during image handling
      */
     public static Bitmap handleSamplingAndRotationBitmap(Context context, Uri selectedImage)
             throws IOException {
@@ -75,7 +75,7 @@ public class ImageUtils {
 
             // Choose the smallest ratio as inSampleSize value, this will guarantee a final image
             // with both dimensions larger than or equal to the requested height and width.
-            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+            inSampleSize = Math.min(heightRatio, widthRatio);
 
             // This offers some additional logic in case the image has a strange
             // aspect ratio. For example, a panorama may have a much larger

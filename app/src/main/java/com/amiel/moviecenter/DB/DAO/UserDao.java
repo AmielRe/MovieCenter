@@ -14,7 +14,4 @@ public interface UserDao extends BaseDao<User>{
 
     @Query("SELECT * FROM Users WHERE email=:email")
     LiveData<User> getUserByEmail(String email);
-
-    @Query("SELECT * FROM Users WHERE id=:id")
-    LiveData<User> getUserById(long id);
 }
