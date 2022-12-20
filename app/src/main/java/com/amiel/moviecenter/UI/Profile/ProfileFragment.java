@@ -53,11 +53,19 @@ public class ProfileFragment extends Fragment {
     TextInputLayout usernameInputLayout;
     ImageView profileImageButton;
     Button saveDetailsButton;
+    ActivityResultLauncher<String[]> cameraResult;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+        cameraResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
+            // If permission granted
+            if(!isGranted.containsValue(false)) {
+                cameraResultLauncher.launch(ImageUtils.getCameraIntent(getContext()));
+            }
+        });
+
         // Defines the xml file for the fragment
         return inflater.inflate(R.layout.profile_fragment, parent, false);
     }
@@ -122,12 +130,7 @@ public class ProfileFragment extends Fragment {
             if (options[item].equals("Take Photo"))
             {
                 if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
-                    new PermissionHelper().startPermissionRequest(requireActivity(), isGranted -> {
-                        // If permission granted
-                        if(!isGranted.containsValue(false)) {
-                            cameraResultLauncher.launch(ImageUtils.getCameraIntent(getContext()));
-                        }
-                    }, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
+                    new PermissionHelper().startPermissionRequest(cameraResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
                 } else {
                     cameraResultLauncher.launch(ImageUtils.getCameraIntent(getContext()));
                 }

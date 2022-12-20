@@ -5,13 +5,15 @@ import android.content.pm.PackageManager;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 public class PermissionHelper {
 
-    public void startPermissionRequest(FragmentActivity fr, PermissionInterface permissionInterface, String... permissions) {
-        ActivityResultLauncher<String[]> requestPermissionLauncher =
-                fr.registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissionInterface::onGranted);
+    public ActivityResultLauncher<String[]> registerForActivityResult(Fragment fr, PermissionInterface permissionInterface) {
+        return fr.registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissionInterface::onGranted);
+    }
+    public void startPermissionRequest(ActivityResultLauncher<String[]> requestPermissionLauncher, String... permissions) {
         requestPermissionLauncher.launch(permissions);
     }
 

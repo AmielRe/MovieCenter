@@ -5,9 +5,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,7 +24,6 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuProvider;
@@ -44,6 +41,8 @@ import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
+import com.amiel.moviecenter.Utils.AsyncTasks.DownloadImageTask;
+import com.amiel.moviecenter.Utils.AsyncTasks.GetMovieDataTask;
 import com.amiel.moviecenter.Utils.DialogUtils;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.PermissionHelper;
@@ -56,10 +55,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -82,6 +77,8 @@ public class MoviesListFragment extends Fragment {
     FloatingActionButton newPostFab;
     ImageView movieImageImageView;
     ImageView moviePosterImageView;
+    ActivityResultLauncher<String[]> moviePosterResult;
+    ActivityResultLauncher<String[]> movieImageResult;
 
     private static final String BASE_IMDB_MOVIE_URL = "https://imdb-api.com/API/AdvancedSearch/k_4wqqdznf?title=%s&has=plot";
 
@@ -93,6 +90,20 @@ public class MoviesListFragment extends Fragment {
         ((AppCompatActivity) requireActivity()).getSupportActionBar().setDisplayShowCustomEnabled(false);
         ((AppCompatActivity) requireActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         ((AppCompatActivity) requireActivity()).getSupportActionBar().show();
+
+        movieImageResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
+            // If permission granted
+            if(!isGranted.containsValue(false)) {
+                galleryResultLauncherMovieImage.launch(ImageUtils.getGalleryIntent());
+            }
+        });
+
+        moviePosterResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
+            // If permission granted
+            if(!isGranted.containsValue(false)) {
+                galleryResultLauncherMoviePoster.launch(ImageUtils.getGalleryIntent());
+            }
+        });
 
         requireActivity().addMenuProvider(new MenuProvider() {
             @Override
@@ -259,75 +270,13 @@ public class MoviesListFragment extends Fragment {
                             e.printStackTrace();
                         }
                     } else {
-                        OkHttpClient client = new OkHttpClient();
-
-                        Request request = new Request.Builder()
-                                .url(String.format(BASE_IMDB_MOVIE_URL, movieName.getText().toString()))
-                                .build();
-
-                        client.newCall(request).enqueue(new Callback() {
-                            @Override
-                            public void onFailure(Call call, IOException e) {
-                                requireActivity().runOnUiThread(() -> {
-                                    progressDialog.dismiss();
-                                    Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                                });
-                                call.cancel();
-                            }
-
-                            @Override
-                            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-
-                                final String myResponse = response.body().string();
-                                JSONObject json = new JSONObject();
-                                try {
-                                    json = new JSONObject(myResponse);
-                                    JSONObject resultsJSON = (JSONObject) json.getJSONArray("results").get(0);
-                                    moviesListViewModel.setNewMoviePlot(resultsJSON.getString("plot"));
-                                    String year = resultsJSON.getString("description").replaceAll("[^0-9]", "");
-                                    String moviePosterUrl = resultsJSON.getString("image");
-                                    String title = resultsJSON.getString("title");
-
-                                    Request request = new Request.Builder()
-                                            .url(moviePosterUrl)
-                                            .build();
-
-                                    client.newCall(request).enqueue(new Callback() {
-                                        @Override
-                                        public void onFailure(Call call, IOException e) {
-                                            requireActivity().runOnUiThread(() -> {
-                                                progressDialog.dismiss();
-                                                Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                                            });
-                                            call.cancel();
-                                        }
-
-                                        @Override
-                                        public void onResponse(Call call, Response response) {
-                                            InputStream inputStream = response.body().byteStream();
-                                            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                                            requireActivity().runOnUiThread(() -> {
-                                                moviePosterImageView.setImageBitmap(bitmap);
-                                                moviePosterImageView.setBackground(null);
-                                                moviePoster.setOnClickListener(null);
-                                                movieYear.setText(year);
-                                                movieYear.setEnabled(false);
-                                                movieName.setText(title);
-                                                progressDialog.dismiss();
-                                                Toast.makeText(requireActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
-                                            });
-                                        }
-                                    });
-
-                                } catch (JSONException e) {
-                                    requireActivity().runOnUiThread(() -> {
-                                        progressDialog.dismiss();
-                                        Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                                    });
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
+                        try {
+                            new GetMovieDataTask(moviePosterImageView, movieName, movieYear, moviesListViewModel, progressDialog).execute(String.format(BASE_IMDB_MOVIE_URL, movieName.getText().toString()));
+                        } catch (Exception e) {
+                            progressDialog.dismiss();
+                            Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
@@ -361,12 +310,7 @@ public class MoviesListFragment extends Fragment {
 
         movieImage.setOnClickListener(v -> {
             if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
-                new PermissionHelper().startPermissionRequest(requireActivity(), isGranted -> {
-                    // If permission granted
-                    if(!isGranted.containsValue(false)) {
-                        galleryResultLauncherMovieImage.launch(ImageUtils.getGalleryIntent());
-                    }
-                }, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
+                new PermissionHelper().startPermissionRequest(movieImageResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
             } else {
                 galleryResultLauncherMovieImage.launch(ImageUtils.getGalleryIntent());
             }
@@ -374,12 +318,7 @@ public class MoviesListFragment extends Fragment {
 
         moviePoster.setOnClickListener(v -> {
             if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
-                new PermissionHelper().startPermissionRequest(requireActivity(), isGranted -> {
-                    // If permission granted
-                    if(!isGranted.containsValue(false)) {
-                        galleryResultLauncherMoviePoster.launch(ImageUtils.getGalleryIntent());
-                    }
-                }, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
+                new PermissionHelper().startPermissionRequest(moviePosterResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
             } else {
                 galleryResultLauncherMoviePoster.launch(ImageUtils.getGalleryIntent());
             }
