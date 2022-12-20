@@ -1,13 +1,21 @@
 package com.amiel.moviecenter.Utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+
+import androidx.core.content.FileProvider;
+
+import com.amiel.moviecenter.BuildConfig;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -150,7 +158,6 @@ public class ImageUtils {
     }
 
     private static byte[] imageRescale(byte[] image){
-
         while (image.length > 500000){
             Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
             Bitmap resized = Bitmap.createScaledBitmap(bitmap, (int)(bitmap.getWidth()*0.8), (int)(bitmap.getHeight()*0.8), true);
@@ -159,6 +166,17 @@ public class ImageUtils {
             image = stream.toByteArray();
         }
         return image;
+    }
 
+    public static Intent getCameraIntent(Context context) {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        File f = new File(android.os.Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "temp.jpg");
+        Uri uri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", f);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        return intent;
+    }
+
+    public static Intent getGalleryIntent() {
+        return new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
     }
 }
