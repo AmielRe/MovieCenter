@@ -17,9 +17,6 @@ public interface MovieDao extends BaseDao<Movie> {
     @Query("SELECT * FROM Movies WHERE name=:name AND year=:year")
     LiveData<Movie> getMovieByNameAndYear(String name, int year);
 
-    @Query("SELECT * FROM Movies WHERE id=:id")
-    LiveData<Movie> getMovieById(long id);
-
     @Query("SELECT * FROM Movies WHERE name=:name")
     LiveData<Movie> getMovieByName(String name);
 }

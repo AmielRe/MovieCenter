@@ -40,19 +40,10 @@ public class DatabaseRepository {
     public LiveData<Movie> getMovieByNameAndYear(String name, int year) {
         return mDatabase.movieDao().getMovieByNameAndYear(name, year);
     }
-
-    public LiveData<Movie> getMovieById(long id) {
-        return mDatabase.movieDao().getMovieById(id);
-    }
-
+    
     public LiveData<Movie> getMovieByName(String name) {
         return mDatabase.movieDao().getMovieByName(name);
     }
-
-    public void deleteMovieTask(Movie movie){
-        new DeleteAsyncTask<>(mDatabase.movieDao()).execute(movie);
-    }
-
 
     public MutableLiveData<long[]> insertPostTask(Post post){
         MutableLiveData<long[]> liveData = new MutableLiveData<>();
@@ -64,12 +55,8 @@ public class DatabaseRepository {
         new UpdateAsyncTask<>(mDatabase.postDao()).execute(post);
     }
 
-    public void deletePostTask(Post post){
-        new DeleteAsyncTask<>(mDatabase.postDao()).execute(post);
-    }
-
-    public LiveData<List<Post>> getAllPostsForMovie(long movieId) {
-        return mDatabase.postDao().getAllPostsForMovie(movieId);
+    public LiveData<Map<User,List<Post>>> getAllPostsForMovieWithUser(long movieId) {
+        return mDatabase.postDao().getAllPostsForMovieWithUser(movieId);
     }
 
     public LiveData<Map<Movie, List<Post>>> getAllPostsOfUserWithMovie(String userEmail) {
@@ -86,15 +73,7 @@ public class DatabaseRepository {
         new UpdateAsyncTask<>(mDatabase.userDao()).execute(user);
     }
 
-    public void deleteUserTask(User user){
-        new DeleteAsyncTask<>(mDatabase.userDao()).execute(user);
-    }
-
     public LiveData<User> getUserByEmail(String email) {
         return mDatabase.userDao().getUserByEmail(email);
-    }
-
-    public LiveData<User> getUserById(long id) {
-        return mDatabase.userDao().getUserById(id);
     }
 }
