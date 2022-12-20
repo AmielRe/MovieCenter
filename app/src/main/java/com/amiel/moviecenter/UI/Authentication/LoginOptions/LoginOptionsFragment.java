@@ -49,9 +49,9 @@ public class LoginOptionsFragment extends Fragment {
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        signInWithEmail = (Button) view.findViewById(R.id.login_sign_in_with_email_button);
-        signInWithGoogle = (Button) view.findViewById(R.id.login_sign_in_with_google_button);
-        signUp = (Button) view.findViewById(R.id.login_sign_up_button);
+        signInWithEmail = view.findViewById(R.id.login_sign_in_with_email_button);
+        signInWithGoogle = view.findViewById(R.id.login_sign_in_with_google_button);
+        signUp = view.findViewById(R.id.login_sign_up_button);
 
         signInWithEmail.setOnClickListener(v -> Navigation.findNavController(view).navigate(R.id.signInFragment));
 

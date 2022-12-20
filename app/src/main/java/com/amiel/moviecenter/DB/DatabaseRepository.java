@@ -40,7 +40,7 @@ public class DatabaseRepository {
     public LiveData<Movie> getMovieByNameAndYear(String name, int year) {
         return mDatabase.movieDao().getMovieByNameAndYear(name, year);
     }
-    
+
     public LiveData<Movie> getMovieByName(String name) {
         return mDatabase.movieDao().getMovieByName(name);
     }
