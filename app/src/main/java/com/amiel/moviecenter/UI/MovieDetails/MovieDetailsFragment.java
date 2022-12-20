@@ -13,16 +13,25 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.amiel.moviecenter.DB.DatabaseRepository;
+import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
+import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
+import com.amiel.moviecenter.UI.MyPosts.MyPostRowItem;
+import com.amiel.moviecenter.UI.MyPosts.MyPostsRecyclerAdapter;
+import com.amiel.moviecenter.UI.Profile.ProfileViewModel;
+import com.amiel.moviecenter.Utils.ViewModelFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MovieDetailsFragment extends Fragment {
 
@@ -36,14 +45,11 @@ public class MovieDetailsFragment extends Fragment {
     RecyclerView list;
     PostDetailsRecyclerAdapter adapter;
 
-    private DatabaseRepository db;
-
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        db = new DatabaseRepository(getActivity());
         return inflater.inflate(R.layout.movie_details_fragment, parent, false);
     }
 
@@ -56,20 +62,21 @@ public class MovieDetailsFragment extends Fragment {
         movieImage = view.findViewById(R.id.movie_details_movie_image);
         movieRating = view.findViewById(R.id.movie_details_movie_rating);
         moviePlot = view.findViewById(R.id.movie_details_movie_description);
+        MovieDetailsViewModel movieDetailsViewModel = new ViewModelProvider(this, new ViewModelFactory(getActivity().getApplication(), MovieDetailsFragmentArgs.fromBundle(getArguments()).getId())).get(MovieDetailsViewModel.class);
 
         list = view.findViewById(R.id.movie_details_recycler_view);
         list.setHasFixedSize(true);
 
         // Set adapter to recycler view
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
-        db.getAllPostsForMovie(MovieDetailsFragmentArgs.fromBundle(getArguments()).getId()).observe(getViewLifecycleOwner(), posts -> {
-            List<PostDetailsItem> postsItems = new ArrayList<>();
-            for(Post post : posts) {
-                db.getUserById(post.getUserID()).observe(getViewLifecycleOwner(), user -> {
-                    postsItems.add(new PostDetailsItem(user.getUsername(), post.getText(), user.getProfileImage(), post.getRating()));
-                    adapter = new PostDetailsRecyclerAdapter(postsItems);
-                    list.setAdapter(adapter);
-                });
+        movieDetailsViewModel.getPosts().observe(getViewLifecycleOwner(), postsMap -> {
+            List<PostDetailsItem> postsRowItems = new ArrayList<>();
+            for(Map.Entry<User, List<Post>> currEntry : postsMap.entrySet()) {
+                for(Post currPost : currEntry.getValue()) {
+                    postsRowItems.add(new PostDetailsItem(currEntry.getKey().getUsername(), currPost.getText(), currEntry.getKey().getProfileImage(), currPost.getRating()));
+                }
+                adapter = new PostDetailsRecyclerAdapter(postsRowItems);
+                list.setAdapter(adapter);
             }
         });
 
@@ -79,20 +86,20 @@ public class MovieDetailsFragment extends Fragment {
         movieImage.setImageBitmap(movieBitmap);
         movieRating.setRating(MovieDetailsFragmentArgs.fromBundle(getArguments()).getRating());
         moviePlot.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getPlot());
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }
+        requireActivity().addMenuProvider(new MenuProvider() {
+            @Override
+            public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+                menu.findItem(R.id.search_bar).setVisible(false);
+            }
 
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-    }
+            @Override
+            public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+                return false;
+            }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
+            @Override
+            public void onPrepareMenu(@NonNull Menu menu) {}
+        });
     }
 }

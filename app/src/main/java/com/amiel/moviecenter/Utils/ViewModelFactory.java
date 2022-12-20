@@ -5,6 +5,7 @@ import android.app.Application;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.amiel.moviecenter.UI.MovieDetails.MovieDetailsViewModel;
 import com.amiel.moviecenter.UI.MyPosts.MyPostsViewModel;
 import com.amiel.moviecenter.UI.Profile.ProfileViewModel;
 
@@ -23,9 +24,9 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory imple
             return (T) new ProfileViewModel(mApplication, (String) mParams[0]);
         } else if (modelClass == MyPostsViewModel.class) {
             return (T) new MyPostsViewModel(mApplication, (String) mParams[0]);
-        } /*else if (modelClass == ViewModel3.class) {
-            return (T) new ViewModel3(mApplication, (Integer) mParams[0], (String) mParams[1]);
-        }*/ else {
+        } else if (modelClass == MovieDetailsViewModel.class) {
+            return (T) new MovieDetailsViewModel(mApplication, (long) mParams[0]);
+        } else {
             return super.create(modelClass);
         }
     }
