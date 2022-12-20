@@ -19,14 +19,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amiel.moviecenter.DB.DatabaseRepository;
-import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
-import com.amiel.moviecenter.UI.MyPosts.MyPostRowItem;
-import com.amiel.moviecenter.UI.MyPosts.MyPostsRecyclerAdapter;
-import com.amiel.moviecenter.UI.Profile.ProfileViewModel;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 
 import java.util.ArrayList;
