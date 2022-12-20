@@ -34,7 +34,7 @@ public class SignInFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        ((AppCompatActivity) requireActivity()).getSupportActionBar().hide();
         return inflater.inflate(R.layout.sign_in_fragment, parent, false);
     }
 
@@ -74,14 +74,10 @@ public class SignInFragment extends Fragment {
             }
         });
 
-        signInButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if(validate()) {
-                    NavController navController = Navigation.findNavController(getActivity(), view.getId());
-                    FirebaseAuthHandler.getInstance().signInWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity(), navController);
-                }
+        signInButton.setOnClickListener(v -> {
+            if(validate()) {
+                NavController navController = Navigation.findNavController(requireActivity(), view.getId());
+                FirebaseAuthHandler.getInstance().signInWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), requireActivity(), navController);
             }
         });
     }

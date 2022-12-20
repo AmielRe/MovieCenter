@@ -19,14 +19,9 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amiel.moviecenter.DB.DatabaseRepository;
-import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
-import com.amiel.moviecenter.UI.MyPosts.MyPostRowItem;
-import com.amiel.moviecenter.UI.MyPosts.MyPostsRecyclerAdapter;
-import com.amiel.moviecenter.UI.Profile.ProfileViewModel;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 
 import java.util.ArrayList;
@@ -62,13 +57,13 @@ public class MovieDetailsFragment extends Fragment {
         movieImage = view.findViewById(R.id.movie_details_movie_image);
         movieRating = view.findViewById(R.id.movie_details_movie_rating);
         moviePlot = view.findViewById(R.id.movie_details_movie_description);
-        MovieDetailsViewModel movieDetailsViewModel = new ViewModelProvider(this, new ViewModelFactory(getActivity().getApplication(), MovieDetailsFragmentArgs.fromBundle(getArguments()).getId())).get(MovieDetailsViewModel.class);
+        MovieDetailsViewModel movieDetailsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), MovieDetailsFragmentArgs.fromBundle(getArguments()).getId())).get(MovieDetailsViewModel.class);
 
         list = view.findViewById(R.id.movie_details_recycler_view);
         list.setHasFixedSize(true);
 
         // Set adapter to recycler view
-        list.setLayoutManager(new LinearLayoutManager(getActivity()));
+        list.setLayoutManager(new LinearLayoutManager(requireActivity()));
         movieDetailsViewModel.getPosts().observe(getViewLifecycleOwner(), postsMap -> {
             List<PostDetailsItem> postsRowItems = new ArrayList<>();
             for(Map.Entry<User, List<Post>> currEntry : postsMap.entrySet()) {

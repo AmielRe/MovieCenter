@@ -9,9 +9,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amiel.moviecenter.OnItemClickListener;
+import com.amiel.moviecenter.Utils.OnItemClickListener;
 import com.amiel.moviecenter.R;
-import com.amiel.moviecenter.UI.MyPosts.MyPostRowItem;
 
 public class MyPostViewHolder extends RecyclerView.ViewHolder{
     RatingBar postRating;

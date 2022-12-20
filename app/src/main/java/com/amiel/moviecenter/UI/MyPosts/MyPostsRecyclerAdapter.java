@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amiel.moviecenter.OnItemClickListener;
+import com.amiel.moviecenter.Utils.OnItemClickListener;
 import com.amiel.moviecenter.R;
 
 import java.util.ArrayList;

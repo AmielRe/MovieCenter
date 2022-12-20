@@ -37,9 +37,9 @@ public class LoginOptionsFragment extends Fragment {
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        FirebaseAuthHandler.getInstance().initGoogleAuth(getString(R.string.web_client_id), getActivity());
-        db = new DatabaseRepository(getActivity());
-        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        FirebaseAuthHandler.getInstance().initGoogleAuth(getString(R.string.web_client_id), requireActivity());
+        db = new DatabaseRepository(requireActivity());
+        ((AppCompatActivity) requireActivity()).getSupportActionBar().hide();
 
         // Defines the xml file for the fragment
         return inflater.inflate(R.layout.login_options_fragment, parent, false);
@@ -65,10 +65,10 @@ public class LoginOptionsFragment extends Fragment {
                         GoogleSignInAccount account = task.getResult(ApiException.class);
 
                         // ID is 0 because were not setting it, it's used just for retrieval
-                        User newUser = new User(account.getDisplayName(), account.getEmail(), ImageUtils.getBytes(((BitmapDrawable)getActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()), 0);
+                        User newUser = new User(account.getDisplayName(), account.getEmail(), ImageUtils.getBytes(((BitmapDrawable)requireActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()), 0);
                         db.insertUserTask(newUser);
-                        NavController navController = Navigation.findNavController(getActivity(), getView().getId());
-                        FirebaseAuthHandler.getInstance().signInWithGoogle(account, getActivity(), navController);
+                        NavController navController = Navigation.findNavController(requireActivity(), getView().getId());
+                        FirebaseAuthHandler.getInstance().signInWithGoogle(account, requireActivity(), navController);
                     } catch (ApiException e) {
                         Log.w("TAG", "Google sign in failed", e);
                     }

@@ -5,7 +5,6 @@ import android.content.Context;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.amiel.moviecenter.DB.AsyncTask.DeleteAsyncTask;
 import com.amiel.moviecenter.DB.AsyncTask.InsertAsyncTask;
 import com.amiel.moviecenter.DB.AsyncTask.UpdateAsyncTask;
 import com.amiel.moviecenter.DB.Model.Movie;

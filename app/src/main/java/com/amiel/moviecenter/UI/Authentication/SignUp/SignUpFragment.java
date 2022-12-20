@@ -58,8 +58,8 @@ public class SignUpFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        db = new DatabaseRepository(getActivity());
-        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        db = new DatabaseRepository(requireActivity());
+        ((AppCompatActivity) requireActivity()).getSupportActionBar().hide();
         return inflater.inflate(R.layout.sign_up_fragment, parent, false);
     }
 
@@ -170,7 +170,7 @@ public class SignUpFragment extends Fragment {
                         try {
                             // Check if email is real
                             if(json.getJSONObject("data").getBoolean("valid_syntax") && json.getJSONObject("data").getBoolean("deliverable")) {
-                                getActivity().runOnUiThread(() -> {
+                                requireActivity().runOnUiThread(() -> {
                                     // If we got here, email is not fake
                                     FirebaseAuthHandler.getInstance().getmAuth().fetchSignInMethodsForEmail(emailEditText.getText().toString())
                                         .addOnCompleteListener(task -> {
@@ -181,10 +181,10 @@ public class SignUpFragment extends Fragment {
                                                 emailEditText.setError(null);
 
                                                 // ID is 0 because were not setting it, it's used just for retrieval
-                                                User newUser = new User(usernameEditText.getText().toString(), emailEditText.getText().toString(), ImageUtils.getBytes(((BitmapDrawable) ContextCompat.getDrawable(getActivity(),R.drawable.default_profile_image)).getBitmap()), 0);
+                                                User newUser = new User(usernameEditText.getText().toString(), emailEditText.getText().toString(), ImageUtils.getBytes(((BitmapDrawable) ContextCompat.getDrawable(requireActivity(),R.drawable.default_profile_image)).getBitmap()), 0);
                                                 db.insertUserTask(newUser);
-                                                NavController navController = Navigation.findNavController(getActivity(), view.getId());
-                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), getActivity(), navController);
+                                                NavController navController = Navigation.findNavController(requireActivity(), view.getId());
+                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(emailEditText.getText().toString(), passwordEditText.getText().toString(), requireActivity(), navController);
                                             } else {
                                                 // Email already exists
                                                 emailEditText.setError(getString(R.string.error_email_already_in_use));
@@ -195,7 +195,7 @@ public class SignUpFragment extends Fragment {
                                 });
                             }
                             else {
-                                getActivity().runOnUiThread(() -> {
+                                requireActivity().runOnUiThread(() -> {
                                     emailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
                                     emailEditText.setError(getString(R.string.error_invalid_email));
                                     loadingProgressBar.setVisibility(View.INVISIBLE);

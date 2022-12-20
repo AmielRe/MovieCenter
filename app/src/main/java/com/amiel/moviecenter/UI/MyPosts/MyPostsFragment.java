@@ -11,23 +11,17 @@ import android.widget.EditText;
 import android.widget.RatingBar;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import java.util.Map;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
-import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.Post;
-import com.amiel.moviecenter.DB.Model.User;
-import com.amiel.moviecenter.UI.Profile.ProfileViewModel;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 
 import java.util.ArrayList;
@@ -61,10 +55,10 @@ public class MyPostsFragment extends Fragment {
         postText = view.findViewById(R.id.my_post_row_item_post_text);
         list = view.findViewById(R.id.my_posts_recycler_view);
         list.setHasFixedSize(true);
-        myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(getActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
+        myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
 
         // Set adapter to recycler view
-        list.setLayoutManager(new LinearLayoutManager(getActivity()));
+        list.setLayoutManager(new LinearLayoutManager(requireActivity()));
         myPostsViewModel.getPosts().observe(getViewLifecycleOwner(), posts -> {
             List<MyPostRowItem> postsRowItems = new ArrayList<>();
             for(Map.Entry<Movie, List<Post>> currEntry : posts.entrySet()) {

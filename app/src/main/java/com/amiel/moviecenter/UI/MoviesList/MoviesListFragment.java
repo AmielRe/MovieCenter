@@ -1,18 +1,14 @@
 package com.amiel.moviecenter.UI.MoviesList;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,8 +21,9 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuProvider;
@@ -40,34 +37,20 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.amiel.moviecenter.OnItemClickListener;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
-import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
-import com.amiel.moviecenter.UI.Profile.ProfileViewModel;
+import com.amiel.moviecenter.Utils.AsyncTasks.GetMovieDataTask;
 import com.amiel.moviecenter.Utils.DialogUtils;
 import com.amiel.moviecenter.Utils.ImageUtils;
+import com.amiel.moviecenter.Utils.PermissionHelper;
 import com.amiel.moviecenter.Utils.TextValidator;
-import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import androidx.appcompat.widget.SearchView;
 
 import static android.app.Activity.RESULT_OK;
@@ -85,22 +68,33 @@ public class MoviesListFragment extends Fragment {
     FloatingActionButton newPostFab;
     ImageView movieImageImageView;
     ImageView moviePosterImageView;
+    ActivityResultLauncher<String[]> moviePosterResult;
+    ActivityResultLauncher<String[]> movieImageResult;
 
-    private static final int GALLERY_REQUEST_CODE_POSTER = 2;
-    private static final int GALLERY_REQUEST_CODE_IMAGE = 3;
     private static final String BASE_IMDB_MOVIE_URL = "https://imdb-api.com/API/AdvancedSearch/k_4wqqdznf?title=%s&has=plot";
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        // Defines the xml file for the fragment
-        //db = new DatabaseRepository(getActivity());
-
         // Disable and hide back button from movies list fragment
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayShowCustomEnabled(false);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+        ((AppCompatActivity) requireActivity()).getSupportActionBar().setDisplayShowCustomEnabled(false);
+        ((AppCompatActivity) requireActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+        ((AppCompatActivity) requireActivity()).getSupportActionBar().show();
+
+        movieImageResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
+            // If permission granted
+            if(!isGranted.containsValue(false)) {
+                galleryResultLauncherMovieImage.launch(ImageUtils.getGalleryIntent());
+            }
+        });
+
+        moviePosterResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
+            // If permission granted
+            if(!isGranted.containsValue(false)) {
+                galleryResultLauncherMoviePoster.launch(ImageUtils.getGalleryIntent());
+            }
+        });
 
         requireActivity().addMenuProvider(new MenuProvider() {
             @Override
@@ -113,8 +107,8 @@ public class MoviesListFragment extends Fragment {
                 MenuItem search = menu.findItem(R.id.search_bar);
                 SearchView searchView = (SearchView) search.getActionView();
 
-                SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-                searchView.setSearchableInfo( searchManager.getSearchableInfo(getActivity().getComponentName()));
+                SearchManager searchManager = (SearchManager) requireActivity().getSystemService(Context.SEARCH_SERVICE);
+                searchView.setSearchableInfo( searchManager.getSearchableInfo(requireActivity().getComponentName()));
                 searchView.setQueryHint(getResources().getString(R.string.search_movie_hint));
 
                 // attach setOnQueryTextListener
@@ -129,7 +123,7 @@ public class MoviesListFragment extends Fragment {
                             adapter.getFilter().filter(query);
                         } else {
                             // Search query not found in List View
-                            Toast.makeText(getActivity(), "Not found", Toast.LENGTH_LONG).show();
+                            Toast.makeText(requireActivity(), "Not found", Toast.LENGTH_LONG).show();
                         }
                         return false;
                     }
@@ -177,7 +171,7 @@ public class MoviesListFragment extends Fragment {
 
         // Set adapter to recycler view
         moviesListViewModel.getMovies().observe(getViewLifecycleOwner(), movies -> {
-            list.setLayoutManager(new LinearLayoutManager(getActivity()));
+            list.setLayoutManager(new LinearLayoutManager(requireActivity()));
             adapter = new MoviesListRecyclerAdapter(movies);
             list.setAdapter(adapter);
 
@@ -259,83 +253,21 @@ public class MoviesListFragment extends Fragment {
                                 moviesListViewModel.setNewMoviePlot(movieByNameAndYear.getPlot());
                                 moviePoster.setOnClickListener(null);
                                 progressDialog.dismiss();
-                                Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(requireActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
                             });
                         } catch (Exception e) {
                             progressDialog.dismiss();
-                            Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
                             e.printStackTrace();
                         }
                     } else {
-                        OkHttpClient client = new OkHttpClient();
-
-                        Request request = new Request.Builder()
-                                .url(String.format(BASE_IMDB_MOVIE_URL, movieName.getText().toString()))
-                                .build();
-
-                        client.newCall(request).enqueue(new Callback() {
-                            @Override
-                            public void onFailure(Call call, IOException e) {
-                                getActivity().runOnUiThread(() -> {
-                                    progressDialog.dismiss();
-                                    Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                                });
-                                call.cancel();
-                            }
-
-                            @Override
-                            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-
-                                final String myResponse = response.body().string();
-                                JSONObject json = new JSONObject();
-                                try {
-                                    json = new JSONObject(myResponse);
-                                    JSONObject resultsJSON = (JSONObject) json.getJSONArray("results").get(0);
-                                    moviesListViewModel.setNewMoviePlot(resultsJSON.getString("plot"));
-                                    String year = resultsJSON.getString("description").replaceAll("[^0-9]", "");
-                                    String moviePosterUrl = resultsJSON.getString("image");
-                                    String title = resultsJSON.getString("title");
-
-                                    Request request = new Request.Builder()
-                                            .url(moviePosterUrl)
-                                            .build();
-
-                                    client.newCall(request).enqueue(new Callback() {
-                                        @Override
-                                        public void onFailure(Call call, IOException e) {
-                                            getActivity().runOnUiThread(() -> {
-                                                progressDialog.dismiss();
-                                                Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                                            });
-                                            call.cancel();
-                                        }
-
-                                        @Override
-                                        public void onResponse(Call call, Response response) {
-                                            InputStream inputStream = response.body().byteStream();
-                                            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                                            getActivity().runOnUiThread(() -> {
-                                                moviePosterImageView.setImageBitmap(bitmap);
-                                                moviePosterImageView.setBackground(null);
-                                                moviePoster.setOnClickListener(null);
-                                                movieYear.setText(year);
-                                                movieYear.setEnabled(false);
-                                                movieName.setText(title);
-                                                progressDialog.dismiss();
-                                                Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
-                                            });
-                                        }
-                                    });
-
-                                } catch (JSONException e) {
-                                    getActivity().runOnUiThread(() -> {
-                                        progressDialog.dismiss();
-                                        Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                                    });
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
+                        try {
+                            new GetMovieDataTask(moviePosterImageView, movieName, movieYear, moviesListViewModel, progressDialog).execute(String.format(BASE_IMDB_MOVIE_URL, movieName.getText().toString()));
+                        } catch (Exception e) {
+                            progressDialog.dismiss();
+                            Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
@@ -356,35 +288,35 @@ public class MoviesListFragment extends Fragment {
                             moviesListViewModel.setNewMoviePlot(movie.getPlot());
                             moviePoster.setOnClickListener(null);
                             progressDialog.dismiss();
-                            Toast.makeText(getActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
                         }
                     });
                 } catch(Exception e) {
                     progressDialog.dismiss();
-                    Toast.makeText(getActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 }
             }
         });
 
         movieImage.setOnClickListener(v -> {
-            if(isMissingPermissions()) {
-                requestAppPermission(GALLERY_REQUEST_CODE_IMAGE);
+            if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
+                new PermissionHelper().startPermissionRequest(movieImageResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
             } else {
-                selectImage(GALLERY_REQUEST_CODE_IMAGE);
+                galleryResultLauncherMovieImage.launch(ImageUtils.getGalleryIntent());
             }
         });
 
         moviePoster.setOnClickListener(v -> {
-            if(isMissingPermissions()) {
-                requestAppPermission(GALLERY_REQUEST_CODE_POSTER);
+            if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
+                new PermissionHelper().startPermissionRequest(moviePosterResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
             } else {
-                selectImage(GALLERY_REQUEST_CODE_POSTER);
+                galleryResultLauncherMoviePoster.launch(ImageUtils.getGalleryIntent());
             }
         });
 
         // Finally building an AlertDialog
-        final AlertDialog builder = new AlertDialog.Builder(getActivity())
+        final AlertDialog builder = new AlertDialog.Builder(requireActivity())
                 .setPositiveButton("Post", null)
                 .setNegativeButton("Cancel", null)
                 .setView(scrollViewLayout)
@@ -438,58 +370,39 @@ public class MoviesListFragment extends Fragment {
         });
     }
 
-    private void selectImage(int requestCode) {
-        Intent intent = new Intent(Intent.ACTION_PICK,android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, requestCode);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            selectImage(requestCode);
-        }
-    }
-
-    private void requestAppPermission(int requestCode) {
-        List<String> missingPermissions = new ArrayList<>();
-        if (getActivity().checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
-            missingPermissions.add(Manifest.permission.CAMERA);
-        if (getActivity().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-            missingPermissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-        if (getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-            missingPermissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if(!missingPermissions.isEmpty()) {
-            requestPermissions(missingPermissions.toArray(new String[missingPermissions.size()]), requestCode);
-        }
-    }
-
-    private boolean isMissingPermissions() {
-        return (getActivity().checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED
-                || getActivity().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || getActivity().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            Uri selectedImage = data.getData();
-            try {
-                Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(getActivity(), selectedImage);
-                if (requestCode == GALLERY_REQUEST_CODE_POSTER) {
-                    moviePosterImageView.setImageBitmap(res);
-                    moviePosterImageView.setBackground(null);
-                } else if(requestCode == GALLERY_REQUEST_CODE_IMAGE) {
-                    movieImageImageView.setImageBitmap(res);
-                    movieImageImageView.setBackground(null);
+    private final ActivityResultLauncher<Intent> galleryResultLauncherMovieImage = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK
+                        && result.getData() != null) {
+                    Uri selectedImage = result.getData().getData();
+                    try {
+                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), selectedImage);
+                        movieImageImageView.setImageBitmap(res);
+                        movieImageImageView.setBackground(null);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-        }
-    }
+    );
+
+    private final ActivityResultLauncher<Intent> galleryResultLauncherMoviePoster = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK
+                        && result.getData() != null) {
+                    Uri selectedImage = result.getData().getData();
+                    try {
+                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), selectedImage);
+                        moviePosterImageView.setImageBitmap(res);
+                        moviePosterImageView.setBackground(null);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+    );
 
     @Override
     public void onResume() {
