@@ -27,8 +27,8 @@ public class SplashScreenFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
-        db = new DatabaseRepository(getActivity());
-        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        db = new DatabaseRepository(requireActivity());
+        ((AppCompatActivity) requireActivity()).getSupportActionBar().hide();
         return inflater.inflate(R.layout.fragment_splash, parent, false);
     }
 
@@ -36,7 +36,7 @@ public class SplashScreenFragment extends Fragment {
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        NavController navController = Navigation.findNavController(getActivity(), view.getId());
+        NavController navController = Navigation.findNavController(requireActivity(), view.getId());
 
         db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
             NavDirections directions;

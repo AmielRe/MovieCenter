@@ -61,10 +61,10 @@ public class MyPostsFragment extends Fragment {
         postText = view.findViewById(R.id.my_post_row_item_post_text);
         list = view.findViewById(R.id.my_posts_recycler_view);
         list.setHasFixedSize(true);
-        myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(getActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
+        myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
 
         // Set adapter to recycler view
-        list.setLayoutManager(new LinearLayoutManager(getActivity()));
+        list.setLayoutManager(new LinearLayoutManager(requireActivity()));
         myPostsViewModel.getPosts().observe(getViewLifecycleOwner(), posts -> {
             List<MyPostRowItem> postsRowItems = new ArrayList<>();
             for(Map.Entry<Movie, List<Post>> currEntry : posts.entrySet()) {
