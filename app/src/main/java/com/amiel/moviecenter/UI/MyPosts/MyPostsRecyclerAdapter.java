@@ -7,15 +7,15 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amiel.moviecenter.Utils.OnItemClickListener;
 import com.amiel.moviecenter.R;
+import com.amiel.moviecenter.Utils.OnMyPostRowItemClickListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MyPostsRecyclerAdapter extends RecyclerView.Adapter<MyPostViewHolder> {
 
-    OnItemClickListener listener;
+    OnMyPostRowItemClickListener listener;
     List<MyPostRowItem> data;
 
     public MyPostsRecyclerAdapter(List<MyPostRowItem> originalData) {
@@ -23,7 +23,7 @@ public class MyPostsRecyclerAdapter extends RecyclerView.Adapter<MyPostViewHolde
         this.data.addAll(originalData);
     }
 
-    void setOnItemClickListener(OnItemClickListener listener) {
+    void setOnItemClickListener(OnMyPostRowItemClickListener listener) {
         this.listener = listener;
     }
 

@@ -1,5 +1,6 @@
 package com.amiel.moviecenter.UI.MyPosts;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -8,13 +9,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.RatingBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import java.util.Map;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,6 +25,9 @@ import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.Model.Post;
+import com.amiel.moviecenter.UI.MoviesList.MoviesListFragmentDirections;
+import com.amiel.moviecenter.Utils.ImageUtils;
+import com.amiel.moviecenter.Utils.OnItemClickListener;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 
 import java.util.ArrayList;
@@ -33,9 +39,6 @@ public class MyPostsFragment extends Fragment {
 
     // Recycler View object
     RecyclerView list;
-
-    RatingBar postRating;
-    EditText postText;
 
     MyPostsViewModel myPostsViewModel;
 
@@ -51,8 +54,6 @@ public class MyPostsFragment extends Fragment {
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        postRating = view.findViewById(R.id.my_post_row_item_post_rating);
-        postText = view.findViewById(R.id.my_post_row_item_post_text);
         list = view.findViewById(R.id.my_posts_recycler_view);
         list.setHasFixedSize(true);
         myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
@@ -63,12 +64,20 @@ public class MyPostsFragment extends Fragment {
             List<MyPostRowItem> postsRowItems = new ArrayList<>();
             for(Map.Entry<Movie, List<Post>> currEntry : posts.entrySet()) {
                 for(Post currPost : currEntry.getValue()) {
-                    MyPostRowItem postRowItem = new MyPostRowItem(currPost.text, currPost.rating, currEntry.getKey().getName());
+                    MyPostRowItem postRowItem = new MyPostRowItem(currPost, currEntry.getKey());
                     postsRowItems.add(postRowItem);
                 }
-                adapter = new MyPostsRecyclerAdapter(postsRowItems);
-                list.setAdapter(adapter);
             }
+
+            adapter = new MyPostsRecyclerAdapter(postsRowItems);
+            list.setAdapter(adapter);
+
+            adapter.setOnItemClickListener((pos, postText) -> {
+                MyPostRowItem postRowItem = adapter.getItemAtPosition(pos);
+                Post updatedPost = postRowItem.post;
+                updatedPost.setText(postText);
+                myPostsViewModel.updatePost(updatedPost);
+            });
         });
 
         requireActivity().addMenuProvider(new MenuProvider() {
