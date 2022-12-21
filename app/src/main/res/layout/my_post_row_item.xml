@@ -6,7 +6,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardCornerRadius="25dp"
     app:cardElevation="5dp"
-    android:layout_margin="8dp">
+    android:layout_margin="8dp"
+    android:clickable="false">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -63,7 +64,6 @@
             android:inputType="textMultiLine"
             android:background="@null"
             android:gravity="center"
-            android:text="asifjhasdflgjldksfgjlksdfglksdsadfgasdgdsfgdsfgfjlskdfgsldk;fgjlskdfjg"
             app:layout_constraintBottom_toBottomOf="@+id/my_post_row_item_post_image"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/my_post_row_item_post_image"

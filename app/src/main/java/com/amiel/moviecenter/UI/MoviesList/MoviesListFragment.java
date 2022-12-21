@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,6 +31,7 @@ import androidx.core.view.MenuProvider;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -51,6 +53,10 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
 import androidx.appcompat.widget.SearchView;
 
 import static android.app.Activity.RESULT_OK;
@@ -71,7 +77,7 @@ public class MoviesListFragment extends Fragment {
     ActivityResultLauncher<String[]> moviePosterResult;
     ActivityResultLauncher<String[]> movieImageResult;
 
-    private static final String BASE_IMDB_MOVIE_URL = "https://imdb-api.com/API/AdvancedSearch/k_4wqqdznf?title=%s&has=plot";
+    private static final String BASE_IMDB_MOVIE_URL = "https://imdb-api.com/API/AdvancedSearch/k_4wqqdznf?title=%s&title_type=feature,tv_movie&has=plot&release_date=,%s";
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
@@ -262,7 +268,9 @@ public class MoviesListFragment extends Fragment {
                         }
                     } else {
                         try {
-                            new GetMovieDataTask(moviePosterImageView, movieName, movieYear, moviesListViewModel, progressDialog).execute(String.format(BASE_IMDB_MOVIE_URL, movieName.getText().toString()));
+                            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                            String currentDate = df.format(Calendar.getInstance().getTime());
+                            new GetMovieDataTask(moviePosterImageView, movieName, movieYear, moviesListViewModel, progressDialog).execute(String.format(BASE_IMDB_MOVIE_URL, movieName.getText().toString(), currentDate));
                         } catch (Exception e) {
                             progressDialog.dismiss();
                             Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
@@ -333,20 +341,23 @@ public class MoviesListFragment extends Fragment {
                 progressDialog.show();
 
                 // If new movie - insert it
-                moviesListViewModel.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
-                    if(movie == null) {
-                        Movie newMovie = new Movie(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString().replaceAll("[^0-9]", "")), movieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(((BitmapDrawable) moviePosterImageView.getDrawable()).getBitmap()), 0);
-                        moviesListViewModel.insertMovie(newMovie).observe(getViewLifecycleOwner(), ids -> {
-                            final float rating = newMovie.getRating();
-                            final String text = movieExperienceText.getText().toString();
-                            final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImageImageView.getDrawable()).getBitmap());
-                            moviesListViewModel.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
-                                // Insert new post
-                                Post newPost = new Post(text, ids[0], rating, image, user.getId(), 0); // ID is 0 because were not setting it, it's used just for retrieval
-                                moviesListViewModel.insertPost(newPost);
-                            });
+                boolean isExist = adapter.originalData.stream().anyMatch(currMovie -> currMovie.getName().equals(movieName.getText().toString()) && currMovie.getYear() == Integer.parseInt(movieYear.getText().toString()));
+                if(!isExist) {
+                    Movie newMovie = new Movie(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString().replaceAll("[^0-9]", "")), movieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(((BitmapDrawable) moviePosterImageView.getDrawable()).getBitmap()), 0);
+                    moviesListViewModel.insertMovie(newMovie).observe(getViewLifecycleOwner(), ids -> {
+                        final float rating = newMovie.getRating();
+                        final String text = movieExperienceText.getText().toString();
+                        final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImageImageView.getDrawable()).getBitmap());
+                        moviesListViewModel.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
+                            // Insert new post
+                            Post newPost = new Post(text, ids[0], rating, image, user.getId(), 0); // ID is 0 because were not setting it, it's used just for retrieval
+                            moviesListViewModel.insertPost(newPost);
                         });
-                    } else {
+                        builder.dismiss();
+                        progressDialog.dismiss();
+                    });
+                } else {
+                    moviesListViewModel.getMovieByNameAndYear(movieName.getText().toString(), Integer.parseInt(movieYear.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
                         final float rating = movie.getRating();
                         final String text = movieExperienceText.getText().toString();
                         final byte[] image = ImageUtils.getBytes(((BitmapDrawable) movieImageImageView.getDrawable()).getBitmap());
@@ -361,11 +372,11 @@ public class MoviesListFragment extends Fragment {
                         moviesListViewModel.updateMovie(updatedMovie);
                         adapter.updateMovieRating(updatedMovie);
                         adapter.notifyDataSetChanged();
-                    }
 
-                    builder.dismiss();
-                    progressDialog.dismiss();
-                });
+                        builder.dismiss();
+                        progressDialog.dismiss();
+                    });
+                }
             }
         });
     }
