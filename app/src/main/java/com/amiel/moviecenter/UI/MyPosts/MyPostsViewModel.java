@@ -26,4 +26,8 @@ public class MyPostsViewModel extends AndroidViewModel {
     public LiveData<Map<Movie, List<Post>>> getPosts() {
         return posts;
     }
+
+    public void updatePost(Post updatedPost) {
+        mRepository.updatePostTask(updatedPost);
+    }
 }

@@ -1,15 +1,16 @@
 package com.amiel.moviecenter.UI.MyPosts;
 
+import com.amiel.moviecenter.DB.Model.Movie;
+import com.amiel.moviecenter.DB.Model.Post;
+
 public class MyPostRowItem {
 
-    public String postText;
-    public float rating;
-    public String postMovieName;
+    Post post;
+    Movie postMovie;
 
-    public MyPostRowItem(String postText, float rating, String postMovieName)
+    public MyPostRowItem(Post post, Movie postMovie)
     {
-        this.postText = postText;
-        this.rating = rating;
-        this.postMovieName = postMovieName;
+        this.post = post;
+        this.postMovie = postMovie;
     }
 }
