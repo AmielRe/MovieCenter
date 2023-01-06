@@ -1,6 +1,5 @@
 package com.amiel.moviecenter.UI.MyPosts;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -8,27 +7,20 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import java.util.Map;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.Navigation;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.Model.Post;
-import com.amiel.moviecenter.UI.MoviesList.MoviesListFragmentDirections;
-import com.amiel.moviecenter.Utils.ImageUtils;
-import com.amiel.moviecenter.Utils.OnItemClickListener;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
+import com.amiel.moviecenter.databinding.MyPostsFragmentBinding;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,29 +29,26 @@ public class MyPostsFragment extends Fragment {
 
     MyPostsRecyclerAdapter adapter;
 
-    // Recycler View object
-    RecyclerView list;
-
     MyPostsViewModel myPostsViewModel;
+    MyPostsFragmentBinding binding;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        // Defines the xml file for the fragment
-        return inflater.inflate(R.layout.my_posts_fragment, parent, false);
+        binding = MyPostsFragmentBinding.inflate(inflater, parent, false);
+        return binding.getRoot();
     }
 
     // This event is triggered soon after onCreateView().
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        list = view.findViewById(R.id.my_posts_recycler_view);
-        list.setHasFixedSize(true);
+        binding.myPostsRecyclerView.setHasFixedSize(true);
         myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
 
         // Set adapter to recycler view
-        list.setLayoutManager(new LinearLayoutManager(requireActivity()));
+        binding.myPostsRecyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
         myPostsViewModel.getPosts().observe(getViewLifecycleOwner(), posts -> {
             List<MyPostRowItem> postsRowItems = new ArrayList<>();
             for(Map.Entry<Movie, List<Post>> currEntry : posts.entrySet()) {
@@ -70,7 +59,7 @@ public class MyPostsFragment extends Fragment {
             }
 
             adapter = new MyPostsRecyclerAdapter(postsRowItems);
-            list.setAdapter(adapter);
+            binding.myPostsRecyclerView.setAdapter(adapter);
 
             adapter.setOnItemClickListener((pos, postText) -> {
                 MyPostRowItem postRowItem = adapter.getItemAtPosition(pos);

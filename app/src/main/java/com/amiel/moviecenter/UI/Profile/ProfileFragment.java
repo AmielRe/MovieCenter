@@ -33,6 +33,7 @@ import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.PermissionHelper;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
+import com.amiel.moviecenter.databinding.ProfileFragmentBinding;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -45,19 +46,16 @@ import static android.app.Activity.RESULT_OK;
 
 public class ProfileFragment extends Fragment {
 
+    ProfileFragmentBinding binding;
     ProfileViewModel profileViewModel;
-    TextInputEditText emailEditText;
-    TextInputEditText usernameEditText;
-    TextInputLayout emailInputLayout;
-    TextInputLayout usernameInputLayout;
-    ImageView profileImageButton;
-    Button saveDetailsButton;
     ActivityResultLauncher<String[]> cameraResult;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+        binding = ProfileFragmentBinding.inflate(inflater, parent, false);
+
         cameraResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
@@ -65,20 +63,13 @@ public class ProfileFragment extends Fragment {
             }
         });
 
-        // Defines the xml file for the fragment
-        return inflater.inflate(R.layout.profile_fragment, parent, false);
+        return binding.getRoot();
     }
 
     // This event is triggered soon after onCreateView().
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        emailInputLayout = view.findViewById(R.id.profile_fragment_email_input_layout);
-        emailEditText = view.findViewById(R.id.profile_fragment_email_edit_text);
-        usernameInputLayout = view.findViewById(R.id.profile_fragment_username_input_layout);
-        usernameEditText = view.findViewById(R.id.profile_fragment_username_edit_text);
-        profileImageButton = view.findViewById(R.id.profile_fragment_image);
-        saveDetailsButton = view.findViewById(R.id.profile_fragment_save_button);
         String email = FirebaseAuthHandler.getInstance().getCurrentUserEmail();
         profileViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), email)).get(ProfileViewModel.class);
 
@@ -98,22 +89,22 @@ public class ProfileFragment extends Fragment {
         });
 
         profileViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
-            emailEditText.setText(email);
-            usernameEditText.setText(user.username);
-            usernameEditText.setSelection(usernameEditText.getText().length());
+            binding.profileFragmentEmailEditText.setText(email);
+            binding.profileFragmentUsernameEditText.setText(user.username);
+            binding.profileFragmentUsernameEditText.setSelection(binding.profileFragmentUsernameEditText.getText().length());
             Bitmap profileBitmap = ImageUtils.getBitmap(user.profileImage);
             if(profileBitmap != null) {
-                profileImageButton.setImageBitmap(ImageUtils.getBitmap(user.profileImage));
+                binding.profileFragmentImage.setImageBitmap(ImageUtils.getBitmap(user.profileImage));
             }
         });
 
-        profileImageButton.setOnClickListener(v -> selectImage());
+        binding.profileFragmentImage.setOnClickListener(v -> selectImage());
 
-        saveDetailsButton.setOnClickListener(v -> {
+        binding.profileFragmentSaveButton.setOnClickListener(v -> {
             try {
                 User updatedUser = profileViewModel.getUser().getValue();
-                updatedUser.setUsername(usernameEditText.getText().toString());
-                updatedUser.setProfileImage(ImageUtils.getBytes(((BitmapDrawable)profileImageButton.getDrawable()).getBitmap()));
+                updatedUser.setUsername(binding.profileFragmentUsernameEditText.getText().toString());
+                updatedUser.setProfileImage(ImageUtils.getBytes(((BitmapDrawable)binding.profileFragmentImage.getDrawable()).getBitmap()));
                 profileViewModel.updateUser(updatedUser);
             } catch(Exception e) {
                 Toast.makeText(requireActivity(), "Failed to save details...", Toast.LENGTH_SHORT).show();
@@ -154,7 +145,7 @@ public class ProfileFragment extends Fragment {
                     Uri selectedImage = result.getData().getData();
                     try {
                         Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), selectedImage);
-                        profileImageButton.setImageBitmap(res);
+                        binding.profileFragmentImage.setImageBitmap(res);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -176,7 +167,7 @@ public class ProfileFragment extends Fragment {
                     }
                     try {
                         Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), FileProvider.getUriForFile(getContext(), BuildConfig.APPLICATION_ID + ".provider", f));
-                        profileImageButton.setImageBitmap(res);
+                        binding.profileFragmentImage.setImageBitmap(res);
                         String path = android.os.Environment
                                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
                                 + File.separator
