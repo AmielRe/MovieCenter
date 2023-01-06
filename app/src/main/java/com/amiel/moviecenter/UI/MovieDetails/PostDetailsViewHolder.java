@@ -12,28 +12,24 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.amiel.moviecenter.Utils.OnItemClickListener;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.Utils.ImageUtils;
+import com.amiel.moviecenter.databinding.MoviePostRowItemBinding;
 
 class PostDetailsViewHolder extends RecyclerView.ViewHolder{
-    TextView username;
-    TextView postText;
-    ImageView userImage;
-    RatingBar rating;
+
+    MoviePostRowItemBinding binding;
 
     public PostDetailsViewHolder(@NonNull View itemView, OnItemClickListener listener) {
         super(itemView);
-        username = itemView.findViewById(R.id.movie_post_row_item_user_name);
-        postText = itemView.findViewById(R.id.movie_post_row_item_post_text);
-        userImage = itemView.findViewById(R.id.movie_post_row_item_user_image);
-        rating = itemView.findViewById(R.id.movie_post_row_item_post_rating);
+        binding = MoviePostRowItemBinding.bind(itemView);
     }
 
     public void bind(PostDetailsItem post, int pos) {
-        this.username.setText(itemView.getContext().getString(R.string.username, post.username));
-        this.postText.setText(post.postText);
-        this.rating.setRating(post.rating);
+        binding.moviePostRowItemUserName.setText(itemView.getContext().getString(R.string.username, post.username));
+        binding.moviePostRowItemPostText.setText(post.postText);
+        binding.moviePostRowItemPostRating.setRating(post.rating);
         Bitmap userImageBitmap = ImageUtils.getBitmap(post.userImage);
         if(userImageBitmap != null) {
-            this.userImage.setImageBitmap(userImageBitmap);
+            binding.moviePostRowItemUserImage.setImageBitmap(userImageBitmap);
         }
     }
 }
