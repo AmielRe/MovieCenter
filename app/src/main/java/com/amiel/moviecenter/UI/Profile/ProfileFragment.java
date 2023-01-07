@@ -13,8 +13,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -34,8 +32,6 @@ import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.PermissionHelper;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.amiel.moviecenter.databinding.ProfileFragmentBinding;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -106,6 +102,7 @@ public class ProfileFragment extends Fragment {
                 updatedUser.setUsername(binding.profileFragmentUsernameEditText.getText().toString());
                 updatedUser.setProfileImage(ImageUtils.getBytes(((BitmapDrawable)binding.profileFragmentImage.getDrawable()).getBitmap()));
                 profileViewModel.updateUser(updatedUser);
+                Toast.makeText(requireActivity(), "User details saved!", Toast.LENGTH_SHORT).show();
             } catch(Exception e) {
                 Toast.makeText(requireActivity(), "Failed to save details...", Toast.LENGTH_SHORT).show();
             }

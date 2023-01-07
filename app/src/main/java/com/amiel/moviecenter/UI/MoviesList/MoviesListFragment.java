@@ -324,7 +324,7 @@ public class MoviesListFragment extends Fragment {
                         final byte[] image = ImageUtils.getBytes(((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap());
                         moviesListViewModel.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
                             // Insert new post
-                            Post newPost = new Post(text, ids[0], rating, image, user.getId(), 0); // ID is 0 because were not setting it, it's used just for retrieval
+                            Post newPost = new Post(text, ids[0], rating, image, user.getId(), 0, Calendar.getInstance().getTime()); // ID is 0 because were not setting it, it's used just for retrieval
                             moviesListViewModel.insertPost(newPost);
                         });
                         builder.dismiss();
@@ -337,7 +337,7 @@ public class MoviesListFragment extends Fragment {
                         final byte[] image = ImageUtils.getBytes(((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap());
                         moviesListViewModel.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
                             // Insert new post
-                            Post newPost = new Post(text, movie.getId(), rating, image, user.getId(), 0); // ID is 0 because were not setting it, it's used just for retrieval
+                            Post newPost = new Post(text, movie.getId(), rating, image, user.getId(), 0, Calendar.getInstance().getTime()); // ID is 0 because were not setting it, it's used just for retrieval
                             moviesListViewModel.insertPost(newPost);
                         });
 
