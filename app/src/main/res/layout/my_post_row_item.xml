@@ -67,10 +67,15 @@
             app:layout_constraintBottom_toBottomOf="@+id/my_post_row_item_post_image"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/my_post_row_item_post_image"
-            app:layout_constraintTop_toTopOf="@+id/my_post_row_item_post_image"
-            android:focusable="false"
-            android:focusableInTouchMode="false"
-            android:enabled="false"
-            android:cursorVisible="false" />
+            app:layout_constraintTop_toTopOf="@+id/my_post_row_item_post_image"/>
+
+        <TextView
+            android:id="@+id/my_post_row_item_post_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/my_post_row_item_post_text"
+            app:layout_constraintStart_toEndOf="@+id/my_post_row_item_post_image" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
