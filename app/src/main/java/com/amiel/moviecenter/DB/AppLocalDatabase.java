@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.room.Database;
 import androidx.room.Room;
+import androidx.room.TypeConverters;
 
 import com.amiel.moviecenter.DB.DAO.MovieDao;
 import com.amiel.moviecenter.DB.DAO.PostDao;
@@ -11,9 +12,11 @@ import com.amiel.moviecenter.DB.DAO.UserDao;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
+import com.amiel.moviecenter.Utils.Converters;
 
 @Database(entities = {Movie.class, Post.class, User.class}, version = 1)
-public abstract class AppDatabase extends androidx.room.RoomDatabase {
+@TypeConverters({Converters.class})
+public abstract class AppLocalDatabase extends androidx.room.RoomDatabase {
 
     public static final String DATABASE_NAME = "MOVIE_CENTER.DB";
 
@@ -21,19 +24,20 @@ public abstract class AppDatabase extends androidx.room.RoomDatabase {
     public abstract MovieDao movieDao();
     public abstract PostDao postDao();
 
-    private static volatile AppDatabase instance;
+    private static volatile AppLocalDatabase instance;
 
-    static AppDatabase getInstance(final Context context){
+    static AppLocalDatabase getInstance(final Context context){
         if (instance == null) {
-            synchronized (AppDatabase.class) {
+            synchronized (AppLocalDatabase.class) {
                 if (instance == null) {
                     instance =
                             Room.databaseBuilder(context.getApplicationContext(),
-                                    AppDatabase.class,
-                                    DATABASE_NAME).build();
+                                    AppLocalDatabase.class,
+                                    DATABASE_NAME).fallbackToDestructiveMigration().build();
                 }
             }
         }
         return instance;
     }
 }
+

@@ -16,10 +16,10 @@ import java.util.Map;
 
 public class DatabaseRepository {
 
-    private final AppDatabase mDatabase;
+    private final AppLocalDatabase mDatabase;
 
     public DatabaseRepository(Context context) {
-        mDatabase = AppDatabase.getInstance(context);
+        mDatabase = AppLocalDatabase.getInstance(context);
     }
 
     public MutableLiveData<long[]> insertMovieTask(Movie movie){
