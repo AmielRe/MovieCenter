@@ -54,4 +54,5 @@
 
     <!-- Post -->
     <string name="username">@%1$s</string>
+    <string name="movie_name_and_year">%1$s (%2$d) </string>
 </resources>
