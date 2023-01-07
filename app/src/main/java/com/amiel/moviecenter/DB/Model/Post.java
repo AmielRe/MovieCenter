@@ -6,6 +6,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import java.util.Date;
+
 @Entity(tableName = "Posts")
 public class Post {
 
@@ -33,7 +35,11 @@ public class Post {
     @ColumnInfo(name = "userId")
     public long userID;
 
-    public Post(String text, long movieID, float rating, byte[] image, long userID, long id)
+    @NonNull
+    @ColumnInfo(name = "postDate")
+    public Date postDate;
+
+    public Post(String text, long movieID, float rating, byte[] image, long userID, long id, Date postDate)
     {
         this.text = text;
         this.movieID = movieID;
@@ -41,6 +47,7 @@ public class Post {
         this.image = image;
         this.id = id;
         this.userID = userID;
+        this.postDate = postDate;
     }
 
     @Ignore
@@ -98,5 +105,14 @@ public class Post {
 
     public void setImage(byte[] image) {
         this.image = image;
+    }
+
+    @NonNull
+    public Date getPostDate() {
+        return postDate;
+    }
+
+    public void setPostDate(@NonNull Date postDate) {
+        this.postDate = postDate;
     }
 }
