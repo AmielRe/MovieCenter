@@ -53,7 +53,7 @@ public class MovieDetailsFragment extends Fragment {
             List<PostDetailsItem> postsRowItems = new ArrayList<>();
             for(Map.Entry<User, List<Post>> currEntry : postsMap.entrySet()) {
                 for(Post currPost : currEntry.getValue()) {
-                    postsRowItems.add(new PostDetailsItem(currEntry.getKey().getUsername(), currPost.getText(), currEntry.getKey().getProfileImage(), currPost.getRating()));
+                    postsRowItems.add(new PostDetailsItem(currEntry.getKey().getUsername(), currPost.getText(), currEntry.getKey().getProfileImage(), currPost.getRating(), currPost.getPostDate(), currPost.getImage()));
                 }
                 adapter = new PostDetailsRecyclerAdapter(postsRowItems);
                 binding.movieDetailsRecyclerView.setAdapter(adapter);
