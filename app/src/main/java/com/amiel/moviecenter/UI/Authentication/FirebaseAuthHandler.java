@@ -6,6 +6,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 
@@ -81,7 +82,7 @@ public class FirebaseAuthHandler {
                         // Sign in success, update UI with the signed-in user's information
                         FirebaseUser user = mAuth.getCurrentUser();
 
-                        byte[] userProfileImage = ImageUtils.getBytes(((BitmapDrawable)context.getDrawable(R.drawable.default_profile_image)).getBitmap());
+                        byte[] userProfileImage = ImageUtils.getBytes(((BitmapDrawable)AppCompatResources.getDrawable(context, R.drawable.default_profile_image)).getBitmap());
                         User newUser = new User(username, email, userProfileImage, user.getUid());
                         db.insertUserTask(newUser);
 
