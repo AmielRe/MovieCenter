@@ -166,11 +166,8 @@ public class SignUpFragment extends Fragment {
                                                 // Email doesn't already exist
                                                 binding.signUpEmailEdittext.setError(null);
 
-                                                // ID is 0 because were not setting it, it's used just for retrieval
-                                                User newUser = new User(binding.signUpUsernameEdittext.getText().toString(), binding.signUpEmailEdittext.getText().toString(), ImageUtils.getBytes(((BitmapDrawable) ContextCompat.getDrawable(requireActivity(),R.drawable.default_profile_image)).getBitmap()), 0);
-                                                db.insertUserTask(newUser);
                                                 NavController navController = Navigation.findNavController(requireActivity(), view.getId());
-                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(binding.signUpEmailEdittext.getText().toString(), binding.signUpPasswordEdittext.getText().toString(), requireActivity(), navController);
+                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(binding.signUpUsernameEdittext.getText().toString(), binding.signUpEmailEdittext.getText().toString(), binding.signUpPasswordEdittext.getText().toString(), requireActivity(), navController, db);
                                             } else {
                                                 // Email already exists
                                                 binding.signUpEmailEdittext.setError(getString(R.string.error_email_already_in_use));

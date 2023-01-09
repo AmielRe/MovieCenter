@@ -2,6 +2,7 @@ package com.amiel.moviecenter.UI.Authentication.LoginOptions;
 
 import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,12 +22,15 @@ import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
+import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.databinding.LoginOptionsFragmentBinding;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+
+import java.io.IOException;
 
 public class LoginOptionsFragment extends Fragment {
 
@@ -60,9 +64,17 @@ public class LoginOptionsFragment extends Fragment {
                     try {
                         GoogleSignInAccount account = task.getResult(ApiException.class);
 
-                        // ID is 0 because were not setting it, it's used just for retrieval
-                        User newUser = new User(account.getDisplayName(), account.getEmail(), ImageUtils.getBytes(((BitmapDrawable)requireActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()), 0);
+                        byte[] userProfileImage = null;
+                        try {
+                            userProfileImage = ImageUtils.getBytes(ImageUtils.handleSamplingAndRotationBitmap(getActivity(), account.getPhotoUrl()));
+                        } catch(Exception ignored) {}
+
+                        User newUser = new User(account.getDisplayName(), account.getEmail(), userProfileImage, account.getId());
                         db.insertUserTask(newUser);
+                        if(userProfileImage != null) {
+                            FirebaseStorageHandler.getInstance().uploadImage(userProfileImage, account.getId());
+                        }
+
                         NavController navController = Navigation.findNavController(requireActivity(), getView().getId());
                         FirebaseAuthHandler.getInstance().signInWithGoogle(account, requireActivity(), navController);
                     } catch (ApiException e) {

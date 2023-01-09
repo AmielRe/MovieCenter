@@ -28,10 +28,12 @@ import com.amiel.moviecenter.BuildConfig;
 import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
+import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.PermissionHelper;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.amiel.moviecenter.databinding.ProfileFragmentBinding;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -88,10 +90,12 @@ public class ProfileFragment extends Fragment {
             binding.profileFragmentEmailEditText.setText(email);
             binding.profileFragmentUsernameEditText.setText(user.username);
             binding.profileFragmentUsernameEditText.setSelection(binding.profileFragmentUsernameEditText.getText().length());
-            Bitmap profileBitmap = ImageUtils.getBitmap(user.profileImage);
-            if(profileBitmap != null) {
-                binding.profileFragmentImage.setImageBitmap(ImageUtils.getBitmap(user.profileImage));
-            }
+            FirebaseStorageHandler.getInstance().downloadImage(user.getId(), bytes -> {
+                Bitmap profileBitmap = ImageUtils.getBitmap(bytes);
+                if(profileBitmap != null) {
+                    binding.profileFragmentImage.setImageBitmap(profileBitmap);
+                }
+            });
         });
 
         binding.profileFragmentImage.setOnClickListener(v -> selectImage());
@@ -99,8 +103,10 @@ public class ProfileFragment extends Fragment {
         binding.profileFragmentSaveButton.setOnClickListener(v -> {
             try {
                 User updatedUser = profileViewModel.getUser().getValue();
+                byte[] userUpdatedProfileImage = ImageUtils.getBytes(((BitmapDrawable)binding.profileFragmentImage.getDrawable()).getBitmap());
                 updatedUser.setUsername(binding.profileFragmentUsernameEditText.getText().toString());
-                updatedUser.setProfileImage(ImageUtils.getBytes(((BitmapDrawable)binding.profileFragmentImage.getDrawable()).getBitmap()));
+                updatedUser.setProfileImage(userUpdatedProfileImage);
+                FirebaseStorageHandler.getInstance().uploadImage(userUpdatedProfileImage, updatedUser.getId());
                 profileViewModel.updateUser(updatedUser);
                 Toast.makeText(requireActivity(), "User details saved!", Toast.LENGTH_SHORT).show();
             } catch(Exception e) {

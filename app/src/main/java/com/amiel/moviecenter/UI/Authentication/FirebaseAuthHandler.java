@@ -2,14 +2,21 @@ package com.amiel.moviecenter.UI.Authentication;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 
+import com.amiel.moviecenter.DB.DatabaseRepository;
+import com.amiel.moviecenter.DB.Model.User;
+import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.LoginOptions.LoginOptionsFragmentDirections;
 import com.amiel.moviecenter.UI.Authentication.SignUp.SignUpFragmentDirections;
 import com.amiel.moviecenter.UI.Authentication.SignIn.SignInFragmentDirections;
+import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
+import com.amiel.moviecenter.Utils.ImageUtils;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -57,7 +64,6 @@ public class FirebaseAuthHandler {
                 if (task.isSuccessful()) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d("TAG", "signInWithEmail:success");
-                    FirebaseUser user = mAuth.getCurrentUser();
                     navController.navigate(SignInFragmentDirections.actionSignInFragmentToMoviesListFragment());
                 } else {
                     // If sign in fails, display a message to the user.
@@ -68,12 +74,19 @@ public class FirebaseAuthHandler {
             });
     }
 
-    public void createUserWithEmailAndPassword(String email, String password, Activity context, NavController navController) {
+    public void createUserWithEmailAndPassword(String username, String email, String password, Activity context, NavController navController, DatabaseRepository db) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(context, task -> {
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
                         FirebaseUser user = mAuth.getCurrentUser();
+
+                        byte[] userProfileImage = ImageUtils.getBytes(((BitmapDrawable)context.getDrawable(R.drawable.default_profile_image)).getBitmap());
+                        User newUser = new User(username, email, userProfileImage, user.getUid());
+                        db.insertUserTask(newUser);
+
+                        FirebaseStorageHandler.getInstance().uploadImage(userProfileImage, newUser.getId());
+
                         navController.navigate(SignUpFragmentDirections.actionSignUpFragmentToMoviesListFragment());
                     } else {
                         // If sign in fails, display a message to the user.

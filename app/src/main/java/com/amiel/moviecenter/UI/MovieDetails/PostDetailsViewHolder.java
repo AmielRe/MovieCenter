@@ -9,10 +9,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
 import com.amiel.moviecenter.Utils.OnItemClickListener;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.databinding.MoviePostRowItemBinding;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.text.SimpleDateFormat;
 
@@ -31,10 +33,12 @@ class PostDetailsViewHolder extends RecyclerView.ViewHolder{
         binding.moviePostRowItemPostText.setText(post.postText);
         binding.moviePostRowItemPostRating.setRating(post.rating);
 
-        Bitmap userImageBitmap = ImageUtils.getBitmap(post.userImage);
-        if(userImageBitmap != null) {
-            binding.moviePostRowItemUserImage.setImageBitmap(userImageBitmap);
-        }
+        FirebaseStorageHandler.getInstance().downloadImage(post.userId, bytes -> {
+            Bitmap userImageBitmap = ImageUtils.getBitmap(bytes);
+            if(userImageBitmap != null) {
+                binding.moviePostRowItemUserImage.setImageBitmap(userImageBitmap);
+            }
+        });
 
         Bitmap postImageBitmap = ImageUtils.getBitmap(post.postImage);
         if(postImageBitmap != null) {
