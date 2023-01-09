@@ -33,13 +33,13 @@ public class Post {
 
     @NonNull
     @ColumnInfo(name = "userId")
-    public long userID;
+    public String userID;
 
     @NonNull
     @ColumnInfo(name = "postDate")
     public Date postDate;
 
-    public Post(String text, long movieID, float rating, byte[] image, long userID, long id, Date postDate)
+    public Post(String text, long movieID, float rating, byte[] image, String userID, long id, Date postDate)
     {
         this.text = text;
         this.movieID = movieID;
@@ -73,11 +73,11 @@ public class Post {
         this.movieID = movieID;
     }
 
-    public long getUserID() {
+    public String getUserID() {
         return userID;
     }
 
-    public void setUserID(long userID) {
+    public void setUserID(String userID) {
         this.userID = userID;
     }
 
