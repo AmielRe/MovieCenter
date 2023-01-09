@@ -17,9 +17,11 @@ import java.util.Map;
 public class DatabaseRepository {
 
     private final AppLocalDatabase mDatabase;
+    private final AppRemoteFirebaseDatabase remoteFirebaseDatabase;
 
     public DatabaseRepository(Context context) {
         mDatabase = AppLocalDatabase.getInstance(context);
+        remoteFirebaseDatabase = AppRemoteFirebaseDatabase.getInstance();
     }
 
     public MutableLiveData<long[]> insertMovieTask(Movie movie){
@@ -63,6 +65,7 @@ public class DatabaseRepository {
     }
 
     public MutableLiveData<long[]> insertUserTask(User user){
+        remoteFirebaseDatabase.addUser(user, () -> {});
         MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.userDao()).execute(user);
         return liveData;
