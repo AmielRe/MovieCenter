@@ -47,6 +47,7 @@ public class DatabaseRepository {
     }
 
     public MutableLiveData<long[]> insertPostTask(Post post){
+        remoteFirebaseDatabase.addPost(post, () -> {});
         MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.postDao()).execute(post);
         return liveData;

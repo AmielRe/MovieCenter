@@ -7,6 +7,8 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity(tableName = "Posts")
 public class Post {
@@ -21,7 +23,7 @@ public class Post {
 
     @NonNull
     @ColumnInfo(name = "movieId")
-    public long movieID;
+    public String movieID;
 
     @NonNull
     @ColumnInfo(name = "rating")
@@ -39,14 +41,22 @@ public class Post {
     @ColumnInfo(name = "postDate")
     public Date postDate;
 
-    public Post(String text, long movieID, float rating, byte[] image, String userID, long id, Date postDate)
+    public static final String TEXT = "text";
+    public static final String ID = "id";
+    public static final String MOVIE_ID = "movieID";
+    public static final String RATING = "rating";
+    public static final String USER_ID = "userID";
+    public static final String DATE = "postDate";
+    public static final String COLLECTION = "Posts";
+
+    public Post(String text, String movieID, float rating, byte[] image, String userID, long id, Date postDate)
     {
         this.text = text;
         this.movieID = movieID;
         this.rating = rating;
         this.image = image;
-        this.id = id;
         this.userID = userID;
+        this.id = id;
         this.postDate = postDate;
     }
 
@@ -65,11 +75,11 @@ public class Post {
     }
 
     @NonNull
-    public long getMovieID() {
+    public String getMovieID() {
         return movieID;
     }
 
-    public void setMovieID(@NonNull long movieID) {
+    public void setMovieID(@NonNull String movieID) {
         this.movieID = movieID;
     }
 
@@ -114,5 +124,26 @@ public class Post {
 
     public void setPostDate(@NonNull Date postDate) {
         this.postDate = postDate;
+    }
+
+    public static Post fromJson(Map<String,Object> json){
+        long id = (long)json.get(ID);
+        String movieId = (String)json.get(MOVIE_ID);
+        String userId = (String) json.get(USER_ID);
+        float rating = (float) json.get(RATING);
+        String text = (String) json.get(TEXT);
+        Date postDate = (Date) json.get(DATE);
+        return new Post(text, movieId, rating, null, userId, id, postDate);
+    }
+
+    public Map<String,Object> toJson(){
+        Map<String, Object> json = new HashMap<>();
+        json.put(ID, getId());
+        json.put(MOVIE_ID, getMovieID());
+        json.put(USER_ID, getUserID());
+        json.put(RATING, getRating());
+        json.put(TEXT, getText());
+        json.put(DATE, getPostDate());
+        return json;
     }
 }
