@@ -129,6 +129,16 @@ public class FirebaseAuthHandler {
         return email;
     }
 
+    public String getCurrentUserId() {
+        String id = "";
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            id = user.getUid();
+        }
+
+        return id;
+    }
+
     public void logoutCurrentUser() {
         mAuth.signOut();
     }

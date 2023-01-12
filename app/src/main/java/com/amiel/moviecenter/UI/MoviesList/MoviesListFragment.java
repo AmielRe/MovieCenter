@@ -37,6 +37,7 @@ import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.Utils.AsyncTasks.GetMovieDataTask;
 import com.amiel.moviecenter.Utils.DialogUtils;
+import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.PermissionHelper;
 import com.amiel.moviecenter.Utils.TextValidator;
@@ -322,11 +323,13 @@ public class MoviesListFragment extends Fragment {
                         final float rating = newMovie.getRating();
                         final String text = newPostBinding.newPostHowWasYourExperienceEditText.getText().toString();
                         final byte[] image = ImageUtils.getBytes(((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap());
-                        moviesListViewModel.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
-                            // Insert new post
-                            Post newPost = new Post(text, ids[0], rating, image, user.getId(), 0, Calendar.getInstance().getTime()); // ID is 0 because were not setting it, it's used just for retrieval
-                            moviesListViewModel.insertPost(newPost);
+
+                        // Insert new post
+                        Post newPost = new Post(text, String.valueOf(ids[0]), rating, image, FirebaseAuthHandler.getInstance().getCurrentUserId(), 0, Calendar.getInstance().getTime()); // ID is 0 because were not setting it, it's used just for retrieval
+                        moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> {
+                            FirebaseStorageHandler.getInstance().uploadImage(newPost.getImage(), String.valueOf(postIds[0]));
                         });
+
                         builder.dismiss();
                         progressDialog.dismiss();
                     });
@@ -335,10 +338,11 @@ public class MoviesListFragment extends Fragment {
                         final float rating = movie.getRating();
                         final String text = newPostBinding.newPostHowWasYourExperienceEditText.getText().toString();
                         final byte[] image = ImageUtils.getBytes(((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap());
-                        moviesListViewModel.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
-                            // Insert new post
-                            Post newPost = new Post(text, movie.getId(), rating, image, user.getId(), 0, Calendar.getInstance().getTime()); // ID is 0 because were not setting it, it's used just for retrieval
-                            moviesListViewModel.insertPost(newPost);
+
+                        // Insert new post
+                        Post newPost = new Post(text, String.valueOf(movie.getId()), rating, image, FirebaseAuthHandler.getInstance().getCurrentUserId(), 0, Calendar.getInstance().getTime()); // ID is 0 because were not setting it, it's used just for retrieval
+                        moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> {
+                            FirebaseStorageHandler.getInstance().uploadImage(newPost.getImage(), String.valueOf(postIds[0]));
                         });
 
                         // Update movie rating

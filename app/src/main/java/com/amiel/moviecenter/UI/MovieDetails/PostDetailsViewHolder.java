@@ -33,12 +33,10 @@ class PostDetailsViewHolder extends RecyclerView.ViewHolder{
         binding.moviePostRowItemPostText.setText(post.postText);
         binding.moviePostRowItemPostRating.setRating(post.rating);
 
-        FirebaseStorageHandler.getInstance().downloadImage(post.userId, bytes -> {
-            Bitmap userImageBitmap = ImageUtils.getBitmap(bytes);
-            if(userImageBitmap != null) {
-                binding.moviePostRowItemUserImage.setImageBitmap(userImageBitmap);
-            }
-        });
+        Bitmap userImageBitmap = ImageUtils.getBitmap(post.userImage);
+        if(userImageBitmap != null) {
+            binding.moviePostRowItemUserImage.setImageBitmap(userImageBitmap);
+        }
 
         Bitmap postImageBitmap = ImageUtils.getBitmap(post.postImage);
         if(postImageBitmap != null) {

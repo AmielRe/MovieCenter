@@ -14,6 +14,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -66,8 +67,10 @@ public class LoginOptionsFragment extends Fragment {
 
                         byte[] userProfileImage = null;
                         try {
-                            userProfileImage = ImageUtils.getBytes(ImageUtils.handleSamplingAndRotationBitmap(getActivity(), account.getPhotoUrl()));
-                        } catch(Exception ignored) {}
+                            userProfileImage = ImageUtils.getBytes(((BitmapDrawable) AppCompatResources.getDrawable(getActivity(), R.drawable.default_profile_image)).getBitmap());
+                        } catch(Exception ignored) {
+                            ignored.printStackTrace();
+                        }
 
                         User newUser = new User(account.getDisplayName(), account.getEmail(), userProfileImage, account.getId());
                         db.insertUserTask(newUser);

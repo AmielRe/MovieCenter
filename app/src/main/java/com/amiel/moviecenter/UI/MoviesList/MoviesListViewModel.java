@@ -53,8 +53,8 @@ public class MoviesListViewModel extends AndroidViewModel {
         return mRepository.getUserByEmail(email);
     }
 
-    public void insertPost(Post newPost) {
-        mRepository.insertPostTask(newPost);
+    public MutableLiveData<long[]> insertPost(Post newPost) {
+        return mRepository.insertPostTask(newPost);
     }
 
     public void updateMovie(Movie updatedMovie) {
