@@ -4,10 +4,8 @@ import android.Manifest;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -52,8 +50,6 @@ import java.util.Locale;
 
 import androidx.appcompat.widget.SearchView;
 
-import static android.app.Activity.RESULT_OK;
-
 public class MoviesListFragment extends Fragment {
 
     MoviesListViewModel moviesListViewModel;
@@ -81,14 +77,14 @@ public class MoviesListFragment extends Fragment {
         movieImageResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
-                galleryResultLauncherMovieImage.launch(ImageUtils.getGalleryIntent());
+                galleryResultLauncherMovieImage.launch("image/*");
             }
         });
 
         moviePosterResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
-                galleryResultLauncherMoviePoster.launch(ImageUtils.getGalleryIntent());
+                galleryResultLauncherMoviePoster.launch("image/*");
             }
         });
 
@@ -150,7 +146,7 @@ public class MoviesListFragment extends Fragment {
     // This event is triggered soon after onCreateView().
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         binding.mainRecyclerListMovies.setHasFixedSize(true);
         moviesListViewModel = new ViewModelProvider(this).get(MoviesListViewModel.class);
         progressDialog = DialogUtils.setProgressDialog(getContext(), "Loading...");
@@ -286,7 +282,7 @@ public class MoviesListFragment extends Fragment {
             if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
                 new PermissionHelper().startPermissionRequest(movieImageResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
             } else {
-                galleryResultLauncherMovieImage.launch(ImageUtils.getGalleryIntent());
+                galleryResultLauncherMovieImage.launch("image/*");
             }
         });
 
@@ -294,7 +290,7 @@ public class MoviesListFragment extends Fragment {
             if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
                 new PermissionHelper().startPermissionRequest(moviePosterResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
             } else {
-                galleryResultLauncherMoviePoster.launch(ImageUtils.getGalleryIntent());
+                galleryResultLauncherMoviePoster.launch("image/*");
             }
         });
 
@@ -349,7 +345,6 @@ public class MoviesListFragment extends Fragment {
                         Movie updatedMovie = new Movie(movie.getName(), movie.getYear(), (movie.getRating() + newPostBinding.newPostMovieRating.getRating()) / 2, movie.getPlot(), movie.getPoster(), movie.getId());
                         moviesListViewModel.updateMovie(updatedMovie);
                         adapter.updateMovieRating(updatedMovie);
-                        adapter.notifyDataSetChanged();
 
                         builder.dismiss();
                         progressDialog.dismiss();
@@ -359,39 +354,33 @@ public class MoviesListFragment extends Fragment {
         });
     }
 
-    private final ActivityResultLauncher<Intent> galleryResultLauncherMovieImage = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
+    private final ActivityResultLauncher<String> galleryResultLauncherMovieImage = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
             result -> {
-                if (result.getResultCode() == RESULT_OK
-                        && result.getData() != null) {
-                    Uri selectedImage = result.getData().getData();
+                if (result != null) {
                     try {
-                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), selectedImage);
+                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), result);
                         newPostBinding.newPostMovieImageImageView.setImageBitmap(res);
                         newPostBinding.newPostMovieImageImageView.setBackground(null);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-            }
-    );
+            });
 
-    private final ActivityResultLauncher<Intent> galleryResultLauncherMoviePoster = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
+    private final ActivityResultLauncher<String> galleryResultLauncherMoviePoster = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
             result -> {
-                if (result.getResultCode() == RESULT_OK
-                        && result.getData() != null) {
-                    Uri selectedImage = result.getData().getData();
+                if (result != null) {
                     try {
-                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), selectedImage);
+                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), result);
                         newPostBinding.newPostMoviePosterImageView.setImageBitmap(res);
                         newPostBinding.newPostMoviePosterImageView.setBackground(null);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-            }
-    );
+            });
 
     @Override
     public void onResume() {

@@ -47,7 +47,7 @@ public class DatabaseRepository {
     }
 
     public MutableLiveData<long[]> insertPostTask(Post post){
-        remoteFirebaseDatabase.addPost(post, () -> {});
+        remoteFirebaseDatabase.addPost(post, data -> {});
         MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.postDao()).execute(post);
         return liveData;
@@ -66,7 +66,7 @@ public class DatabaseRepository {
     }
 
     public MutableLiveData<long[]> insertUserTask(User user){
-        remoteFirebaseDatabase.addUser(user, () -> {});
+        remoteFirebaseDatabase.addUser(user, data -> {});
         MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.userDao()).execute(user);
         return liveData;

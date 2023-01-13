@@ -36,13 +36,13 @@ public class AppRemoteFirebaseDatabase {
         return instance;
     }
 
-    public void addUser(User newUser, AddUserListener listener) {
+    public void addUser(User newUser, GenericAddListener<Void> listener) {
         db.collection(User.COLLECTION).document(String.valueOf(newUser.getId())).set(newUser.toJson())
-                .addOnCompleteListener(task -> listener.onComplete());
+                .addOnCompleteListener(task -> listener.onComplete(null));
     }
 
-    public void addPost(Post newPost, AddPostListener listener) {
+    public void addPost(Post newPost, GenericAddListener<Void> listener) {
         db.collection(Post.COLLECTION).document(String.valueOf(newPost.getId())).set(newPost.toJson())
-                .addOnCompleteListener(task -> listener.onComplete());
+                .addOnCompleteListener(task -> listener.onComplete(null));
     }
 }
