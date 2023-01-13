@@ -20,10 +20,10 @@ public class PermissionHelper {
         if(fr != null && permissions != null) {
             for (String permission : permissions) {
                 if (fr.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
-                    return false;
+                    return true;
                 }
             }
         }
-        return true;
+        return false;
     }
 }
