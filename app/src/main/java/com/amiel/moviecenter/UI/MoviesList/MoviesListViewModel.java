@@ -60,4 +60,6 @@ public class MoviesListViewModel extends AndroidViewModel {
     public void updateMovie(Movie updatedMovie) {
         mRepository.updateMovieTask(updatedMovie);
     }
+
+    public void updatePost(Post updatedPost) { mRepository.updatePostTask(updatedPost); }
 }

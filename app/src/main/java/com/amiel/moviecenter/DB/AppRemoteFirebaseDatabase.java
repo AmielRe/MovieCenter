@@ -36,13 +36,23 @@ public class AppRemoteFirebaseDatabase {
         return instance;
     }
 
-    public void addUser(User newUser, GenericAddListener<Void> listener) {
+    public void addUser(User newUser, GenericListener<Void> listener) {
         db.collection(User.COLLECTION).document(String.valueOf(newUser.getId())).set(newUser.toJson())
                 .addOnCompleteListener(task -> listener.onComplete(null));
     }
 
-    public void addPost(Post newPost, GenericAddListener<Void> listener) {
+    public void updateUser(User updatedUser, GenericListener<Void> listener) {
+        db.collection(User.COLLECTION).document(String.valueOf(updatedUser.getId())).update(updatedUser.toJson())
+                .addOnCompleteListener(task -> listener.onComplete(null));
+    }
+
+    public void addPost(Post newPost, GenericListener<Void> listener) {
         db.collection(Post.COLLECTION).document(String.valueOf(newPost.getId())).set(newPost.toJson())
+                .addOnCompleteListener(task -> listener.onComplete(null));
+    }
+
+    public void updatePost(Post updatedPost, GenericListener<Void> listener) {
+        db.collection(Post.COLLECTION).document(String.valueOf(updatedPost.getId())).update(updatedPost.toJson())
                 .addOnCompleteListener(task -> listener.onComplete(null));
     }
 }

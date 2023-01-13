@@ -54,6 +54,7 @@ public class DatabaseRepository {
     }
 
     public void updatePostTask(Post post){
+        remoteFirebaseDatabase.updatePost(post, data -> {});
         new UpdateAsyncTask<>(mDatabase.postDao()).execute(post);
     }
 
@@ -73,6 +74,7 @@ public class DatabaseRepository {
     }
 
     public void updateUserTask(User user){
+        remoteFirebaseDatabase.updateUser(user, data -> {});
         new UpdateAsyncTask<>(mDatabase.userDao()).execute(user);
     }
 
