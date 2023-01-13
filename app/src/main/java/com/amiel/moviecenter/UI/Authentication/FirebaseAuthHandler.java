@@ -2,12 +2,12 @@ package com.amiel.moviecenter.UI.Authentication;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 
 import com.amiel.moviecenter.DB.DatabaseRepository;
@@ -82,11 +82,15 @@ public class FirebaseAuthHandler {
                         // Sign in success, update UI with the signed-in user's information
                         FirebaseUser user = mAuth.getCurrentUser();
 
-                        byte[] userProfileImage = ImageUtils.getBytes(((BitmapDrawable)AppCompatResources.getDrawable(context, R.drawable.default_profile_image)).getBitmap());
-                        User newUser = new User(username, email, userProfileImage, user.getUid());
-                        db.insertUserTask(newUser);
+                        Bitmap userImageBitmap = ((BitmapDrawable)AppCompatResources.getDrawable(context, R.drawable.default_profile_image)).getBitmap();
+                        User newUser = new User(username, email, ImageUtils.getBytes(userImageBitmap), user.getUid(), "");
 
-                        FirebaseStorageHandler.getInstance().uploadImage(userProfileImage, newUser.getId());
+                        FirebaseStorageHandler.getInstance().uploadUserImage(userImageBitmap, newUser.getId(), data -> {
+                            if (data != null) {
+                                newUser.setProfileImageUrl(data);
+                                db.insertUserTask(newUser);
+                            }
+                        });
 
                         navController.navigate(SignUpFragmentDirections.actionSignUpFragmentToMoviesListFragment());
                     } else {
@@ -105,10 +109,21 @@ public class FirebaseAuthHandler {
         mSignInClient = GoogleSignIn.getClient(context, gso);
     }
 
-    public void signInWithGoogle(GoogleSignInAccount acct, Activity context, NavController navController) {
+    public void signInWithGoogle(GoogleSignInAccount acct, Activity context, NavController navController, DatabaseRepository db) {
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
             .addOnSuccessListener(context, authResult -> {
+
+                Bitmap userImageBitmap = ((BitmapDrawable) AppCompatResources.getDrawable(context, R.drawable.default_profile_image)).getBitmap();
+                User newUser = new User(acct.getDisplayName(), acct.getEmail(), ImageUtils.getBytes(userImageBitmap), authResult.getUser().getUid(), "");
+
+                FirebaseStorageHandler.getInstance().uploadUserImage(userImageBitmap, newUser.getId(), data -> {
+                    if (data != null) {
+                        newUser.setProfileImageUrl(data);
+                        db.insertUserTask(newUser);
+                    }
+                });
+
                 navController.navigate(LoginOptionsFragmentDirections.actionLoginOptionsFragmentToMoviesListFragment());
             })
             .addOnFailureListener(context, e -> Toast.makeText(context, "Authentication failed.",

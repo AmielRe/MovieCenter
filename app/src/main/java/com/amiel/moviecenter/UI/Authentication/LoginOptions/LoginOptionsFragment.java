@@ -1,37 +1,28 @@
 package com.amiel.moviecenter.UI.Authentication.LoginOptions;
 
 import android.content.Intent;
-import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
-import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
-import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
-import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.databinding.LoginOptionsFragmentBinding;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
-
-import java.io.IOException;
 
 public class LoginOptionsFragment extends Fragment {
 
@@ -65,21 +56,8 @@ public class LoginOptionsFragment extends Fragment {
                     try {
                         GoogleSignInAccount account = task.getResult(ApiException.class);
 
-                        byte[] userProfileImage = null;
-                        try {
-                            userProfileImage = ImageUtils.getBytes(((BitmapDrawable) AppCompatResources.getDrawable(getActivity(), R.drawable.default_profile_image)).getBitmap());
-                        } catch(Exception ignored) {
-                            ignored.printStackTrace();
-                        }
-
-                        User newUser = new User(account.getDisplayName(), account.getEmail(), userProfileImage, account.getId());
-                        db.insertUserTask(newUser);
-                        if(userProfileImage != null) {
-                            FirebaseStorageHandler.getInstance().uploadImage(userProfileImage, account.getId());
-                        }
-
                         NavController navController = Navigation.findNavController(requireActivity(), getView().getId());
-                        FirebaseAuthHandler.getInstance().signInWithGoogle(account, requireActivity(), navController);
+                        FirebaseAuthHandler.getInstance().signInWithGoogle(account, requireActivity(), navController, db);
                     } catch (ApiException e) {
                         Log.w("TAG", "Google sign in failed", e);
                     }
