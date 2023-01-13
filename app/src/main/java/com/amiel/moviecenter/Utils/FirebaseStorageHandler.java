@@ -48,4 +48,8 @@ public class FirebaseStorageHandler {
     public void uploadPostImage(Bitmap image, String imageName, GenericListener<String> listener) {
         uploadImage(image, "posts/" + imageName, listener);
     }
+
+    public void uploadMovieImage(Bitmap image, String imageName, GenericListener<String> listener) {
+        uploadImage(image, "movies/" + imageName, listener);
+    }
 }

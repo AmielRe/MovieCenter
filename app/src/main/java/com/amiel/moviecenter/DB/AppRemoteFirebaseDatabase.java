@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.room.Room;
 
+import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -53,6 +54,16 @@ public class AppRemoteFirebaseDatabase {
 
     public void updatePost(Post updatedPost, GenericListener<Void> listener) {
         db.collection(Post.COLLECTION).document(String.valueOf(updatedPost.getId())).update(updatedPost.toJson())
+                .addOnCompleteListener(task -> listener.onComplete(null));
+    }
+
+    public void addMovie(Movie newMovie,GenericListener<Void> listener) {
+        db.collection(Movie.COLLECTION).document(String.valueOf(newMovie.getId())).set(newMovie.toJson())
+                .addOnCompleteListener(task -> listener.onComplete(null));
+    }
+
+    public void updateMovie(Movie updatedMovie,GenericListener<Void> listener) {
+        db.collection(Movie.COLLECTION).document(String.valueOf(updatedMovie.getId())).update(updatedMovie.toJson())
                 .addOnCompleteListener(task -> listener.onComplete(null));
     }
 }

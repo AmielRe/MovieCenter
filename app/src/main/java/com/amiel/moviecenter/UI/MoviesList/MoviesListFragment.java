@@ -29,6 +29,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.amiel.moviecenter.DB.GenericListener;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.Model.Movie;
@@ -314,16 +315,23 @@ public class MoviesListFragment extends Fragment {
                 // If new movie - insert it
                 boolean isExist = adapter.originalData.stream().anyMatch(currMovie -> currMovie.getName().equals(newPostBinding.newPostMovieNameEditText.getText().toString()) && currMovie.getYear() == Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString()));
                 if(!isExist) {
-                    Movie newMovie = new Movie(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString().replaceAll("[^0-9]", "")), newPostBinding.newPostMovieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(((BitmapDrawable) newPostBinding.newPostMoviePosterImageView.getDrawable()).getBitmap()), 0);
+                    final Bitmap movieImageBitmap = ((BitmapDrawable) newPostBinding.newPostMoviePosterImageView.getDrawable()).getBitmap();
+                    Movie newMovie = new Movie(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString().replaceAll("[^0-9]", "")), newPostBinding.newPostMovieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(movieImageBitmap), 0, "");
                     moviesListViewModel.insertMovie(newMovie).observe(getViewLifecycleOwner(), ids -> {
-                        final float rating = newMovie.getRating();
+                        FirebaseStorageHandler.getInstance().uploadMovieImage(movieImageBitmap, String.valueOf(ids[0]), data -> {
+                            if(data != null) {
+                                newMovie.setPosterUrl(data);
+                                newMovie.setId(ids[0]);
+                            }
+                        });
+
                         final String text = newPostBinding.newPostHowWasYourExperienceEditText.getText().toString();
-                        final Bitmap imageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
+                        final Bitmap postImageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, String.valueOf(ids[0]), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), 0, Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
+                        Post newPost = new Post(text, String.valueOf(ids[0]), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), 0, Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
                         moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> {
-                            FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, String.valueOf(postIds[0]), data -> {
+                            FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, String.valueOf(postIds[0]), data -> {
                                 if (data != null) {
                                     newPost.setPostImageUrl(data);
                                     newPost.setId(postIds[0]);
@@ -354,9 +362,9 @@ public class MoviesListFragment extends Fragment {
                         });
 
                         // Update movie rating
-                        Movie updatedMovie = new Movie(movie.getName(), movie.getYear(), (movie.getRating() + newPostBinding.newPostMovieRating.getRating()) / 2, movie.getPlot(), movie.getPoster(), movie.getId());
-                        moviesListViewModel.updateMovie(updatedMovie);
-                        adapter.updateMovieRating(updatedMovie);
+                        movie.setRating((movie.getRating() + newPostBinding.newPostMovieRating.getRating()) / 2);
+                        moviesListViewModel.updateMovie(movie);
+                        adapter.updateMovieRating(movie);
 
                         builder.dismiss();
                         progressDialog.dismiss();

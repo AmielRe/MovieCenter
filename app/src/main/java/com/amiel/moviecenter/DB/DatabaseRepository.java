@@ -25,12 +25,14 @@ public class DatabaseRepository {
     }
 
     public MutableLiveData<long[]> insertMovieTask(Movie movie){
+        remoteFirebaseDatabase.addMovie(movie, data -> {});
         MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.movieDao()).execute(movie);
         return liveData;
     }
 
     public void updateMovieTask(Movie movie){
+        remoteFirebaseDatabase.updateMovie(movie, data -> {});
         new UpdateAsyncTask<>(mDatabase.movieDao()).execute(movie);
     }
 
