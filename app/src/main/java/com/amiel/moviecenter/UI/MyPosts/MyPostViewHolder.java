@@ -10,6 +10,7 @@ import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.OnMyPostRowItemClickListener;
 import com.amiel.moviecenter.databinding.MyPostRowItemBinding;
+import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -34,7 +35,7 @@ public class MyPostViewHolder extends RecyclerView.ViewHolder{
         binding.myPostRowItemPostRating.setRating(post.post.getRating());
         binding.myPostRowItemPostText.setText(post.post.getText());
         binding.myPostRowItemMovieNameAndYear.setText(this.itemView.getContext().getString(R.string.movie_name_and_year, post.postMovie.getName(), post.postMovie.getYear()));
-        binding.myPostRowItemPostImage.setImageBitmap(ImageUtils.getBitmap(post.post.getImage()));
+        Picasso.get().load(post.post.postImageUrl).placeholder(R.drawable.default_post_placeholder).into(binding.myPostRowItemPostImage);
         binding.myPostRowItemPostDate.setText(new SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault()).format(post.post.postDate));
     }
 

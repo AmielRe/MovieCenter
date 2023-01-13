@@ -30,6 +30,7 @@ import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.PermissionHelper;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.amiel.moviecenter.databinding.ProfileFragmentBinding;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 
@@ -81,12 +82,7 @@ public class ProfileFragment extends Fragment {
             binding.profileFragmentEmailEditText.setText(email);
             binding.profileFragmentUsernameEditText.setText(user.username);
             binding.profileFragmentUsernameEditText.setSelection(binding.profileFragmentUsernameEditText.getText().length());
-            FirebaseStorageHandler.getInstance().downloadImage(user.getId(), bytes -> {
-                Bitmap profileBitmap = ImageUtils.getBitmap(bytes);
-                if(profileBitmap != null) {
-                    binding.profileFragmentImage.setImageBitmap(profileBitmap);
-                }
-            });
+            Picasso.get().load(user.getProfileImageUrl()).placeholder(R.drawable.default_profile_image).into(binding.profileFragmentImage);
         });
 
         binding.profileFragmentImage.setOnClickListener(v -> selectImage());
@@ -97,9 +93,13 @@ public class ProfileFragment extends Fragment {
                 byte[] userUpdatedProfileImage = ImageUtils.getBytes(((BitmapDrawable)binding.profileFragmentImage.getDrawable()).getBitmap());
                 updatedUser.setUsername(binding.profileFragmentUsernameEditText.getText().toString());
                 updatedUser.setProfileImage(userUpdatedProfileImage);
-                FirebaseStorageHandler.getInstance().uploadImage(userUpdatedProfileImage, updatedUser.getId());
-                profileViewModel.updateUser(updatedUser);
-                Toast.makeText(requireActivity(), "User details saved!", Toast.LENGTH_SHORT).show();
+                FirebaseStorageHandler.getInstance().uploadUserImage(((BitmapDrawable)binding.profileFragmentImage.getDrawable()).getBitmap(), updatedUser.getId(), data -> {
+                    if(data != null) {
+                        updatedUser.setProfileImageUrl(data);
+                    }
+                    profileViewModel.updateUser(updatedUser);
+                    Toast.makeText(requireActivity(), "User details saved!", Toast.LENGTH_SHORT).show();
+                });
             } catch(Exception e) {
                 Toast.makeText(requireActivity(), "Failed to save details...", Toast.LENGTH_SHORT).show();
             }

@@ -318,12 +318,18 @@ public class MoviesListFragment extends Fragment {
                     moviesListViewModel.insertMovie(newMovie).observe(getViewLifecycleOwner(), ids -> {
                         final float rating = newMovie.getRating();
                         final String text = newPostBinding.newPostHowWasYourExperienceEditText.getText().toString();
-                        final byte[] image = ImageUtils.getBytes(((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap());
+                        final Bitmap imageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, String.valueOf(ids[0]), rating, image, FirebaseAuthHandler.getInstance().getCurrentUserId(), 0, Calendar.getInstance().getTime()); // ID is 0 because were not setting it, it's used just for retrieval
+                        Post newPost = new Post(text, String.valueOf(ids[0]), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), 0, Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
                         moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> {
-                            FirebaseStorageHandler.getInstance().uploadImage(newPost.getImage(), String.valueOf(postIds[0]));
+                            FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, String.valueOf(postIds[0]), data -> {
+                                if (data != null) {
+                                    newPost.setPostImageUrl(data);
+                                    newPost.setId(postIds[0]);
+                                    moviesListViewModel.updatePost(newPost);
+                                }
+                            });
                         });
 
                         builder.dismiss();
@@ -333,12 +339,18 @@ public class MoviesListFragment extends Fragment {
                     moviesListViewModel.getMovieByNameAndYear(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
                         final float rating = movie.getRating();
                         final String text = newPostBinding.newPostHowWasYourExperienceEditText.getText().toString();
-                        final byte[] image = ImageUtils.getBytes(((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap());
+                        final Bitmap imageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, String.valueOf(movie.getId()), rating, image, FirebaseAuthHandler.getInstance().getCurrentUserId(), 0, Calendar.getInstance().getTime()); // ID is 0 because were not setting it, it's used just for retrieval
+                        Post newPost = new Post(text, String.valueOf(movie.getId()), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), 0, Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
                         moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> {
-                            FirebaseStorageHandler.getInstance().uploadImage(newPost.getImage(), String.valueOf(postIds[0]));
+                            FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, String.valueOf(postIds[0]), data -> {
+                                if (data != null) {
+                                    newPost.setPostImageUrl(data);
+                                    newPost.setId(postIds[0]);
+                                    moviesListViewModel.updatePost(newPost);
+                                }
+                            });
                         });
 
                         // Update movie rating

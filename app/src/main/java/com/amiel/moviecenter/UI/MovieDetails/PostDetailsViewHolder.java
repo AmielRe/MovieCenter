@@ -15,6 +15,7 @@ import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.databinding.MoviePostRowItemBinding;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 
@@ -28,19 +29,11 @@ class PostDetailsViewHolder extends RecyclerView.ViewHolder{
     }
 
     public void bind(PostDetailsItem post, int pos) {
-        binding.moviePostRowItemPostDate.setText(new SimpleDateFormat("dd-MM-yyyy HH:mm").format(post.postDate));
-        binding.moviePostRowItemUserName.setText(itemView.getContext().getString(R.string.username, post.username));
-        binding.moviePostRowItemPostText.setText(post.postText);
-        binding.moviePostRowItemPostRating.setRating(post.rating);
-
-        Bitmap userImageBitmap = ImageUtils.getBitmap(post.userImage);
-        if(userImageBitmap != null) {
-            binding.moviePostRowItemUserImage.setImageBitmap(userImageBitmap);
-        }
-
-        Bitmap postImageBitmap = ImageUtils.getBitmap(post.postImage);
-        if(postImageBitmap != null) {
-            binding.moviePostRowItemPostImage.setImageBitmap(postImageBitmap);
-        }
+        binding.moviePostRowItemPostDate.setText(new SimpleDateFormat("dd-MM-yyyy HH:mm").format(post.post.getPostDate()));
+        binding.moviePostRowItemUserName.setText(itemView.getContext().getString(R.string.username, post.postUser.getUsername()));
+        binding.moviePostRowItemPostText.setText(post.post.getText());
+        binding.moviePostRowItemPostRating.setRating(post.post.getRating());
+        Picasso.get().load(post.postUser.getProfileImageUrl()).placeholder(R.drawable.default_profile_image).into(binding.moviePostRowItemUserImage);
+        Picasso.get().load(post.post.getPostImageUrl()).placeholder(R.drawable.default_post_placeholder).into(binding.moviePostRowItemPostImage);
     }
 }
