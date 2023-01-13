@@ -17,7 +17,7 @@ public class MovieDetailsViewModel extends AndroidViewModel {
     private final LiveData<Map<User, List<Post>>> posts;
     DatabaseRepository mRepository;
 
-    public MovieDetailsViewModel(Application app, long movieId) {
+    public MovieDetailsViewModel(Application app, String movieId) {
         super(app);
         mRepository = new DatabaseRepository(app);
         posts = mRepository.getAllPostsForMovieWithUser(movieId);

@@ -18,7 +18,7 @@ public interface PostDao extends BaseDao<Post>{
             "JOIN Posts ON Posts.userId = Users.id " +
             "INNER JOIN Movies ON Posts.movieId = Movies.id " +
             "WHERE Posts.movieId LIKE :movieId")
-    LiveData<Map<User, List<Post>>> getAllPostsForMovieWithUser(long movieId);
+    LiveData<Map<User, List<Post>>> getAllPostsForMovieWithUser(String movieId);
 
     @Query("SELECT * FROM Movies " +
             "JOIN Posts ON Posts.movieId = Movies.id " +

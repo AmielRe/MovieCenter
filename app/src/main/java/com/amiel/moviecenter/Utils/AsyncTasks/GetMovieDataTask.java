@@ -59,7 +59,7 @@ public class GetMovieDataTask extends AsyncTask<String, Void, Pair<Movie, String
                 String moviePosterUrl = resultsJSON.getString("image");
                 String title = resultsJSON.getString("title");
                 moviesListViewModel.setNewMoviePlot(plot);
-                Movie movie = new Movie(title, Integer.parseInt(year), 0, plot, null, 0);
+                Movie movie = new Movie(title, Integer.parseInt(year), 0, plot, null, "", "");
 
                 returnValue = Pair.create(movie, moviePosterUrl);
             } catch (Exception e) {

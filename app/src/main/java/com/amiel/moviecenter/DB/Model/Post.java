@@ -13,9 +13,10 @@ import java.util.Map;
 @Entity(tableName = "Posts")
 public class Post {
 
-    @PrimaryKey(autoGenerate = true)
+    @NonNull
+    @PrimaryKey
     @ColumnInfo(name = "id")
-    public long id;
+    public String id;
 
     @NonNull
     @ColumnInfo(name = "text")
@@ -54,7 +55,7 @@ public class Post {
     public static final String POST_IMAGE_URL = "postImageUrl";
     public static final String COLLECTION = "Posts";
 
-    public Post(String text, String movieID, float rating, byte[] image, String userID, long id, Date postDate, String postImageUrl)
+    public Post(String text, String movieID, float rating, byte[] image, String userID, String id, Date postDate, String postImageUrl)
     {
         this.text = text;
         this.movieID = movieID;
@@ -81,11 +82,11 @@ public class Post {
         this.postImageUrl = postImageUrl;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -142,7 +143,7 @@ public class Post {
     }
 
     public static Post fromJson(Map<String,Object> json){
-        long id = (long)json.get(ID);
+        String id = (String)json.get(ID);
         String movieId = (String)json.get(MOVIE_ID);
         String userId = (String) json.get(USER_ID);
         float rating = (float) json.get(RATING);

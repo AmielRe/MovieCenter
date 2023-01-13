@@ -12,9 +12,10 @@ import java.util.Map;
 @Entity(tableName = "Movies")
 public class Movie {
 
-    @PrimaryKey(autoGenerate = true)
+    @NonNull
+    @PrimaryKey
     @ColumnInfo(name = "id")
-    private long id;
+    private String id;
 
     @NonNull
     @ColumnInfo(name = "name")
@@ -22,7 +23,7 @@ public class Movie {
 
     @NonNull
     @ColumnInfo(name = "year")
-    private int year;
+    private long year;
 
     @NonNull
     @ColumnInfo(name = "rating")
@@ -48,7 +49,7 @@ public class Movie {
     public static final String POSTER_URL = "posterUrl";
     public static final String COLLECTION = "Movies";
 
-    public Movie(String name, int year, float rating, String plot, byte[] poster, long id, String posterUrl)
+    public Movie(String name, long year, float rating, String plot, byte[] poster, String id, String posterUrl)
     {
         this.name = name;
         this.year = year;
@@ -73,11 +74,11 @@ public class Movie {
         this.posterUrl = posterUrl;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -90,11 +91,11 @@ public class Movie {
         this.name = name;
     }
 
-    public int getYear() {
+    public long getYear() {
         return year;
     }
 
-    public void setYear(int year) {
+    public void setYear(long year) {
         this.year = year;
     }
 
@@ -125,10 +126,10 @@ public class Movie {
     }
 
     public static Movie fromJson(Map<String,Object> json){
-        long id = (long) json.get(ID);
+        String id = (String) json.get(ID);
         String name = (String)json.get(NAME);
-        int year = (int) json.get(YEAR);
-        float rating = (float) json.get(RATING);
+        long year = (long) json.get(YEAR);
+        float rating = ((Double) json.get(RATING)).floatValue();
         String plot = (String) json.get(PLOT);
         String posterUrl = (String) json.get(POSTER_URL);
         return new Movie(name, year, rating, plot, null, id, posterUrl);
