@@ -10,8 +10,13 @@ import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.LinkedList;
+import java.util.List;
 
 public class AppRemoteFirebaseDatabase {
 
@@ -35,6 +40,10 @@ public class AppRemoteFirebaseDatabase {
             }
         }
         return instance;
+    }
+
+    public String createUniqueId(String collectionName) {
+        return db.collection(collectionName).document().getId();
     }
 
     public void addUser(User newUser, GenericListener<Void> listener) {
@@ -65,5 +74,19 @@ public class AppRemoteFirebaseDatabase {
     public void updateMovie(Movie updatedMovie,GenericListener<Void> listener) {
         db.collection(Movie.COLLECTION).document(String.valueOf(updatedMovie.getId())).update(updatedMovie.toJson())
                 .addOnCompleteListener(task -> listener.onComplete(null));
+    }
+
+    public void getAllMovies(GenericListener<List<Movie>> callback) {
+        db.collection(Movie.COLLECTION).get().addOnCompleteListener(task -> {
+            List<Movie> list = new LinkedList<>();
+            if (task.isSuccessful()){
+                QuerySnapshot jsonsList = task.getResult();
+                for (DocumentSnapshot json: jsonsList){
+                    Movie movie = Movie.fromJson(json.getData());
+                    list.add(movie);
+                }
+            }
+            callback.onComplete(list);
+        });
     }
 }
