@@ -20,6 +20,7 @@ import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.amiel.moviecenter.databinding.MovieDetailsFragmentBinding;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,8 +63,7 @@ public class MovieDetailsFragment extends Fragment {
 
         binding.movieDetailsMovieName.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getName());
         binding.movieDetailsMovieYear.setText(String.valueOf(MovieDetailsFragmentArgs.fromBundle(getArguments()).getYear()));
-        Bitmap movieBitmap = MovieDetailsFragmentArgs.fromBundle(getArguments()).getImage();
-        binding.movieDetailsMovieImage.setImageBitmap(movieBitmap);
+        Picasso.get().load(MovieDetailsFragmentArgs.fromBundle(getArguments()).getImageurl()).placeholder(R.drawable.default_post_placeholder).into(binding.movieDetailsMovieImage);
         binding.movieDetailsMovieRating.setRating(MovieDetailsFragmentArgs.fromBundle(getArguments()).getRating());
         binding.movieDetailsMovieDescription.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getPlot());
 

@@ -25,6 +25,7 @@ public class DatabaseRepository {
     }
 
     public MutableLiveData<long[]> insertMovieTask(Movie movie){
+        movie.setId(remoteFirebaseDatabase.createUniqueId(Movie.COLLECTION));
         remoteFirebaseDatabase.addMovie(movie, data -> {});
         MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.movieDao()).execute(movie);
@@ -36,8 +37,8 @@ public class DatabaseRepository {
         new UpdateAsyncTask<>(mDatabase.movieDao()).execute(movie);
     }
 
-    public LiveData<List<Movie>> getAllMoviesTask() {
-        return mDatabase.movieDao().getAll();
+    public void getAllMoviesTask(GenericListener<List<Movie>> callback) {
+        remoteFirebaseDatabase.getAllMovies(callback);
     }
 
     public LiveData<Movie> getMovieByNameAndYear(String name, int year) {
@@ -49,6 +50,7 @@ public class DatabaseRepository {
     }
 
     public MutableLiveData<long[]> insertPostTask(Post post){
+        post.setId(remoteFirebaseDatabase.createUniqueId(Post.COLLECTION));
         remoteFirebaseDatabase.addPost(post, data -> {});
         MutableLiveData<long[]> liveData = new MutableLiveData<>();
         new InsertAsyncTask<>(liveData, mDatabase.postDao()).execute(post);
@@ -60,7 +62,7 @@ public class DatabaseRepository {
         new UpdateAsyncTask<>(mDatabase.postDao()).execute(post);
     }
 
-    public LiveData<Map<User,List<Post>>> getAllPostsForMovieWithUser(long movieId) {
+    public LiveData<Map<User,List<Post>>> getAllPostsForMovieWithUser(String movieId) {
         return mDatabase.postDao().getAllPostsForMovieWithUser(movieId);
     }
 

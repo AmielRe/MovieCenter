@@ -55,6 +55,8 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
             movieImage.get().setImageBitmap(result);
             movieImage.get().setBackground(null);
         }
-        loadingDialog.get().dismiss();
+        if(loadingDialog.get() != null) {
+            loadingDialog.get().dismiss();
+        }
     }
 }

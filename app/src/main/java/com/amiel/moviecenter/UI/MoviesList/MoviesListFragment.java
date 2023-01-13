@@ -29,7 +29,6 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.amiel.moviecenter.DB.GenericListener;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.Model.Movie;
@@ -144,12 +143,17 @@ public class MoviesListFragment extends Fragment {
         return binding.getRoot();
     }
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        moviesListViewModel = new ViewModelProvider(this).get(MoviesListViewModel.class);
+    }
+
     // This event is triggered soon after onCreateView().
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         binding.mainRecyclerListMovies.setHasFixedSize(true);
-        moviesListViewModel = new ViewModelProvider(this).get(MoviesListViewModel.class);
         progressDialog = DialogUtils.setProgressDialog(getContext(), "Loading...");
 
         if(!FirebaseAuthHandler.getInstance().isUserLoggedIn()) {
@@ -159,18 +163,19 @@ public class MoviesListFragment extends Fragment {
         }
 
         // Set adapter to recycler view
-        moviesListViewModel.getMovies().observe(getViewLifecycleOwner(), movies -> {
+        moviesListViewModel.getMovies(data -> {
             binding.mainRecyclerListMovies.setLayoutManager(new LinearLayoutManager(requireActivity()));
-            adapter = new MoviesListRecyclerAdapter(movies);
+            adapter = new MoviesListRecyclerAdapter(data);
             binding.mainRecyclerListMovies.setAdapter(adapter);
 
             binding.mainRecyclerListMovies.addItemDecoration(new DividerItemDecoration(binding.mainRecyclerListMovies.getContext(), DividerItemDecoration.VERTICAL));
 
             adapter.setOnItemClickListener(pos -> {
                 Movie clickedMovie = adapter.getItemAtPosition(pos);
-                MoviesListFragmentDirections.ActionMoviesListFragmentToMovieDetailsFragment action = MoviesListFragmentDirections.actionMoviesListFragmentToMovieDetailsFragment(clickedMovie.getId(), clickedMovie.getName(), clickedMovie.getYear(), clickedMovie.getRating(), clickedMovie.getPlot(), ImageUtils.getBitmap(clickedMovie.getPoster()));
+                MoviesListFragmentDirections.ActionMoviesListFragmentToMovieDetailsFragment action = MoviesListFragmentDirections.actionMoviesListFragmentToMovieDetailsFragment(clickedMovie.getId(), clickedMovie.getName(), clickedMovie.getYear(), clickedMovie.getRating(), clickedMovie.getPlot(), clickedMovie.getPosterUrl());
                 Navigation.findNavController(view).navigate(action);
             });
+            binding.progressBar.setVisibility(View.GONE);
         });
 
         binding.movieListSwipeRefreshLayout.setOnRefreshListener(() -> {
@@ -316,12 +321,12 @@ public class MoviesListFragment extends Fragment {
                 boolean isExist = adapter.originalData.stream().anyMatch(currMovie -> currMovie.getName().equals(newPostBinding.newPostMovieNameEditText.getText().toString()) && currMovie.getYear() == Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString()));
                 if(!isExist) {
                     final Bitmap movieImageBitmap = ((BitmapDrawable) newPostBinding.newPostMoviePosterImageView.getDrawable()).getBitmap();
-                    Movie newMovie = new Movie(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString().replaceAll("[^0-9]", "")), newPostBinding.newPostMovieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(movieImageBitmap), 0, "");
+                    Movie newMovie = new Movie(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString().replaceAll("[^0-9]", "")), newPostBinding.newPostMovieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(movieImageBitmap), "", "");
                     moviesListViewModel.insertMovie(newMovie).observe(getViewLifecycleOwner(), ids -> {
                         FirebaseStorageHandler.getInstance().uploadMovieImage(movieImageBitmap, String.valueOf(ids[0]), data -> {
                             if(data != null) {
                                 newMovie.setPosterUrl(data);
-                                newMovie.setId(ids[0]);
+                                moviesListViewModel.updateMovie(newMovie);
                             }
                         });
 
@@ -329,12 +334,11 @@ public class MoviesListFragment extends Fragment {
                         final Bitmap postImageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, String.valueOf(ids[0]), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), 0, Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
+                        Post newPost = new Post(text, String.valueOf(ids[0]), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), newMovie.getId(), Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
                         moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> {
                             FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, String.valueOf(postIds[0]), data -> {
                                 if (data != null) {
                                     newPost.setPostImageUrl(data);
-                                    newPost.setId(postIds[0]);
                                     moviesListViewModel.updatePost(newPost);
                                 }
                             });
@@ -350,12 +354,11 @@ public class MoviesListFragment extends Fragment {
                         final Bitmap imageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, String.valueOf(movie.getId()), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), 0, Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
+                        Post newPost = new Post(text, String.valueOf(movie.getId()), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
                         moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> {
                             FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, String.valueOf(postIds[0]), data -> {
                                 if (data != null) {
                                     newPost.setPostImageUrl(data);
-                                    newPost.setId(postIds[0]);
                                     moviesListViewModel.updatePost(newPost);
                                 }
                             });
@@ -411,10 +414,12 @@ public class MoviesListFragment extends Fragment {
     }
 
     public void updateMovies() {
-        moviesListViewModel.getMovies().observe(getViewLifecycleOwner(), movies -> {
+        binding.progressBar.setVisibility(View.VISIBLE);
+        moviesListViewModel.getMovies((mvList)->{
+            moviesListViewModel.setMovies(mvList);
             adapter.clear();
-            adapter.addAll(movies);
-            adapter.notifyDataSetChanged();
+            adapter.addAll(mvList);
+            binding.progressBar.setVisibility(View.GONE);
         });
     }
 }
