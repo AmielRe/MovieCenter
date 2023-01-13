@@ -1,5 +1,5 @@
 package com.amiel.moviecenter.DB;
 
-public interface GenericAddListener<T> {
+public interface GenericListener<T> {
     void onComplete(T data);
 }
