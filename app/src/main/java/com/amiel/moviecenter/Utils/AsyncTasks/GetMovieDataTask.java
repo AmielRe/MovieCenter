@@ -1,6 +1,8 @@
 package com.amiel.moviecenter.Utils.AsyncTasks;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentActivity;
+
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
@@ -24,13 +26,15 @@ public class GetMovieDataTask extends AsyncTask<String, Void, Pair<Movie, String
     WeakReference<TextInputEditText> movieName;
     WeakReference<TextInputEditText> movieYear;
     MoviesListViewModel moviesListViewModel;
+    FragmentActivity context;
     WeakReference<AlertDialog> loadingDialog;
 
-    public GetMovieDataTask(ImageView movieImage, TextInputEditText movieName, TextInputEditText movieYear, MoviesListViewModel moviesListViewModel, AlertDialog loadingDialog) {
+    public GetMovieDataTask(FragmentActivity context, ImageView movieImage, TextInputEditText movieName, TextInputEditText movieYear, MoviesListViewModel moviesListViewModel, AlertDialog loadingDialog) {
         this.movieImage = new WeakReference<>(movieImage);
         this.movieName = new WeakReference<>(movieName);
         this.movieYear = new WeakReference<>(movieYear);
         this.moviesListViewModel = moviesListViewModel;
+        this.context = context;
         this.loadingDialog = new WeakReference<>(loadingDialog);
     }
 
@@ -73,12 +77,13 @@ public class GetMovieDataTask extends AsyncTask<String, Void, Pair<Movie, String
 
     protected void onPostExecute(Pair<Movie, String> result) {
         if(result != null) {
-            new DownloadImageTask(movieImage.get(), loadingDialog.get())
+            new DownloadImageTask(movieImage.get())
                     .execute(result.second);
             movieName.get().setText(result.first.getName());
             movieYear.get().setText(String.valueOf(result.first.getYear()));
             movieYear.get().setEnabled(false);
-        } else {
+        }
+        if (!context.isFinishing() && loadingDialog.get() != null) {
             loadingDialog.get().dismiss();
         }
     }

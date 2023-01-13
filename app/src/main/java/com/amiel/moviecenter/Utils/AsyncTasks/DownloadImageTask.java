@@ -16,11 +16,9 @@ import okhttp3.Response;
 
 public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
     WeakReference<ImageView> movieImage;
-    WeakReference<AlertDialog> loadingDialog;
 
-    public DownloadImageTask(ImageView movieImage, AlertDialog loadingDialog) {
+    public DownloadImageTask(ImageView movieImage) {
         this.movieImage = new WeakReference<>(movieImage);
-        this.loadingDialog = new WeakReference<>(loadingDialog);
     }
 
     protected Bitmap doInBackground(String... urls) {
@@ -54,9 +52,6 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         if(result != null) {
             movieImage.get().setImageBitmap(result);
             movieImage.get().setBackground(null);
-        }
-        if(loadingDialog.get() != null) {
-            loadingDialog.get().dismiss();
         }
     }
 }

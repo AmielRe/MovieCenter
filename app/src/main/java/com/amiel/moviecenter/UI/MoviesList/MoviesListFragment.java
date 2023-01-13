@@ -164,7 +164,9 @@ public class MoviesListFragment extends Fragment {
 
         // Set adapter to recycler view
         moviesListViewModel.getMovies(data -> {
-            binding.mainRecyclerListMovies.setLayoutManager(new LinearLayoutManager(requireActivity()));
+            if(isAdded() && getActivity() != null) {
+                binding.mainRecyclerListMovies.setLayoutManager(new LinearLayoutManager(getActivity()));
+            }
             adapter = new MoviesListRecyclerAdapter(data);
             binding.mainRecyclerListMovies.setAdapter(adapter);
 
@@ -247,7 +249,7 @@ public class MoviesListFragment extends Fragment {
                         try {
                             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
                             String currentDate = df.format(Calendar.getInstance().getTime());
-                            new GetMovieDataTask(newPostBinding.newPostMoviePosterImageView, newPostBinding.newPostMovieNameEditText, newPostBinding.newPostMovieYearEditText, moviesListViewModel, progressDialog).execute(String.format(BASE_IMDB_MOVIE_URL, newPostBinding.newPostMovieNameEditText.getText().toString(), currentDate));
+                            new GetMovieDataTask(getActivity(), newPostBinding.newPostMoviePosterImageView, newPostBinding.newPostMovieNameEditText, newPostBinding.newPostMovieYearEditText, moviesListViewModel, progressDialog).execute(String.format(BASE_IMDB_MOVIE_URL, newPostBinding.newPostMovieNameEditText.getText().toString(), currentDate));
                         } catch (Exception e) {
                             progressDialog.dismiss();
                             Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
@@ -334,7 +336,7 @@ public class MoviesListFragment extends Fragment {
                         final Bitmap postImageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, String.valueOf(ids[0]), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), newMovie.getId(), Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
+                        Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), newMovie.getId(), Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
                         moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> {
                             FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, String.valueOf(postIds[0]), data -> {
                                 if (data != null) {
@@ -354,7 +356,7 @@ public class MoviesListFragment extends Fragment {
                         final Bitmap imageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, String.valueOf(movie.getId()), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
+                        Post newPost = new Post(text, movie.getId(), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
                         moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> {
                             FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, String.valueOf(postIds[0]), data -> {
                                 if (data != null) {
