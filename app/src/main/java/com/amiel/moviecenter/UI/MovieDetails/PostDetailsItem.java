@@ -1,23 +1,18 @@
 package com.amiel.moviecenter.UI.MovieDetails;
 
+import com.amiel.moviecenter.DB.Model.Post;
+import com.amiel.moviecenter.DB.Model.User;
+
 import java.util.Date;
 
 public class PostDetailsItem {
 
-    public String username;
-    public String postText;
-    public byte[] userImage;
-    public float rating;
-    public Date postDate;
-    public byte[] postImage;
+    User postUser;
+    Post post;
 
-    public PostDetailsItem(String username, String postText, byte[] userImage, float rating, Date postDate, byte[] postImage)
+    public PostDetailsItem(User postUser, Post post)
     {
-        this.username = username;
-        this.postText = postText;
-        this.userImage = userImage;
-        this.rating = rating;
-        this.postDate = postDate;
-        this.postImage = postImage;
+        this.postUser = postUser;
+        this.post = post;
     }
 }
