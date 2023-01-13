@@ -41,15 +41,20 @@ public class Post {
     @ColumnInfo(name = "postDate")
     public Date postDate;
 
+    @NonNull
+    @ColumnInfo(name = "postImageUrl")
+    public String postImageUrl;
+
     public static final String TEXT = "text";
     public static final String ID = "id";
     public static final String MOVIE_ID = "movieID";
     public static final String RATING = "rating";
     public static final String USER_ID = "userID";
     public static final String DATE = "postDate";
+    public static final String POST_IMAGE_URL = "postImageUrl";
     public static final String COLLECTION = "Posts";
 
-    public Post(String text, String movieID, float rating, byte[] image, String userID, long id, Date postDate)
+    public Post(String text, String movieID, float rating, byte[] image, String userID, long id, Date postDate, String postImageUrl)
     {
         this.text = text;
         this.movieID = movieID;
@@ -58,12 +63,22 @@ public class Post {
         this.userID = userID;
         this.id = id;
         this.postDate = postDate;
+        this.postImageUrl = postImageUrl;
     }
 
     @Ignore
     public Post()
     {
 
+    }
+
+    @NonNull
+    public String getPostImageUrl() {
+        return postImageUrl;
+    }
+
+    public void setPostImageUrl(@NonNull String postImageUrl) {
+        this.postImageUrl = postImageUrl;
     }
 
     public long getId() {
@@ -133,7 +148,8 @@ public class Post {
         float rating = (float) json.get(RATING);
         String text = (String) json.get(TEXT);
         Date postDate = (Date) json.get(DATE);
-        return new Post(text, movieId, rating, null, userId, id, postDate);
+        String postImageUrl = (String) json.get(POST_IMAGE_URL);
+        return new Post(text, movieId, rating, null, userId, id, postDate, postImageUrl);
     }
 
     public Map<String,Object> toJson(){
@@ -144,6 +160,7 @@ public class Post {
         json.put(RATING, getRating());
         json.put(TEXT, getText());
         json.put(DATE, getPostDate());
+        json.put(POST_IMAGE_URL, getPostImageUrl());
         return json;
     }
 }

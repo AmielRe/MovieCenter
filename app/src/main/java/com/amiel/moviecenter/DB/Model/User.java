@@ -31,23 +31,38 @@ public class User {
     @ColumnInfo(name = "profileImage")
     public byte[] profileImage;
 
+    @NonNull
+    @ColumnInfo(name = "profileImageUrl")
+    public String profileImageUrl;
+
     public static final String USERNAME = "username";
     public static final String ID = "id";
     public static final String EMAIL = "email";
+    public static final String PROFILE_IMAGE_URL = "profileImageUrl";
     public static final String COLLECTION = "Users";
 
-    public User(@NonNull String username, @NonNull String email, byte[] profileImage, String id)
+    public User(@NonNull String username, @NonNull String email, byte[] profileImage, String id, String profileImageUrl)
     {
         this.username = username;
         this.email = email;
         this.id = id;
         this.profileImage = profileImage;
+        this.profileImageUrl = profileImageUrl;
     }
 
     @Ignore
     public User()
     {
 
+    }
+
+    @NonNull
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(@NonNull String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 
     public String getId() {
@@ -89,7 +104,8 @@ public class User {
         String id = (String)json.get(ID);
         String username = (String)json.get(USERNAME);
         String email = (String) json.get(EMAIL);
-        return new User(username, email, null, id);
+        String profileImageUrl = (String) json.get(PROFILE_IMAGE_URL);
+        return new User(username, email, null, id, profileImageUrl);
     }
 
     public Map<String,Object> toJson(){
@@ -97,6 +113,7 @@ public class User {
         json.put(ID, getId());
         json.put(USERNAME, getUsername());
         json.put(EMAIL, getEmail());
+        json.put(PROFILE_IMAGE_URL, getProfileImageUrl());
         return json;
     }
 }
