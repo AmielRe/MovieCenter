@@ -1,6 +1,5 @@
 package com.amiel.moviecenter.Utils.AsyncTasks;
 
-import androidx.appcompat.app.AlertDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;

@@ -19,6 +19,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuProvider;
@@ -66,11 +67,14 @@ public class MoviesListFragment extends Fragment {
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Disable and hide back button from movies list fragment
-        ((AppCompatActivity) requireActivity()).getSupportActionBar().setDisplayShowCustomEnabled(false);
-        ((AppCompatActivity) requireActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-        ((AppCompatActivity) requireActivity()).getSupportActionBar().show();
+        ActionBar actionBar = ((AppCompatActivity)requireActivity()).getSupportActionBar();
+        if( actionBar != null) {
+            actionBar.setDisplayShowCustomEnabled(false);
+            actionBar.setDisplayHomeAsUpEnabled(false);
+            actionBar.show();
+        }
 
         binding = MovieListFragmentBinding.inflate(inflater, parent, false);
 
@@ -154,7 +158,7 @@ public class MoviesListFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         binding.mainRecyclerListMovies.setHasFixedSize(true);
-        progressDialog = DialogUtils.setProgressDialog(getContext(), "Loading...");
+        progressDialog = DialogUtils.setProgressDialog(getActivity(), "Loading...");
 
         if(!FirebaseAuthHandler.getInstance().isUserLoggedIn()) {
             binding.movieListFab.setVisibility(View.INVISIBLE);
@@ -337,14 +341,12 @@ public class MoviesListFragment extends Fragment {
 
                         // Insert new post
                         Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), newMovie.getId(), Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
-                        moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> {
-                            FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, String.valueOf(postIds[0]), data -> {
-                                if (data != null) {
-                                    newPost.setPostImageUrl(data);
-                                    moviesListViewModel.updatePost(newPost);
-                                }
-                            });
-                        });
+                        moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, String.valueOf(postIds[0]), data -> {
+                            if (data != null) {
+                                newPost.setPostImageUrl(data);
+                                moviesListViewModel.updatePost(newPost);
+                            }
+                        }));
 
                         builder.dismiss();
                         progressDialog.dismiss();
@@ -357,14 +359,12 @@ public class MoviesListFragment extends Fragment {
 
                         // Insert new post
                         Post newPost = new Post(text, movie.getId(), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
-                        moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> {
-                            FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, String.valueOf(postIds[0]), data -> {
-                                if (data != null) {
-                                    newPost.setPostImageUrl(data);
-                                    moviesListViewModel.updatePost(newPost);
-                                }
-                            });
-                        });
+                        moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, String.valueOf(postIds[0]), data -> {
+                            if (data != null) {
+                                newPost.setPostImageUrl(data);
+                                moviesListViewModel.updatePost(newPost);
+                            }
+                        }));
 
                         // Update movie rating
                         movie.setRating((movie.getRating() + newPostBinding.newPostMovieRating.getRating()) / 2);

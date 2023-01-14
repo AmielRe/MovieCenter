@@ -26,7 +26,7 @@ public class GetMovieDataTask extends AsyncTask<String, Void, Pair<Movie, String
     WeakReference<TextInputEditText> movieName;
     WeakReference<TextInputEditText> movieYear;
     MoviesListViewModel moviesListViewModel;
-    FragmentActivity context;
+    WeakReference<FragmentActivity> context;
     WeakReference<AlertDialog> loadingDialog;
 
     public GetMovieDataTask(FragmentActivity context, ImageView movieImage, TextInputEditText movieName, TextInputEditText movieYear, MoviesListViewModel moviesListViewModel, AlertDialog loadingDialog) {
@@ -34,7 +34,7 @@ public class GetMovieDataTask extends AsyncTask<String, Void, Pair<Movie, String
         this.movieName = new WeakReference<>(movieName);
         this.movieYear = new WeakReference<>(movieYear);
         this.moviesListViewModel = moviesListViewModel;
-        this.context = context;
+        this.context = new WeakReference<>(context);
         this.loadingDialog = new WeakReference<>(loadingDialog);
     }
 
@@ -83,7 +83,7 @@ public class GetMovieDataTask extends AsyncTask<String, Void, Pair<Movie, String
             movieYear.get().setText(String.valueOf(result.first.getYear()));
             movieYear.get().setEnabled(false);
         }
-        if (!context.isFinishing() && loadingDialog.get() != null) {
+        if (!context.get().isFinishing() && loadingDialog.get() != null) {
             loadingDialog.get().dismiss();
         }
     }
