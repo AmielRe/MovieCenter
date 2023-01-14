@@ -137,6 +137,13 @@ public class MoviesListFragment extends Fragment {
             }
 
             @Override
+            public void onPrepareMenu(@NonNull Menu menu) {
+                binding.movieListFab.setVisibility(!FirebaseAuthHandler.getInstance().isUserLoggedIn() ? View.GONE : View.VISIBLE);
+
+                MenuProvider.super.onPrepareMenu(menu);
+            }
+
+            @Override
             public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
 
                 // Handle option Menu Here
@@ -151,6 +158,7 @@ public class MoviesListFragment extends Fragment {
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         moviesListViewModel = new ViewModelProvider(this).get(MoviesListViewModel.class);
+        progressDialog = DialogUtils.setProgressDialog(getContext(), "Loading...");
     }
 
     // This event is triggered soon after onCreateView().
@@ -158,7 +166,6 @@ public class MoviesListFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         binding.mainRecyclerListMovies.setHasFixedSize(true);
-        progressDialog = DialogUtils.setProgressDialog(getActivity(), "Loading...");
 
         if(!FirebaseAuthHandler.getInstance().isUserLoggedIn()) {
             binding.movieListFab.setVisibility(View.INVISIBLE);
