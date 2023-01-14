@@ -1,13 +1,14 @@
 package com.amiel.moviecenter.UI.MyPosts;
 
+import android.app.Activity;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.amiel.moviecenter.R;
-import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.OnMyPostRowItemClickListener;
 import com.amiel.moviecenter.databinding.MyPostRowItemBinding;
 import com.squareup.picasso.Picasso;
@@ -25,6 +26,7 @@ public class MyPostViewHolder extends RecyclerView.ViewHolder{
         binding.myPostRowItemPostText.setOnFocusChangeListener((view1, inFocus) -> {
             int pos = getAdapterPosition();
             if(!inFocus) {
+                hideKeyboard(view1);
                 toggleEditText(binding.myPostRowItemPostText, false);
                 listener.onItemClick(pos, binding.myPostRowItemPostText.getText().toString());
             }
@@ -41,5 +43,10 @@ public class MyPostViewHolder extends RecyclerView.ViewHolder{
 
     private void toggleEditText(EditText editText, boolean isEnabled) {
         editText.setCursorVisible(isEnabled);
+    }
+
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager =(InputMethodManager)view.getContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }
