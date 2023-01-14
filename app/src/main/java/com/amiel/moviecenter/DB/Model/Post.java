@@ -15,19 +15,19 @@ public class Post {
 
     @NonNull
     @PrimaryKey
-    @ColumnInfo(name = "id")
+    @ColumnInfo(name = ID)
     public String id;
 
     @NonNull
-    @ColumnInfo(name = "text")
+    @ColumnInfo(name = TEXT)
     public String text;
 
     @NonNull
-    @ColumnInfo(name = "movieId")
+    @ColumnInfo(name = MOVIE_ID)
     public String movieID;
 
     @NonNull
-    @ColumnInfo(name = "rating")
+    @ColumnInfo(name = RATING)
     public float rating;
 
     @NonNull
@@ -35,21 +35,21 @@ public class Post {
     public byte[] image;
 
     @NonNull
-    @ColumnInfo(name = "userId")
+    @ColumnInfo(name = USER_ID)
     public String userID;
 
     @NonNull
-    @ColumnInfo(name = "postDate")
+    @ColumnInfo(name = DATE)
     public Date postDate;
 
     @NonNull
-    @ColumnInfo(name = "postImageUrl")
+    @ColumnInfo(name = POST_IMAGE_URL)
     public String postImageUrl;
 
     public static final String TEXT = "text";
-    public static final String ID = "id";
+    public static final String ID = "post_id";
     public static final String MOVIE_ID = "movieID";
-    public static final String RATING = "rating";
+    public static final String RATING = "post_rating";
     public static final String USER_ID = "userID";
     public static final String DATE = "postDate";
     public static final String POST_IMAGE_URL = "postImageUrl";

@@ -35,7 +35,7 @@ public class MyPostsFragment extends Fragment {
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         binding = MyPostsFragmentBinding.inflate(inflater, parent, false);
         return binding.getRoot();
     }
@@ -43,7 +43,7 @@ public class MyPostsFragment extends Fragment {
     // This event is triggered soon after onCreateView().
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         binding.myPostsRecyclerView.setHasFixedSize(true);
         myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
 
@@ -51,8 +51,8 @@ public class MyPostsFragment extends Fragment {
         binding.myPostsRecyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
         myPostsViewModel.getPosts().observe(getViewLifecycleOwner(), posts -> {
             List<MyPostRowItem> postsRowItems = new ArrayList<>();
-            for(Map.Entry<Movie, List<Post>> currEntry : posts.entrySet()) {
-                for(Post currPost : currEntry.getValue()) {
+            for (Map.Entry<Movie, List<Post>> currEntry : posts.entrySet()) {
+                for (Post currPost : currEntry.getValue()) {
                     MyPostRowItem postRowItem = new MyPostRowItem(currPost, currEntry.getKey());
                     postsRowItems.add(postRowItem);
                 }
@@ -81,7 +81,8 @@ public class MyPostsFragment extends Fragment {
             }
 
             @Override
-            public void onPrepareMenu(@NonNull Menu menu) {}
+            public void onPrepareMenu(@NonNull Menu menu) {
+            }
         });
     }
 }

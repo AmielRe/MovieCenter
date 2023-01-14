@@ -16,7 +16,7 @@ public class User {
 
     @PrimaryKey
     @NotNull
-    @ColumnInfo(name = User.ID)
+    @ColumnInfo(name = ID)
     public String id;
 
     @NonNull
@@ -32,11 +32,11 @@ public class User {
     public byte[] profileImage;
 
     @NonNull
-    @ColumnInfo(name = "profileImageUrl")
+    @ColumnInfo(name = PROFILE_IMAGE_URL)
     public String profileImageUrl;
 
     public static final String USERNAME = "username";
-    public static final String ID = "id";
+    public static final String ID = "user_id";
     public static final String EMAIL = "email";
     public static final String PROFILE_IMAGE_URL = "profileImageUrl";
     public static final String COLLECTION = "Users";

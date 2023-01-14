@@ -14,23 +14,23 @@ public class Movie {
 
     @NonNull
     @PrimaryKey
-    @ColumnInfo(name = "id")
+    @ColumnInfo(name = ID)
     private String id;
 
     @NonNull
-    @ColumnInfo(name = "name")
+    @ColumnInfo(name = NAME)
     private String name;
 
     @NonNull
-    @ColumnInfo(name = "year")
+    @ColumnInfo(name = YEAR)
     private long year;
 
     @NonNull
-    @ColumnInfo(name = "rating")
+    @ColumnInfo(name = RATING)
     private float rating;
 
     @NonNull
-    @ColumnInfo(name = "plot")
+    @ColumnInfo(name = PLOT)
     private String plot;
 
     @NonNull
@@ -38,13 +38,13 @@ public class Movie {
     private byte[] poster;
 
     @NonNull
-    @ColumnInfo(name = "posterUrl")
+    @ColumnInfo(name = POSTER_URL)
     private String posterUrl;
 
     public static final String NAME = "name";
-    public static final String ID = "id";
+    public static final String ID = "movie_id";
     public static final String YEAR = "year";
-    public static final String RATING = "rating";
+    public static final String RATING = "movie_rating";
     public static final String PLOT = "plot";
     public static final String POSTER_URL = "posterUrl";
     public static final String COLLECTION = "Movies";
