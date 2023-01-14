@@ -2,7 +2,6 @@ package com.amiel.moviecenter.UI.MoviesList;
 
 import android.app.Application;
 
-import androidx.compose.ui.graphics.Outline;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

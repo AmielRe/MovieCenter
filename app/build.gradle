@@ -3,13 +3,12 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'androidx.navigation.safeargs'
 
 android {
-    compileSdkVersion 32
-    buildToolsVersion "29.0.3"
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "com.amiel.moviecenter"
         minSdkVersion 26
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 1
         versionName "1.0"
 
@@ -31,6 +30,7 @@ android {
     buildFeatures {
         viewBinding true
     }
+    namespace 'com.amiel.moviecenter'
 }
 
 dependencies {
