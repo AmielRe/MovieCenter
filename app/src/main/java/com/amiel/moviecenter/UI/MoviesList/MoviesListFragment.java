@@ -340,6 +340,7 @@ public class MoviesListFragment extends Fragment {
                             if(data != null) {
                                 newMovie.setPosterUrl(data);
                                 moviesListViewModel.updateMovie(newMovie);
+                                updateMovies();
                             }
                         });
 
@@ -347,7 +348,7 @@ public class MoviesListFragment extends Fragment {
                         final Bitmap postImageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), newMovie.getId(), Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
+                        Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
                         moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, String.valueOf(postIds[0]), data -> {
                             if (data != null) {
                                 newPost.setPostImageUrl(data);
@@ -413,14 +414,6 @@ public class MoviesListFragment extends Fragment {
                     }
                 }
             });
-
-    @Override
-    public void onResume() {
-        if(adapter != null) {
-            updateMovies();
-        }
-        super.onResume();
-    }
 
     public void updateMovies() {
         binding.progressBar.setVisibility(View.VISIBLE);
