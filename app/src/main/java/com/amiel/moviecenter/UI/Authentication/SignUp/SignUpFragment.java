@@ -38,7 +38,7 @@ public class SignUpFragment extends Fragment {
     SignUpFragmentBinding binding;
     private DatabaseRepository db;
 
-    private static final String CHECK_EMAIL_BASE_URL = "https://api.eva.pingutil.com/email?email=";
+    private static final String CHECK_EMAIL_BASE_URL = "http://api.eva.pingutil.com/email?email=";
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
@@ -131,7 +131,10 @@ public class SignUpFragment extends Fragment {
                 client.newCall(request).enqueue(new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
-                        loadingProgressBar.setVisibility(View.INVISIBLE);
+                        requireActivity().runOnUiThread(() -> {
+                            loadingProgressBar.setVisibility(View.INVISIBLE);
+                        });
+                        e.printStackTrace();
                         call.cancel();
                     }
 
@@ -143,7 +146,9 @@ public class SignUpFragment extends Fragment {
                         try {
                             json = new JSONObject(myResponse);
                         } catch (JSONException e) {
-                            loadingProgressBar.setVisibility(View.INVISIBLE);
+                            requireActivity().runOnUiThread(() -> {
+                                loadingProgressBar.setVisibility(View.INVISIBLE);
+                            });
                             e.printStackTrace();
                         }
 
@@ -180,7 +185,9 @@ public class SignUpFragment extends Fragment {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            loadingProgressBar.setVisibility(View.INVISIBLE);
+                            requireActivity().runOnUiThread(() -> {
+                                loadingProgressBar.setVisibility(View.INVISIBLE);
+                            });
                         }
                     }
                 });

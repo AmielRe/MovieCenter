@@ -4,15 +4,12 @@ import android.app.Activity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.Utils.OnMyPostRowItemClickListener;
 import com.amiel.moviecenter.databinding.MyPostRowItemBinding;
 import com.squareup.picasso.Picasso;
-
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -27,7 +24,7 @@ public class MyPostViewHolder extends RecyclerView.ViewHolder{
             int pos = getAdapterPosition();
             if(!inFocus) {
                 hideKeyboard(view1);
-                toggleEditText(binding.myPostRowItemPostText, false);
+                toggleEditText(binding.myPostRowItemPostText);
                 listener.onItemClick(pos, binding.myPostRowItemPostText.getText().toString());
             }
         });
@@ -41,8 +38,8 @@ public class MyPostViewHolder extends RecyclerView.ViewHolder{
         binding.myPostRowItemPostDate.setText(new SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault()).format(post.post.postDate));
     }
 
-    private void toggleEditText(EditText editText, boolean isEnabled) {
-        editText.setCursorVisible(isEnabled);
+    private void toggleEditText(EditText editText) {
+        editText.setCursorVisible(false);
     }
 
     public void hideKeyboard(View view) {

@@ -70,7 +70,7 @@ public class SignInFragment extends Fragment {
         binding.signInSignInButton.setOnClickListener(v -> {
             if(validate()) {
                 NavController navController = Navigation.findNavController(requireActivity(), view.getId());
-                FirebaseAuthHandler.getInstance().signInWithEmailAndPassword(binding.signInEmailEdittext.getText().toString(), binding.signInEmailEdittext.getText().toString(), requireActivity(), navController);
+                FirebaseAuthHandler.getInstance().signInWithEmailAndPassword(binding.signInEmailEdittext.getText().toString(), binding.signInPasswordEdittext.getText().toString(), requireActivity(), navController);
             }
         });
     }
