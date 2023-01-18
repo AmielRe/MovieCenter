@@ -107,6 +107,7 @@ class MoviesListRecyclerAdapter extends RecyclerView.Adapter<MoviesListViewHolde
             if(data.getName().toLowerCase().contains(updatedMovie.getName().toLowerCase()))
             {
                 originalData.set(originalData.indexOf(data), updatedMovie);
+                this.notifyItemChanged(originalData.indexOf(data));
                 return;
             }
         }

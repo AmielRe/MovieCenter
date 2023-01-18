@@ -38,7 +38,7 @@
 
         <argument
             android:name="id"
-            app:argType="long" />
+            app:argType="string" />
 
         <argument
             android:name="name"
@@ -46,7 +46,7 @@
 
         <argument
             android:name="year"
-            app:argType="integer" />
+            app:argType="long" />
 
         <argument
             android:name="rating"
@@ -57,8 +57,8 @@
             app:argType="string" />
 
         <argument
-            android:name="image"
-            app:argType="android.graphics.Bitmap" />
+            android:name="imageurl"
+            app:argType="string" />
 
     </fragment>
     <fragment

@@ -1,29 +1,23 @@
 package com.amiel.moviecenter.UI.Authentication.SignUp;
 
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
-import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
-import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.TextValidator;
 import com.amiel.moviecenter.databinding.SignUpFragmentBinding;
-import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONException;
@@ -44,7 +38,7 @@ public class SignUpFragment extends Fragment {
     SignUpFragmentBinding binding;
     private DatabaseRepository db;
 
-    private static final String CHECK_EMAIL_BASE_URL = "https://api.eva.pingutil.com/email?email=";
+    private static final String CHECK_EMAIL_BASE_URL = "http://api.eva.pingutil.com/email?email=";
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
@@ -137,7 +131,10 @@ public class SignUpFragment extends Fragment {
                 client.newCall(request).enqueue(new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
-                        loadingProgressBar.setVisibility(View.INVISIBLE);
+                        requireActivity().runOnUiThread(() -> {
+                            loadingProgressBar.setVisibility(View.INVISIBLE);
+                        });
+                        e.printStackTrace();
                         call.cancel();
                     }
 
@@ -149,7 +146,9 @@ public class SignUpFragment extends Fragment {
                         try {
                             json = new JSONObject(myResponse);
                         } catch (JSONException e) {
-                            loadingProgressBar.setVisibility(View.INVISIBLE);
+                            requireActivity().runOnUiThread(() -> {
+                                loadingProgressBar.setVisibility(View.INVISIBLE);
+                            });
                             e.printStackTrace();
                         }
 
@@ -166,11 +165,8 @@ public class SignUpFragment extends Fragment {
                                                 // Email doesn't already exist
                                                 binding.signUpEmailEdittext.setError(null);
 
-                                                // ID is 0 because were not setting it, it's used just for retrieval
-                                                User newUser = new User(binding.signUpUsernameEdittext.getText().toString(), binding.signUpEmailEdittext.getText().toString(), ImageUtils.getBytes(((BitmapDrawable) ContextCompat.getDrawable(requireActivity(),R.drawable.default_profile_image)).getBitmap()), 0);
-                                                db.insertUserTask(newUser);
                                                 NavController navController = Navigation.findNavController(requireActivity(), view.getId());
-                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(binding.signUpEmailEdittext.getText().toString(), binding.signUpPasswordEdittext.getText().toString(), requireActivity(), navController);
+                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(binding.signUpUsernameEdittext.getText().toString(), binding.signUpEmailEdittext.getText().toString(), binding.signUpPasswordEdittext.getText().toString(), requireActivity(), navController, db);
                                             } else {
                                                 // Email already exists
                                                 binding.signUpEmailEdittext.setError(getString(R.string.error_email_already_in_use));
@@ -189,7 +185,9 @@ public class SignUpFragment extends Fragment {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            loadingProgressBar.setVisibility(View.INVISIBLE);
+                            requireActivity().runOnUiThread(() -> {
+                                loadingProgressBar.setVisibility(View.INVISIBLE);
+                            });
                         }
                     }
                 });

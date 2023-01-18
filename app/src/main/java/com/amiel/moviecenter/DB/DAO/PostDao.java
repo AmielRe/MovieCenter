@@ -15,14 +15,14 @@ import java.util.Map;
 public interface PostDao extends BaseDao<Post>{
 
     @Query("SELECT * FROM Users " +
-            "JOIN Posts ON Posts.userId = Users.id " +
-            "INNER JOIN Movies ON Posts.movieId = Movies.id " +
+            "JOIN Posts ON Posts.userId = Users.user_id " +
+            "INNER JOIN Movies ON Posts.movieId = Movies.movie_id " +
             "WHERE Posts.movieId LIKE :movieId")
-    LiveData<Map<User, List<Post>>> getAllPostsForMovieWithUser(long movieId);
+    LiveData<Map<User, List<Post>>> getAllPostsForMovieWithUser(String movieId);
 
     @Query("SELECT * FROM Movies " +
-            "JOIN Posts ON Posts.movieId = Movies.id " +
-            "INNER JOIN Users ON Posts.userId = Users.id " +
+            "JOIN Posts ON Posts.movieId = Movies.movie_id " +
+            "INNER JOIN Users ON Posts.userId = Users.user_id " +
             "WHERE Users.email LIKE :userEmail")
     LiveData<Map<Movie, List<Post>>> getAllPostsOfUserWithMovie(String userEmail);
 }

@@ -1,13 +1,11 @@
 package com.amiel.moviecenter.UI.Authentication.LoginOptions;
 
 import android.content.Intent;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -19,9 +17,7 @@ import androidx.navigation.Navigation;
 
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
-import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
-import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.databinding.LoginOptionsFragmentBinding;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -60,11 +56,8 @@ public class LoginOptionsFragment extends Fragment {
                     try {
                         GoogleSignInAccount account = task.getResult(ApiException.class);
 
-                        // ID is 0 because were not setting it, it's used just for retrieval
-                        User newUser = new User(account.getDisplayName(), account.getEmail(), ImageUtils.getBytes(((BitmapDrawable)requireActivity().getDrawable(R.drawable.default_profile_image)).getBitmap()), 0);
-                        db.insertUserTask(newUser);
                         NavController navController = Navigation.findNavController(requireActivity(), getView().getId());
-                        FirebaseAuthHandler.getInstance().signInWithGoogle(account, requireActivity(), navController);
+                        FirebaseAuthHandler.getInstance().signInWithGoogle(account, requireActivity(), navController, db);
                     } catch (ApiException e) {
                         Log.w("TAG", "Google sign in failed", e);
                     }

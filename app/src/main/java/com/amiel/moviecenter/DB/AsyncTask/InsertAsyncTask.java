@@ -9,7 +9,7 @@ import com.amiel.moviecenter.DB.DAO.BaseDao;
 public class InsertAsyncTask<T> extends AsyncTask<T, Void, long[]> {
 
     private final BaseDao<T> baseDao;
-    private MutableLiveData<long[]> insertedId;
+    private final MutableLiveData<long[]> insertedId;
 
     public InsertAsyncTask(MutableLiveData<long[]> liveData, BaseDao<T> dao) {
         insertedId = liveData;
@@ -22,12 +22,10 @@ public class InsertAsyncTask<T> extends AsyncTask<T, Void, long[]> {
         return baseDao.insert(obj);
     }
 
-    //protected void onPostExecute(Void aVoid) {
     @Override
     protected void onPostExecute(long[] insertId) {
         insertedId.postValue(insertId);
         super.onPostExecute(insertId);
-        //onScenarioInserted(insertId, scenario);
     }
 
     @Override

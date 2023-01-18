@@ -1,6 +1,8 @@
 package com.amiel.moviecenter.Utils.AsyncTasks;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentActivity;
+
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
@@ -24,13 +26,15 @@ public class GetMovieDataTask extends AsyncTask<String, Void, Pair<Movie, String
     WeakReference<TextInputEditText> movieName;
     WeakReference<TextInputEditText> movieYear;
     MoviesListViewModel moviesListViewModel;
+    WeakReference<FragmentActivity> context;
     WeakReference<AlertDialog> loadingDialog;
 
-    public GetMovieDataTask(ImageView movieImage, TextInputEditText movieName, TextInputEditText movieYear, MoviesListViewModel moviesListViewModel, AlertDialog loadingDialog) {
+    public GetMovieDataTask(FragmentActivity context, ImageView movieImage, TextInputEditText movieName, TextInputEditText movieYear, MoviesListViewModel moviesListViewModel, AlertDialog loadingDialog) {
         this.movieImage = new WeakReference<>(movieImage);
         this.movieName = new WeakReference<>(movieName);
         this.movieYear = new WeakReference<>(movieYear);
         this.moviesListViewModel = moviesListViewModel;
+        this.context = new WeakReference<>(context);
         this.loadingDialog = new WeakReference<>(loadingDialog);
     }
 
@@ -51,15 +55,14 @@ public class GetMovieDataTask extends AsyncTask<String, Void, Pair<Movie, String
         }
         if (response.isSuccessful()) {
             try {
-                JSONObject json = new JSONObject();
-                json = new JSONObject(response.body().string());
+                JSONObject json = new JSONObject(response.body().string());
                 JSONObject resultsJSON = (JSONObject) json.getJSONArray("results").get(0);
                 String plot = resultsJSON.getString("plot");
                 String year = resultsJSON.getString("description").replaceAll("[^0-9]", "");
                 String moviePosterUrl = resultsJSON.getString("image");
                 String title = resultsJSON.getString("title");
                 moviesListViewModel.setNewMoviePlot(plot);
-                Movie movie = new Movie(title, Integer.parseInt(year), 0, plot, null, 0);
+                Movie movie = new Movie(title, Integer.parseInt(year), 0, plot, null, "", "");
 
                 returnValue = Pair.create(movie, moviePosterUrl);
             } catch (Exception e) {
@@ -73,12 +76,13 @@ public class GetMovieDataTask extends AsyncTask<String, Void, Pair<Movie, String
 
     protected void onPostExecute(Pair<Movie, String> result) {
         if(result != null) {
-            new DownloadImageTask(movieImage.get(), loadingDialog.get())
+            new DownloadImageTask(movieImage.get())
                     .execute(result.second);
             movieName.get().setText(result.first.getName());
             movieYear.get().setText(String.valueOf(result.first.getYear()));
             movieYear.get().setEnabled(false);
-        } else {
+        }
+        if (!context.get().isFinishing() && loadingDialog.get() != null) {
             loadingDialog.get().dismiss();
         }
     }

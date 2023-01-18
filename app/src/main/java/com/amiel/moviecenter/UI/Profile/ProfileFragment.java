@@ -1,12 +1,10 @@
 package com.amiel.moviecenter.UI.Profile;
 
 import android.Manifest;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,30 +13,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.FileProvider;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.amiel.moviecenter.BuildConfig;
 import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
+import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.PermissionHelper;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.amiel.moviecenter.databinding.ProfileFragmentBinding;
+import com.squareup.picasso.Picasso;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-
-import static android.app.Activity.RESULT_OK;
 
 public class ProfileFragment extends Fragment {
 
@@ -55,7 +49,7 @@ public class ProfileFragment extends Fragment {
         cameraResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
-                cameraResultLauncher.launch(ImageUtils.getCameraIntent(getContext()));
+                cameraResultLauncher.launch(null);
             }
         });
 
@@ -88,10 +82,7 @@ public class ProfileFragment extends Fragment {
             binding.profileFragmentEmailEditText.setText(email);
             binding.profileFragmentUsernameEditText.setText(user.username);
             binding.profileFragmentUsernameEditText.setSelection(binding.profileFragmentUsernameEditText.getText().length());
-            Bitmap profileBitmap = ImageUtils.getBitmap(user.profileImage);
-            if(profileBitmap != null) {
-                binding.profileFragmentImage.setImageBitmap(ImageUtils.getBitmap(user.profileImage));
-            }
+            Picasso.get().load(user.getProfileImageUrl()).placeholder(R.drawable.default_profile_image).into(binding.profileFragmentImage);
         });
 
         binding.profileFragmentImage.setOnClickListener(v -> selectImage());
@@ -99,10 +90,16 @@ public class ProfileFragment extends Fragment {
         binding.profileFragmentSaveButton.setOnClickListener(v -> {
             try {
                 User updatedUser = profileViewModel.getUser().getValue();
+                byte[] userUpdatedProfileImage = ImageUtils.getBytes(((BitmapDrawable)binding.profileFragmentImage.getDrawable()).getBitmap());
                 updatedUser.setUsername(binding.profileFragmentUsernameEditText.getText().toString());
-                updatedUser.setProfileImage(ImageUtils.getBytes(((BitmapDrawable)binding.profileFragmentImage.getDrawable()).getBitmap()));
-                profileViewModel.updateUser(updatedUser);
-                Toast.makeText(requireActivity(), "User details saved!", Toast.LENGTH_SHORT).show();
+                updatedUser.setProfileImage(userUpdatedProfileImage);
+                FirebaseStorageHandler.getInstance().uploadUserImage(((BitmapDrawable)binding.profileFragmentImage.getDrawable()).getBitmap(), updatedUser.getId(), data -> {
+                    if(data != null) {
+                        updatedUser.setProfileImageUrl(data);
+                    }
+                    profileViewModel.updateUser(updatedUser);
+                    Toast.makeText(requireActivity(), "User details saved!", Toast.LENGTH_SHORT).show();
+                });
             } catch(Exception e) {
                 Toast.makeText(requireActivity(), "Failed to save details...", Toast.LENGTH_SHORT).show();
             }
@@ -119,12 +116,12 @@ public class ProfileFragment extends Fragment {
                 if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
                     new PermissionHelper().startPermissionRequest(cameraResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
                 } else {
-                    cameraResultLauncher.launch(ImageUtils.getCameraIntent(getContext()));
+                    cameraResultLauncher.launch(null);
                 }
             }
             else if (options[item].equals("Choose from Gallery"))
             {
-                galleryResultLauncher.launch(ImageUtils.getGalleryIntent());
+                galleryResultLauncher.launch("image/*");
             }
             else if (options[item].equals("Cancel")) {
                 dialog.dismiss();
@@ -134,55 +131,26 @@ public class ProfileFragment extends Fragment {
     }
 
     // Launcher for gallery image pick
-    private final ActivityResultLauncher<Intent> galleryResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK
-                        && result.getData() != null) {
-                    Uri selectedImage = result.getData().getData();
-                    try {
-                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), selectedImage);
-                        binding.profileFragmentImage.setImageBitmap(res);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-    );
-
-    private final ActivityResultLauncher<Intent> cameraResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK
-                        && result.getData() != null) {
-                    File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString());
-                    for (File temp : f.listFiles()) {
-                        if (temp.getName().equals("temp.jpg")) {
-                            f = temp;
-                            break;
-                        }
-                    }
-                    try {
-                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), FileProvider.getUriForFile(getContext(), BuildConfig.APPLICATION_ID + ".provider", f));
-                        binding.profileFragmentImage.setImageBitmap(res);
-                        String path = android.os.Environment
-                                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-                                + File.separator
-                                + "Phoenix" + File.separator + "default";
-                        f.delete();
-                        OutputStream outFile = null;
-                        File file = new File(path, System.currentTimeMillis() + ".jpg");
+    private final ActivityResultLauncher<String> galleryResultLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(),
+            new ActivityResultCallback<Uri>() {
+                @Override
+                public void onActivityResult(Uri result) {
+                    if (result != null) {
                         try {
-                            outFile = new FileOutputStream(file);
-                            res.compress(Bitmap.CompressFormat.JPEG, 85, outFile);
-                            outFile.flush();
-                            outFile.close();
-                        } catch (Exception e) {
+                            Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), result);
+                            binding.profileFragmentImage.setImageBitmap(res);
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
+                }
+            });
+
+    private final ActivityResultLauncher<Void> cameraResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.TakePicturePreview(),
+            result -> {
+                if(result != null) {
+                    binding.profileFragmentImage.setImageBitmap(result);
                 }
             }
     );

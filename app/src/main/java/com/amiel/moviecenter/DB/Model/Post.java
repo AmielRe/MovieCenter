@@ -7,24 +7,27 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity(tableName = "Posts")
 public class Post {
 
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id")
-    public long id;
+    @NonNull
+    @PrimaryKey
+    @ColumnInfo(name = ID)
+    public String id;
 
     @NonNull
-    @ColumnInfo(name = "text")
+    @ColumnInfo(name = TEXT)
     public String text;
 
     @NonNull
-    @ColumnInfo(name = "movieId")
-    public long movieID;
+    @ColumnInfo(name = MOVIE_ID)
+    public String movieID;
 
     @NonNull
-    @ColumnInfo(name = "rating")
+    @ColumnInfo(name = RATING)
     public float rating;
 
     @NonNull
@@ -32,22 +35,36 @@ public class Post {
     public byte[] image;
 
     @NonNull
-    @ColumnInfo(name = "userId")
-    public long userID;
+    @ColumnInfo(name = USER_ID)
+    public String userID;
 
     @NonNull
-    @ColumnInfo(name = "postDate")
+    @ColumnInfo(name = DATE)
     public Date postDate;
 
-    public Post(String text, long movieID, float rating, byte[] image, long userID, long id, Date postDate)
+    @NonNull
+    @ColumnInfo(name = POST_IMAGE_URL)
+    public String postImageUrl;
+
+    public static final String TEXT = "text";
+    public static final String ID = "post_id";
+    public static final String MOVIE_ID = "movieID";
+    public static final String RATING = "post_rating";
+    public static final String USER_ID = "userID";
+    public static final String DATE = "postDate";
+    public static final String POST_IMAGE_URL = "postImageUrl";
+    public static final String COLLECTION = "Posts";
+
+    public Post(String text, String movieID, float rating, byte[] image, String userID, String id, Date postDate, String postImageUrl)
     {
         this.text = text;
         this.movieID = movieID;
         this.rating = rating;
         this.image = image;
-        this.id = id;
         this.userID = userID;
+        this.id = id;
         this.postDate = postDate;
+        this.postImageUrl = postImageUrl;
     }
 
     @Ignore
@@ -56,28 +73,37 @@ public class Post {
 
     }
 
-    public long getId() {
+    @NonNull
+    public String getPostImageUrl() {
+        return postImageUrl;
+    }
+
+    public void setPostImageUrl(@NonNull String postImageUrl) {
+        this.postImageUrl = postImageUrl;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
     @NonNull
-    public long getMovieID() {
+    public String getMovieID() {
         return movieID;
     }
 
-    public void setMovieID(@NonNull long movieID) {
+    public void setMovieID(@NonNull String movieID) {
         this.movieID = movieID;
     }
 
-    public long getUserID() {
+    public String getUserID() {
         return userID;
     }
 
-    public void setUserID(long userID) {
+    public void setUserID(String userID) {
         this.userID = userID;
     }
 
@@ -114,5 +140,28 @@ public class Post {
 
     public void setPostDate(@NonNull Date postDate) {
         this.postDate = postDate;
+    }
+
+    public static Post fromJson(Map<String,Object> json){
+        String id = (String)json.get(ID);
+        String movieId = (String)json.get(MOVIE_ID);
+        String userId = (String) json.get(USER_ID);
+        float rating = (float) json.get(RATING);
+        String text = (String) json.get(TEXT);
+        Date postDate = (Date) json.get(DATE);
+        String postImageUrl = (String) json.get(POST_IMAGE_URL);
+        return new Post(text, movieId, rating, null, userId, id, postDate, postImageUrl);
+    }
+
+    public Map<String,Object> toJson(){
+        Map<String, Object> json = new HashMap<>();
+        json.put(ID, getId());
+        json.put(MOVIE_ID, getMovieID());
+        json.put(USER_ID, getUserID());
+        json.put(RATING, getRating());
+        json.put(TEXT, getText());
+        json.put(DATE, getPostDate());
+        json.put(POST_IMAGE_URL, getPostImageUrl());
+        return json;
     }
 }

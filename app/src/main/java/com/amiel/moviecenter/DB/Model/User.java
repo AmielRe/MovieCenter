@@ -6,31 +6,48 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "Users")
+import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Entity(tableName = User.COLLECTION)
 public class User {
 
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name = "id")
-    public long id;
+    @PrimaryKey
+    @NotNull
+    @ColumnInfo(name = ID)
+    public String id;
 
     @NonNull
-    @ColumnInfo(name = "username")
+    @ColumnInfo(name = USERNAME)
     public String username;
 
     @NonNull
-    @ColumnInfo(name = "email")
+    @ColumnInfo(name = EMAIL)
     public String email;
 
     @NonNull
     @ColumnInfo(name = "profileImage")
     public byte[] profileImage;
 
-    public User(String username, String email, byte[] profileImage, long id)
+    @NonNull
+    @ColumnInfo(name = PROFILE_IMAGE_URL)
+    public String profileImageUrl;
+
+    public static final String USERNAME = "username";
+    public static final String ID = "user_id";
+    public static final String EMAIL = "email";
+    public static final String PROFILE_IMAGE_URL = "profileImageUrl";
+    public static final String COLLECTION = "Users";
+
+    public User(@NonNull String username, @NonNull String email, byte[] profileImage, String id, String profileImageUrl)
     {
         this.username = username;
         this.email = email;
-        this.profileImage = profileImage;
         this.id = id;
+        this.profileImage = profileImage;
+        this.profileImageUrl = profileImageUrl;
     }
 
     @Ignore
@@ -39,21 +56,21 @@ public class User {
 
     }
 
-    public long getId() {
+    @NonNull
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(@NonNull String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
-    }
-
-    @NonNull
-    public byte[] getProfileImage() {
-        return profileImage;
-    }
-
-    public void setProfileImage(@NonNull byte[] profileImage) {
-        this.profileImage = profileImage;
     }
 
     @NonNull
@@ -66,11 +83,37 @@ public class User {
     }
 
     @NonNull
+    public byte[] getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(@NonNull byte[] profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    @NonNull
     public String getUsername() {
         return username;
     }
 
     public void setUsername(@NonNull String username) {
         this.username = username;
+    }
+
+    public static User fromJson(Map<String,Object> json){
+        String id = (String)json.get(ID);
+        String username = (String)json.get(USERNAME);
+        String email = (String) json.get(EMAIL);
+        String profileImageUrl = (String) json.get(PROFILE_IMAGE_URL);
+        return new User(username, email, null, id, profileImageUrl);
+    }
+
+    public Map<String,Object> toJson(){
+        Map<String, Object> json = new HashMap<>();
+        json.put(ID, getId());
+        json.put(USERNAME, getUsername());
+        json.put(EMAIL, getEmail());
+        json.put(PROFILE_IMAGE_URL, getProfileImageUrl());
+        return json;
     }
 }

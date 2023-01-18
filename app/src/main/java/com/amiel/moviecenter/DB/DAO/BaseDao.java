@@ -1,11 +1,12 @@
 package com.amiel.moviecenter.DB.DAO;
 
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Update;
 
 public interface BaseDao<T> {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     long[] insert(T[] obj);
 
     @Update

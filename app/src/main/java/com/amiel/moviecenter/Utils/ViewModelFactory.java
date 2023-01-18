@@ -5,9 +5,14 @@ import android.app.Application;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.amiel.moviecenter.DB.GenericListener;
+import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.UI.MovieDetails.MovieDetailsViewModel;
+import com.amiel.moviecenter.UI.MoviesList.MoviesListViewModel;
 import com.amiel.moviecenter.UI.MyPosts.MyPostsViewModel;
 import com.amiel.moviecenter.UI.Profile.ProfileViewModel;
+
+import java.util.List;
 
 public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory implements ViewModelProvider.Factory {
     private final Application mApplication;
@@ -25,7 +30,7 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory imple
         } else if (modelClass == MyPostsViewModel.class) {
             return (T) new MyPostsViewModel(mApplication, (String) mParams[0]);
         } else if (modelClass == MovieDetailsViewModel.class) {
-            return (T) new MovieDetailsViewModel(mApplication, (long) mParams[0]);
+            return (T) new MovieDetailsViewModel(mApplication, (String) mParams[0]);
         } else {
             return super.create(modelClass);
         }
