@@ -6,6 +6,9 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.FieldValue;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -35,10 +38,14 @@ public class User {
     @ColumnInfo(name = PROFILE_IMAGE_URL)
     public String profileImageUrl;
 
+    @ColumnInfo(name = LAST_UPDATED)
+    private Long lastUpdated;
+
     public static final String USERNAME = "username";
     public static final String ID = "user_id";
     public static final String EMAIL = "email";
     public static final String PROFILE_IMAGE_URL = "profileImageUrl";
+    public static final String LAST_UPDATED = "userLastUpdated";
     public static final String COLLECTION = "Users";
 
     public User(@NonNull String username, @NonNull String email, byte[] profileImage, String id, String profileImageUrl)
@@ -100,12 +107,27 @@ public class User {
         this.username = username;
     }
 
+    public void setLastUpdated(Long lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+
+    public Long getLastUpdated() {
+        return lastUpdated;
+    }
+
     public static User fromJson(Map<String,Object> json){
         String id = (String)json.get(ID);
         String username = (String)json.get(USERNAME);
         String email = (String) json.get(EMAIL);
         String profileImageUrl = (String) json.get(PROFILE_IMAGE_URL);
-        return new User(username, email, null, id, profileImageUrl);
+        User user = new User(username, email, null, id, profileImageUrl);
+
+        try{
+            Timestamp time = (Timestamp) json.get(LAST_UPDATED);
+            user.setLastUpdated(time.getSeconds());
+        }catch(Exception ignored){}
+
+        return user;
     }
 
     public Map<String,Object> toJson(){
@@ -114,6 +136,7 @@ public class User {
         json.put(USERNAME, getUsername());
         json.put(EMAIL, getEmail());
         json.put(PROFILE_IMAGE_URL, getProfileImageUrl());
+        json.put(LAST_UPDATED, FieldValue.serverTimestamp());
         return json;
     }
 }
