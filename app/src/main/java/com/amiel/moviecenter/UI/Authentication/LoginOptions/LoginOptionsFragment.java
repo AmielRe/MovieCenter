@@ -15,9 +15,13 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.amiel.moviecenter.DB.GenericListener;
+import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.R;
+import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
+import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.databinding.LoginOptionsFragmentBinding;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -57,7 +61,14 @@ public class LoginOptionsFragment extends Fragment {
                         GoogleSignInAccount account = task.getResult(ApiException.class);
 
                         NavController navController = Navigation.findNavController(requireActivity(), getView().getId());
-                        FirebaseAuthHandler.getInstance().signInWithGoogle(account, requireActivity(), navController, db);
+                        FirebaseAuthHandler.getInstance().signInWithGoogle(account, requireActivity(), navController, newUser -> {
+                            FirebaseStorageHandler.getInstance().uploadUserImage(ImageUtils.getBitmap(newUser.getProfileImage()), newUser.getId(), imageUrl -> {
+                                if (imageUrl != null) {
+                                    newUser.setProfileImageUrl(imageUrl);
+                                    db.insertUserTask(newUser, data -> {});
+                                }
+                            });
+                        });
                     } catch (ApiException e) {
                         Log.w("TAG", "Google sign in failed", e);
                     }
