@@ -30,7 +30,6 @@ public class User {
     @ColumnInfo(name = EMAIL)
     public String email;
 
-    @NonNull
     @ColumnInfo(name = "profileImage")
     public byte[] profileImage;
 

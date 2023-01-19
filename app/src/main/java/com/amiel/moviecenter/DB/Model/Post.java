@@ -33,7 +33,6 @@ public class Post {
     @ColumnInfo(name = RATING)
     public float rating;
 
-    @NonNull
     @ColumnInfo(name = "image")
     public byte[] image;
 
@@ -161,9 +160,9 @@ public class Post {
         String id = (String)json.get(ID);
         String movieId = (String)json.get(MOVIE_ID);
         String userId = (String) json.get(USER_ID);
-        float rating = (float) json.get(RATING);
+        float rating = ((Double) json.get(RATING)).floatValue();
         String text = (String) json.get(TEXT);
-        Date postDate = (Date) json.get(DATE);
+        Date postDate = ((Timestamp) json.get(DATE)).toDate();
         String postImageUrl = (String) json.get(POST_IMAGE_URL);
         Post post = new Post(text, movieId, rating, null, userId, id, postDate, postImageUrl);
 

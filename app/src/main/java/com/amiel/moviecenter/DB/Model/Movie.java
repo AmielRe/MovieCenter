@@ -36,7 +36,6 @@ public class Movie {
     @ColumnInfo(name = PLOT)
     private String plot;
 
-    @NonNull
     @ColumnInfo(name = "poster")
     private byte[] poster;
 
