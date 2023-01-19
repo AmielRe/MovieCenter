@@ -7,11 +7,14 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.amiel.moviecenter.DB.Model.Movie;
+import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.Utils.OnMyPostRowItemClickListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MyPostsRecyclerAdapter extends RecyclerView.Adapter<MyPostViewHolder> {
 
@@ -47,5 +50,23 @@ public class MyPostsRecyclerAdapter extends RecyclerView.Adapter<MyPostViewHolde
 
     public MyPostRowItem getItemAtPosition(int pos) {
         return data.get(pos);
+    }
+
+    public void clear() {
+        data.clear();
+        notifyDataSetChanged();
+    }
+
+    // Add a list of items -- change to type used
+    public void addAll(Map<Movie, List<Post>> list) {
+        List<MyPostRowItem> postsRowItems = new ArrayList<>();
+        for (Map.Entry<Movie, List<Post>> currEntry : list.entrySet()) {
+            for (Post currPost : currEntry.getValue()) {
+                MyPostRowItem postRowItem = new MyPostRowItem(currPost, currEntry.getKey());
+                postsRowItems.add(postRowItem);
+            }
+        }
+        data.addAll(postsRowItems);
+        notifyDataSetChanged();
     }
 }

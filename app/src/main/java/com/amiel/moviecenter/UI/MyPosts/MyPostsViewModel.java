@@ -4,10 +4,13 @@ import android.app.Application;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.amiel.moviecenter.DB.DatabaseRepository;
+import com.amiel.moviecenter.DB.GenericListener;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
+import com.amiel.moviecenter.Utils.LoadingState;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,12 @@ public class MyPostsViewModel extends AndroidViewModel {
     }
 
     public void updatePost(Post updatedPost) {
-        mRepository.updatePostTask(updatedPost);
+        mRepository.updatePostTask(updatedPost, data -> {
+
+        });
+    }
+
+    public MutableLiveData<LoadingState> getPostsLoadingStatus() {
+        return mRepository.getEventPostsListLoadingState();
     }
 }
