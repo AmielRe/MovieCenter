@@ -1,15 +1,9 @@
 package com.amiel.moviecenter.DB;
 
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-import androidx.room.Room;
-
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
@@ -20,7 +14,7 @@ import java.util.List;
 
 public class AppRemoteFirebaseDatabase {
 
-    private FirebaseFirestore db;
+    private final FirebaseFirestore db;
     private static AppRemoteFirebaseDatabase instance;
 
     private AppRemoteFirebaseDatabase(){
@@ -76,14 +70,42 @@ public class AppRemoteFirebaseDatabase {
                 .addOnCompleteListener(task -> listener.onComplete(null));
     }
 
-    public void getAllMovies(GenericListener<List<Movie>> callback) {
-        db.collection(Movie.COLLECTION).get().addOnCompleteListener(task -> {
+    public void getAllMoviesSince(Long since, GenericListener<List<Movie>> callback) {
+        db.collection(Movie.COLLECTION).whereGreaterThanOrEqualTo(Movie.LAST_UPDATED, new Timestamp(since, 0)).get().addOnCompleteListener(task -> {
             List<Movie> list = new LinkedList<>();
             if (task.isSuccessful()){
                 QuerySnapshot jsonsList = task.getResult();
                 for (DocumentSnapshot json: jsonsList){
                     Movie movie = Movie.fromJson(json.getData());
                     list.add(movie);
+                }
+            }
+            callback.onComplete(list);
+        });
+    }
+
+    public void getAllPostsSince(Long since, GenericListener<List<Post>> callback) {
+        db.collection(Post.COLLECTION).whereGreaterThanOrEqualTo(Post.LAST_UPDATED, new Timestamp(since, 0)).get().addOnCompleteListener(task -> {
+            List<Post> list = new LinkedList<>();
+            if (task.isSuccessful()){
+                QuerySnapshot jsonsList = task.getResult();
+                for (DocumentSnapshot json: jsonsList){
+                    Post post = Post.fromJson(json.getData());
+                    list.add(post);
+                }
+            }
+            callback.onComplete(list);
+        });
+    }
+
+    public void getAllUsersSince(Long since, GenericListener<List<User>> callback) {
+        db.collection(User.COLLECTION).whereGreaterThanOrEqualTo(User.LAST_UPDATED, new Timestamp(since, 0)).get().addOnCompleteListener(task -> {
+            List<User> list = new LinkedList<>();
+            if (task.isSuccessful()){
+                QuerySnapshot jsonsList = task.getResult();
+                for (DocumentSnapshot json: jsonsList){
+                    User user = User.fromJson(json.getData());
+                    list.add(user);
                 }
             }
             callback.onComplete(list);

@@ -4,10 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Query;
 
-import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.User;
-
-import java.util.List;
 
 @Dao
 public interface UserDao extends BaseDao<User>{

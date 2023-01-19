@@ -6,6 +6,9 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.FieldValue;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +36,6 @@ public class Movie {
     @ColumnInfo(name = PLOT)
     private String plot;
 
-    @NonNull
     @ColumnInfo(name = "poster")
     private byte[] poster;
 
@@ -41,12 +43,16 @@ public class Movie {
     @ColumnInfo(name = POSTER_URL)
     private String posterUrl;
 
+    @ColumnInfo(name = LAST_UPDATED)
+    private Long lastUpdated;
+
     public static final String NAME = "name";
     public static final String ID = "movie_id";
     public static final String YEAR = "year";
     public static final String RATING = "movie_rating";
     public static final String PLOT = "plot";
     public static final String POSTER_URL = "posterUrl";
+    public static final String LAST_UPDATED = "movieLastUpdated";
     public static final String COLLECTION = "Movies";
 
     public Movie(String name, long year, float rating, String plot, byte[] poster, String id, String posterUrl)
@@ -125,6 +131,14 @@ public class Movie {
         this.poster = poster;
     }
 
+    public void setLastUpdated(Long lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+
+    public Long getLastUpdated() {
+        return lastUpdated;
+    }
+
     public static Movie fromJson(Map<String,Object> json){
         String id = (String) json.get(ID);
         String name = (String)json.get(NAME);
@@ -132,7 +146,14 @@ public class Movie {
         float rating = ((Double) json.get(RATING)).floatValue();
         String plot = (String) json.get(PLOT);
         String posterUrl = (String) json.get(POSTER_URL);
-        return new Movie(name, year, rating, plot, null, id, posterUrl);
+        Movie movie = new Movie(name, year, rating, plot, null, id, posterUrl);
+
+        try{
+            Timestamp time = (Timestamp) json.get(LAST_UPDATED);
+            movie.setLastUpdated(time.getSeconds());
+        }catch(Exception ignored){}
+
+        return movie;
     }
 
     public Map<String,Object> toJson(){
@@ -143,6 +164,7 @@ public class Movie {
         json.put(RATING, getRating());
         json.put(PLOT, getPlot());
         json.put(POSTER_URL, getPosterUrl());
+        json.put(LAST_UPDATED, FieldValue.serverTimestamp());
         return json;
     }
 }

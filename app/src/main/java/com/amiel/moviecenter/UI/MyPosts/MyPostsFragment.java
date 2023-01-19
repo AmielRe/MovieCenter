@@ -19,6 +19,7 @@ import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.Model.Post;
+import com.amiel.moviecenter.Utils.LoadingState;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.amiel.moviecenter.databinding.MyPostsFragmentBinding;
 
@@ -46,6 +47,12 @@ public class MyPostsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         binding.myPostsRecyclerView.setHasFixedSize(true);
         myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
+
+        binding.myPostsSwipeRefreshLayout.setOnRefreshListener(this::updatePosts);
+
+        myPostsViewModel.getPostsLoadingStatus().observe(getViewLifecycleOwner(), status -> {
+            binding.myPostsSwipeRefreshLayout.setRefreshing(status == LoadingState.LOADING);
+        });
 
         // Set adapter to recycler view
         binding.myPostsRecyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
@@ -83,6 +90,13 @@ public class MyPostsFragment extends Fragment {
             @Override
             public void onPrepareMenu(@NonNull Menu menu) {
             }
+        });
+    }
+
+    public void updatePosts() {
+        myPostsViewModel.getPosts().observe(getViewLifecycleOwner(), psList -> {
+            adapter.clear();
+            adapter.addAll(psList);
         });
     }
 }

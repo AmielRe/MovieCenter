@@ -13,9 +13,13 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.amiel.moviecenter.DB.GenericListener;
+import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.R;
+import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
+import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.TextValidator;
 import com.amiel.moviecenter.databinding.SignUpFragmentBinding;
 import com.google.android.material.textfield.TextInputLayout;
@@ -166,7 +170,14 @@ public class SignUpFragment extends Fragment {
                                                 binding.signUpEmailEdittext.setError(null);
 
                                                 NavController navController = Navigation.findNavController(requireActivity(), view.getId());
-                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(binding.signUpUsernameEdittext.getText().toString(), binding.signUpEmailEdittext.getText().toString(), binding.signUpPasswordEdittext.getText().toString(), requireActivity(), navController, db);
+                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(binding.signUpUsernameEdittext.getText().toString(), binding.signUpEmailEdittext.getText().toString(), binding.signUpPasswordEdittext.getText().toString(), requireActivity(), navController, newUser -> {
+                                                    FirebaseStorageHandler.getInstance().uploadUserImage(ImageUtils.getBitmap(newUser.getProfileImage()), newUser.getId(), imageUrl -> {
+                                                        if (imageUrl != null) {
+                                                            newUser.setProfileImageUrl(imageUrl);
+                                                            db.insertUserTask(newUser, data -> {});
+                                                        }
+                                                    });
+                                                });
                                             } else {
                                                 // Email already exists
                                                 binding.signUpEmailEdittext.setError(getString(R.string.error_email_already_in_use));

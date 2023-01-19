@@ -30,6 +30,7 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.amiel.moviecenter.DB.GenericListener;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.Model.Movie;
@@ -38,6 +39,7 @@ import com.amiel.moviecenter.Utils.AsyncTasks.GetMovieDataTask;
 import com.amiel.moviecenter.Utils.DialogUtils;
 import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
 import com.amiel.moviecenter.Utils.ImageUtils;
+import com.amiel.moviecenter.Utils.LoadingState;
 import com.amiel.moviecenter.Utils.PermissionHelper;
 import com.amiel.moviecenter.Utils.TextValidator;
 import com.amiel.moviecenter.databinding.MovieListFragmentBinding;
@@ -174,7 +176,7 @@ public class MoviesListFragment extends Fragment {
         }
 
         // Set adapter to recycler view
-        moviesListViewModel.getMovies(data -> {
+        moviesListViewModel.getMovies().observe(getViewLifecycleOwner(), data -> {
             if(isAdded() && getActivity() != null) {
                 binding.mainRecyclerListMovies.setLayoutManager(new LinearLayoutManager(getActivity()));
             }
@@ -188,12 +190,12 @@ public class MoviesListFragment extends Fragment {
                 MoviesListFragmentDirections.ActionMoviesListFragmentToMovieDetailsFragment action = MoviesListFragmentDirections.actionMoviesListFragmentToMovieDetailsFragment(clickedMovie.getId(), clickedMovie.getName(), clickedMovie.getYear(), clickedMovie.getRating(), clickedMovie.getPlot(), clickedMovie.getPosterUrl());
                 Navigation.findNavController(view).navigate(action);
             });
-            binding.progressBar.setVisibility(View.GONE);
         });
 
-        binding.movieListSwipeRefreshLayout.setOnRefreshListener(() -> {
-            updateMovies();
-            binding.movieListSwipeRefreshLayout.setRefreshing(false);
+        binding.movieListSwipeRefreshLayout.setOnRefreshListener(this::updateMovies);
+
+        moviesListViewModel.getMoviesLoadingStatus().observe(getViewLifecycleOwner(), status -> {
+            binding.movieListSwipeRefreshLayout.setRefreshing(status == LoadingState.LOADING);
         });
 
         binding.movieListFab.setOnClickListener(v -> openNewPostDialog());
@@ -238,24 +240,16 @@ public class MoviesListFragment extends Fragment {
                 progressDialog.show();
 
                 moviesListViewModel.getMovieByName(newPostBinding.newPostMovieNameEditText.getText().toString()).observe(getViewLifecycleOwner(), movie -> {
-                    if (movie != null && newPostBinding.newPostMovieYearEditText.getText().toString().length() > 0) {
-                        try {
-                            moviesListViewModel.getMovieByNameAndYear(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString())).observe(getViewLifecycleOwner(), movieByNameAndYear -> {
-                                Bitmap movieBitmap = ImageUtils.getBitmap(movieByNameAndYear.getPoster());
-                                if (movieBitmap != null) {
-                                    newPostBinding.newPostMoviePosterImageView.setImageBitmap(movieBitmap);
-                                    newPostBinding.newPostMoviePosterImageView.setBackground(null);
-                                }
-                                moviesListViewModel.setNewMoviePlot(movieByNameAndYear.getPlot());
-                                newPostBinding.newPostMoviePosterUploadImage.setOnClickListener(null);
-                                progressDialog.dismiss();
-                                Toast.makeText(requireActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
-                            });
-                        } catch (Exception e) {
-                            progressDialog.dismiss();
-                            Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
+                    if(movie != null) {
+                        Bitmap movieBitmap = ImageUtils.getBitmap(movie.getPoster());
+                        if (movieBitmap != null) {
+                            newPostBinding.newPostMoviePosterImageView.setImageBitmap(movieBitmap);
+                            newPostBinding.newPostMoviePosterImageView.setBackground(null);
                         }
+                        moviesListViewModel.setNewMoviePlot(movie.getPlot());
+                        newPostBinding.newPostMoviePosterUploadImage.setOnClickListener(null);
+                        progressDialog.dismiss();
+                        Toast.makeText(requireActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
                     } else {
                         try {
                             SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -335,10 +329,10 @@ public class MoviesListFragment extends Fragment {
                 if(!isExist) {
                     final Bitmap movieImageBitmap = ((BitmapDrawable) newPostBinding.newPostMoviePosterImageView.getDrawable()).getBitmap();
                     Movie newMovie = new Movie(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString().replaceAll("[^0-9]", "")), newPostBinding.newPostMovieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(movieImageBitmap), "", "");
-                    moviesListViewModel.insertMovie(newMovie).observe(getViewLifecycleOwner(), ids -> {
-                        FirebaseStorageHandler.getInstance().uploadMovieImage(movieImageBitmap, String.valueOf(ids[0]), data -> {
-                            if(data != null) {
-                                newMovie.setPosterUrl(data);
+                    moviesListViewModel.insertMovie(newMovie, movieData -> {
+                        FirebaseStorageHandler.getInstance().uploadMovieImage(movieImageBitmap, newMovie.getId(), imageUrl -> {
+                            if(imageUrl != null) {
+                                newMovie.setPosterUrl(imageUrl);
                                 moviesListViewModel.updateMovie(newMovie);
                                 updateMovies();
                             }
@@ -348,13 +342,15 @@ public class MoviesListFragment extends Fragment {
                         final Bitmap postImageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
-                        moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, String.valueOf(postIds[0]), data -> {
-                            if (data != null) {
-                                newPost.setPostImageUrl(data);
-                                moviesListViewModel.updatePost(newPost);
-                            }
-                        }));
+                        Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is nothing because it will be set later
+                        moviesListViewModel.insertPost(newPost, postData -> {
+                            FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, newPost.getId(), imageUrl -> {
+                                if (imageUrl != null) {
+                                    newPost.setPostImageUrl(imageUrl);
+                                    moviesListViewModel.updatePost(newPost);
+                                }
+                            });
+                        });
 
                         builder.dismiss();
                         progressDialog.dismiss();
@@ -366,21 +362,23 @@ public class MoviesListFragment extends Fragment {
                         final Bitmap imageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, movie.getId(), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is 0 because were not setting it, it's used just for retrieval
-                        moviesListViewModel.insertPost(newPost).observe(getViewLifecycleOwner(), postIds -> FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, String.valueOf(postIds[0]), data -> {
-                            if (data != null) {
-                                newPost.setPostImageUrl(data);
-                                moviesListViewModel.updatePost(newPost);
-                            }
-                        }));
+                        Post newPost = new Post(text, movie.getId(), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is nothing because it will be set later
+                        moviesListViewModel.insertPost(newPost, data -> {
+                            FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, newPost.getId(), imageUrl -> {
+                                if (imageUrl != null) {
+                                    newPost.setPostImageUrl(imageUrl);
+                                    moviesListViewModel.updatePost(newPost);
+                                }
+                            });
 
-                        // Update movie rating
-                        movie.setRating((movie.getRating() + newPostBinding.newPostMovieRating.getRating()) / 2);
-                        moviesListViewModel.updateMovie(movie);
-                        adapter.updateMovieRating(movie);
+                            // Update movie rating
+                            movie.setRating((movie.getRating() + newPostBinding.newPostMovieRating.getRating()) / 2);
+                            moviesListViewModel.updateMovie(movie);
+                            adapter.updateMovieRating(movie);
 
-                        builder.dismiss();
-                        progressDialog.dismiss();
+                            builder.dismiss();
+                            progressDialog.dismiss();
+                        });
                     });
                 }
             }
@@ -416,12 +414,9 @@ public class MoviesListFragment extends Fragment {
             });
 
     public void updateMovies() {
-        binding.progressBar.setVisibility(View.VISIBLE);
-        moviesListViewModel.getMovies((mvList)->{
-            moviesListViewModel.setMovies(mvList);
+        moviesListViewModel.getMovies().observe(getViewLifecycleOwner(), mvList -> {
             adapter.clear();
             adapter.addAll(mvList);
-            binding.progressBar.setVisibility(View.GONE);
         });
     }
 }

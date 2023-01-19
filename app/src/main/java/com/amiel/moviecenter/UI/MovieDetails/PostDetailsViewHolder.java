@@ -33,7 +33,11 @@ class PostDetailsViewHolder extends RecyclerView.ViewHolder{
         binding.moviePostRowItemUserName.setText(itemView.getContext().getString(R.string.username, post.postUser.getUsername()));
         binding.moviePostRowItemPostText.setText(post.post.getText());
         binding.moviePostRowItemPostRating.setRating(post.post.getRating());
-        Picasso.get().load(post.postUser.getProfileImageUrl()).placeholder(R.drawable.default_profile_image).into(binding.moviePostRowItemUserImage);
-        Picasso.get().load(post.post.getPostImageUrl()).placeholder(R.drawable.default_post_placeholder).into(binding.moviePostRowItemPostImage);
+        if(!post.postUser.getProfileImageUrl().isEmpty()) {
+            Picasso.get().load(post.postUser.getProfileImageUrl()).placeholder(R.drawable.default_profile_image).into(binding.moviePostRowItemUserImage);
+        }
+        if(!post.post.getPostImageUrl().isEmpty()) {
+            Picasso.get().load(post.post.getPostImageUrl()).placeholder(R.drawable.default_post_placeholder).into(binding.moviePostRowItemPostImage);
+        }
     }
 }

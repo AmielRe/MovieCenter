@@ -62,7 +62,9 @@ public class MovieDetailsFragment extends Fragment {
 
         binding.movieDetailsMovieName.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getName());
         binding.movieDetailsMovieYear.setText(String.valueOf(MovieDetailsFragmentArgs.fromBundle(getArguments()).getYear()));
-        Picasso.get().load(MovieDetailsFragmentArgs.fromBundle(getArguments()).getImageurl()).placeholder(R.drawable.default_post_placeholder).into(binding.movieDetailsMovieImage);
+        if(!MovieDetailsFragmentArgs.fromBundle(getArguments()).getImageurl().isEmpty()) {
+            Picasso.get().load(MovieDetailsFragmentArgs.fromBundle(getArguments()).getImageurl()).placeholder(R.drawable.default_post_placeholder).into(binding.movieDetailsMovieImage);
+        }
         binding.movieDetailsMovieRating.setRating(MovieDetailsFragmentArgs.fromBundle(getArguments()).getRating());
         binding.movieDetailsMovieDescription.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getPlot());
 

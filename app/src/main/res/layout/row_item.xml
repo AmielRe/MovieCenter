@@ -13,7 +13,7 @@
         android:paddingEnd="15sp"
         android:paddingStart="15sp"
         android:id="@+id/row_item_movie_image"
-        app:srcCompat="@drawable/joker" />
+        app:srcCompat="@drawable/default_post_placeholder" />
 
     <LinearLayout
         android:layout_width="match_parent"

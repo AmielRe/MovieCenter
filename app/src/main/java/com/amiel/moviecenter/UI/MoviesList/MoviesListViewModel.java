@@ -11,24 +11,20 @@ import com.amiel.moviecenter.DB.GenericListener;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
+import com.amiel.moviecenter.Utils.LoadingState;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MoviesListViewModel extends AndroidViewModel {
 
     String newMoviePlot;
-    private List<Movie> movies;
+    private LiveData<List<Movie>> movies;
     DatabaseRepository mRepository;
 
     public MoviesListViewModel(Application app) {
         super(app);
         mRepository = new DatabaseRepository(app);
-        this.movies = new ArrayList<>();
-    }
-
-    public void setMovies(List<Movie> movies) {
-        this.movies = movies;
+        this.movies = mRepository.getAllMoviesTask();
     }
 
     public void setNewMoviePlot(String newMoviePlot) {
@@ -39,12 +35,17 @@ public class MoviesListViewModel extends AndroidViewModel {
         return newMoviePlot;
     }
 
-    public void getMovies(GenericListener<List<Movie>> callback) {
-        mRepository.getAllMoviesTask(callback);
+    public LiveData<List<Movie>> getMovies() {
+        movies = mRepository.getAllMoviesTask();
+        return movies;
     }
 
-    public MutableLiveData<long[]> insertMovie(Movie newMovie) {
-        return mRepository.insertMovieTask(newMovie);
+    public MutableLiveData<LoadingState> getMoviesLoadingStatus() {
+        return mRepository.getEventMoviesListLoadingState();
+    }
+
+    public void insertMovie(Movie newMovie, GenericListener<Void> listener) {
+        mRepository.insertMovieTask(newMovie, listener);
     }
 
     public LiveData<Movie> getMovieByName(String movieName) {
@@ -55,17 +56,13 @@ public class MoviesListViewModel extends AndroidViewModel {
         return mRepository.getMovieByNameAndYear(movieName, movieYear);
     }
 
-    public LiveData<User> getUserByEmail(String email) {
-        return mRepository.getUserByEmail(email);
-    }
-
-    public MutableLiveData<long[]> insertPost(Post newPost) {
-        return mRepository.insertPostTask(newPost);
+    public void insertPost(Post newPost, GenericListener<Void> listener) {
+        mRepository.insertPostTask(newPost, listener);
     }
 
     public void updateMovie(Movie updatedMovie) {
-        mRepository.updateMovieTask(updatedMovie);
+        mRepository.updateMovieTask(updatedMovie, data -> {});
     }
 
-    public void updatePost(Post updatedPost) { mRepository.updatePostTask(updatedPost); }
+    public void updatePost(Post updatedPost) { mRepository.updatePostTask(updatedPost, data -> {}); }
 }
