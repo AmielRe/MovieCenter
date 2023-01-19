@@ -7,7 +7,7 @@ import androidx.room.Update;
 public interface BaseDao<T> {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    long[] insert(T[] obj);
+    void insert(T[] obj);
 
     @Update
     int update(T[] obj);
