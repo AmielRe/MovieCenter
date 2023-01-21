@@ -2,6 +2,7 @@ package com.amiel.moviecenter.UI.SplashScreen;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
@@ -38,13 +40,15 @@ public class SplashScreenFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         NavController navController = Navigation.findNavController(requireActivity(), view.getId());
 
-        db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail()).observe(getViewLifecycleOwner(), user -> {
+        LiveData<User> userLiveData = db.getUserByEmail(FirebaseAuthHandler.getInstance().getCurrentUserEmail());
+        userLiveData.observe(getViewLifecycleOwner(), user -> {
             NavDirections directions;
             if(user != null && FirebaseAuthHandler.getInstance().isUserLoggedIn()) {
                 directions = SplashScreenFragmentDirections.actionSplashScreenFragmentToMoviesListFragment();
             } else {
                 directions = SplashScreenFragmentDirections.actionSplashScreenFragmentToLoginOptionsFragment();
             }
+            userLiveData.removeObservers(getViewLifecycleOwner());
 
             new Handler().postDelayed(() -> {
                 // This method will be executed once the timer is over
