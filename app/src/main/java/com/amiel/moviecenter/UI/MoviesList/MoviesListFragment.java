@@ -317,21 +317,9 @@ public class MoviesListFragment extends Fragment {
             }
         });
 
-        newPostBinding.newPostMovieImageUploadImage.setOnClickListener(v -> {
-            if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
-                new PermissionHelper().startPermissionRequest(movieImageResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
-            } else {
-                galleryResultLauncherMovieImage.launch("image/*");
-            }
-        });
+        newPostBinding.newPostMovieImageUploadImage.setOnClickListener(v -> galleryResultLauncherMovieImage.launch("image/*"));
 
-        newPostBinding.newPostMoviePosterUploadImage.setOnClickListener(v -> {
-            if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
-                new PermissionHelper().startPermissionRequest(moviePosterResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
-            } else {
-                galleryResultLauncherMoviePoster.launch("image/*");
-            }
-        });
+        newPostBinding.newPostMoviePosterUploadImage.setOnClickListener(v -> galleryResultLauncherMoviePoster.launch("image/*"));
 
         // Finally building an AlertDialog
         final AlertDialog builder = new AlertDialog.Builder(requireActivity())

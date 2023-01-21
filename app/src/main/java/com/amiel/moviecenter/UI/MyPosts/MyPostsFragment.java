@@ -49,6 +49,7 @@ public class MyPostsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         binding = MyPostsFragmentBinding.inflate(inflater, parent, false);
+        myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
 
         permissionResult = PermissionHelper.registerForActivityResult(this, isGranted -> {
             // If permission granted
@@ -59,53 +60,33 @@ public class MyPostsFragment extends Fragment {
 
         cameraResult = ImageUtils.registerForCameraActivityResult(this, data -> {
             if(data != null) {
+                Post updatedPost = adapter.getItemAtPosition(binding.myPostsRecyclerView.getChildAdapterPosition(viewHolder.itemView)).post;
                 viewHolder.setPostImage(data);
+                FirebaseStorageHandler.getInstance().uploadPostImage(data, updatedPost.getId(), imageUrl -> {
+                    if (imageUrl != null) {
+                        updatedPost.setPostImageUrl(imageUrl);
+                        myPostsViewModel.updatePost(updatedPost);
+                    }
+                });
             }
         });
 
         galleryResult = ImageUtils.registerForGalleryActivityResult(this, data -> {
             if (data != null) {
                 try {
+                    Post updatedPost = adapter.getItemAtPosition(binding.myPostsRecyclerView.getChildAdapterPosition(viewHolder.itemView)).post;
                     Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), data);
                     viewHolder.setPostImage(res);
+                    FirebaseStorageHandler.getInstance().uploadPostImage(res, updatedPost.getId(), imageUrl -> {
+                        if (imageUrl != null) {
+                            updatedPost.setPostImageUrl(imageUrl);
+                            myPostsViewModel.updatePost(updatedPost);
+                        }
+                    });
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        });
-
-        adapter = new MyPostsRecyclerAdapter(new ArrayList<>());
-        binding.myPostsRecyclerView.setAdapter(adapter);
-        myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
-
-        binding.myPostsSwipeRefreshLayout.setOnRefreshListener(this::updatePosts);
-
-        myPostsViewModel.getPostsLoadingStatus().observe(getViewLifecycleOwner(), status -> {
-            binding.myPostsSwipeRefreshLayout.setRefreshing(status == LoadingState.LOADING);
-        });
-
-        // Set adapter to recycler view
-        binding.myPostsRecyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
-
-        myPostsViewModel.getPosts().observe(getViewLifecycleOwner(), posts -> {
-            adapter.addAll(posts);
-
-            adapter.setOnItemClickListener((pos, postText, postImageBitmap) -> {
-                MyPostRowItem postRowItem = adapter.getItemAtPosition(pos);
-                Post updatedPost = postRowItem.post;
-                FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, updatedPost.getId(), imageUrl -> {
-                    if (imageUrl != null) {
-                        updatedPost.setText(postText);
-                        updatedPost.setPostImageUrl(imageUrl);
-                        myPostsViewModel.updatePost(updatedPost);
-                    }
-                });
-            });
-
-            adapter.setChangeImageListener(viewHolder -> {
-                this.viewHolder = viewHolder;
-                ImageUtils.selectImage(this, galleryResult, cameraResult, permissionResult);
-            });
         });
 
         return binding.getRoot();
@@ -116,6 +97,30 @@ public class MyPostsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         binding.myPostsRecyclerView.setHasFixedSize(true);
+        binding.myPostsSwipeRefreshLayout.setOnRefreshListener(this::updatePosts);
+        adapter = new MyPostsRecyclerAdapter(new ArrayList<>());
+        binding.myPostsRecyclerView.setAdapter(adapter);
+
+        myPostsViewModel.getPostsLoadingStatus().observe(getViewLifecycleOwner(), status -> {
+            binding.myPostsSwipeRefreshLayout.setRefreshing(status == LoadingState.LOADING);
+        });
+
+        // Set adapter to recycler view
+        binding.myPostsRecyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
+
+        updatePosts();
+
+        adapter.setOnItemClickListener((pos, postText, postImageBitmap) -> {
+            MyPostRowItem postRowItem = adapter.getItemAtPosition(pos);
+            Post updatedPost = postRowItem.post;
+            updatedPost.setText(postText);
+            myPostsViewModel.updatePost(updatedPost);
+        });
+
+        adapter.setChangeImageListener(viewHolder -> {
+            this.viewHolder = viewHolder;
+            ImageUtils.selectImage(this, galleryResult, cameraResult, permissionResult);
+        });
 
         requireActivity().addMenuProvider(new MenuProvider() {
             @Override
