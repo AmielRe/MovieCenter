@@ -5,8 +5,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.amiel.moviecenter.DB.GenericListener;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.R;
@@ -21,6 +23,8 @@ public class MyPostsRecyclerAdapter extends RecyclerView.Adapter<MyPostViewHolde
     OnMyPostRowItemClickListener listener;
     List<MyPostRowItem> data;
 
+    GenericListener<MyPostViewHolder> changeImageListener;
+
     public MyPostsRecyclerAdapter(List<MyPostRowItem> originalData) {
         this.data = new ArrayList<>();
         this.data.addAll(originalData);
@@ -30,11 +34,15 @@ public class MyPostsRecyclerAdapter extends RecyclerView.Adapter<MyPostViewHolde
         this.listener = listener;
     }
 
+    void setChangeImageListener(GenericListener<MyPostViewHolder> listener) {
+        this.changeImageListener = listener;
+    }
+
     @NonNull
     @Override
     public MyPostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.my_post_row_item, parent, false);
-        return new MyPostViewHolder(view, listener);
+        return new MyPostViewHolder(view, listener, changeImageListener);
     }
 
     @Override
