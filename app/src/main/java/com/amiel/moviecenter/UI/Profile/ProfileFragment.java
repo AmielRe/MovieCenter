@@ -3,6 +3,7 @@ package com.amiel.moviecenter.UI.Profile;
 import android.Manifest;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,11 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -38,7 +36,9 @@ public class ProfileFragment extends Fragment {
 
     ProfileFragmentBinding binding;
     ProfileViewModel profileViewModel;
-    ActivityResultLauncher<String[]> cameraResult;
+    ActivityResultLauncher<String[]> permissionResult;
+    ActivityResultLauncher<Void> cameraResult;
+    ActivityResultLauncher<String> galleryResult;
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
@@ -46,10 +46,27 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         binding = ProfileFragmentBinding.inflate(inflater, parent, false);
 
-        cameraResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
+        permissionResult = PermissionHelper.registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
-                cameraResultLauncher.launch(null);
+                cameraResult.launch(null);
+            }
+        });
+
+        cameraResult = ImageUtils.registerForCameraActivityResult(this, data -> {
+            if(data != null) {
+                binding.profileFragmentImage.setImageBitmap(data);
+            }
+        });
+
+        galleryResult = ImageUtils.registerForGalleryActivityResult(this, data -> {
+            if (data != null) {
+                try {
+                    Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), data);
+                    binding.profileFragmentImage.setImageBitmap(res);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -85,7 +102,7 @@ public class ProfileFragment extends Fragment {
             Picasso.get().load(user.getProfileImageUrl()).placeholder(R.drawable.default_profile_image).into(binding.profileFragmentImage);
         });
 
-        binding.profileFragmentImage.setOnClickListener(v -> selectImage());
+        binding.profileFragmentImage.setOnClickListener(v -> ImageUtils.selectImage(this, galleryResult, cameraResult, permissionResult));
 
         binding.profileFragmentSaveButton.setOnClickListener(v -> {
             try {
@@ -105,53 +122,4 @@ public class ProfileFragment extends Fragment {
             }
         });
     }
-
-    private void selectImage() {
-        final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
-        builder.setTitle("Choose profile picture");
-        builder.setItems(options, (dialog, item) -> {
-            if (options[item].equals("Take Photo"))
-            {
-                if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
-                    new PermissionHelper().startPermissionRequest(cameraResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
-                } else {
-                    cameraResultLauncher.launch(null);
-                }
-            }
-            else if (options[item].equals("Choose from Gallery"))
-            {
-                galleryResultLauncher.launch("image/*");
-            }
-            else if (options[item].equals("Cancel")) {
-                dialog.dismiss();
-            }
-        });
-        builder.show();
-    }
-
-    // Launcher for gallery image pick
-    private final ActivityResultLauncher<String> galleryResultLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(),
-            new ActivityResultCallback<Uri>() {
-                @Override
-                public void onActivityResult(Uri result) {
-                    if (result != null) {
-                        try {
-                            Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), result);
-                            binding.profileFragmentImage.setImageBitmap(res);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
-
-    private final ActivityResultLauncher<Void> cameraResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.TakePicturePreview(),
-            result -> {
-                if(result != null) {
-                    binding.profileFragmentImage.setImageBitmap(result);
-                }
-            }
-    );
 }

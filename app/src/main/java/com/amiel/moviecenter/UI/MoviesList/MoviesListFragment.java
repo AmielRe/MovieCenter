@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,7 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
@@ -62,6 +62,8 @@ public class MoviesListFragment extends Fragment {
     AlertDialog progressDialog;
     ActivityResultLauncher<String[]> moviePosterResult;
     ActivityResultLauncher<String[]> movieImageResult;
+    ActivityResultLauncher<String> galleryResultLauncherMovieImage;
+    ActivityResultLauncher<String> galleryResultLauncherMoviePoster;
     NewPostLayoutBinding newPostBinding;
 
     private static final String BASE_IMDB_MOVIE_URL = "https://imdb-api.com/API/AdvancedSearch/k_4wqqdznf?title=%s&title_type=feature,tv_movie&has=plot&release_date=,%s";
@@ -80,17 +82,41 @@ public class MoviesListFragment extends Fragment {
 
         binding = MovieListFragmentBinding.inflate(inflater, parent, false);
 
-        movieImageResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
+        movieImageResult = PermissionHelper.registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
                 galleryResultLauncherMovieImage.launch("image/*");
             }
         });
 
-        moviePosterResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
+        moviePosterResult = PermissionHelper.registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
                 galleryResultLauncherMoviePoster.launch("image/*");
+            }
+        });
+
+        galleryResultLauncherMovieImage = ImageUtils.registerForGalleryActivityResult(this, data -> {
+            if (data != null) {
+                try {
+                    Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), data);
+                    newPostBinding.newPostMovieImageImageView.setImageBitmap(res);
+                    newPostBinding.newPostMovieImageImageView.setBackground(null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        galleryResultLauncherMoviePoster = ImageUtils.registerForGalleryActivityResult(this, data -> {
+            if (data != null) {
+                try {
+                    Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), data);
+                    newPostBinding.newPostMoviePosterImageView.setImageBitmap(res);
+                    newPostBinding.newPostMoviePosterImageView.setBackground(null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -384,34 +410,6 @@ public class MoviesListFragment extends Fragment {
             }
         });
     }
-
-    private final ActivityResultLauncher<String> galleryResultLauncherMovieImage = registerForActivityResult(
-            new ActivityResultContracts.GetContent(),
-            result -> {
-                if (result != null) {
-                    try {
-                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), result);
-                        newPostBinding.newPostMovieImageImageView.setImageBitmap(res);
-                        newPostBinding.newPostMovieImageImageView.setBackground(null);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-    private final ActivityResultLauncher<String> galleryResultLauncherMoviePoster = registerForActivityResult(
-            new ActivityResultContracts.GetContent(),
-            result -> {
-                if (result != null) {
-                    try {
-                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), result);
-                        newPostBinding.newPostMoviePosterImageView.setImageBitmap(res);
-                        newPostBinding.newPostMoviePosterImageView.setBackground(null);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
 
     public void updateMovies() {
         moviesListViewModel.getMovies().observe(getViewLifecycleOwner(), mvList -> {
