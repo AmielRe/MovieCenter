@@ -1,11 +1,20 @@
 package com.amiel.moviecenter.Utils;
 
+import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.exifinterface.media.ExifInterface;
+import androidx.fragment.app.Fragment;
+
 import android.net.Uri;
+
+import com.amiel.moviecenter.DB.GenericListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -158,5 +167,37 @@ public class ImageUtils {
             image = stream.toByteArray();
         }
         return image;
+    }
+
+    public static void selectImage(Fragment context, ActivityResultLauncher<String> galleryResultLauncher, ActivityResultLauncher<Void> cameraResultLauncher, ActivityResultLauncher<String[]> permissionResult) {
+        final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
+        AlertDialog.Builder builder = new AlertDialog.Builder(context.requireActivity());
+        builder.setTitle("Choose profile picture");
+        builder.setItems(options, (dialog, item) -> {
+            if (options[item].equals("Take Photo"))
+            {
+                if(PermissionHelper.isMissingPermissions(context.requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
+                    new PermissionHelper().startPermissionRequest(permissionResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
+                } else {
+                    cameraResultLauncher.launch(null);
+                }
+            }
+            else if (options[item].equals("Choose from Gallery"))
+            {
+                galleryResultLauncher.launch("image/*");
+            }
+            else if (options[item].equals("Cancel")) {
+                dialog.dismiss();
+            }
+        });
+        builder.show();
+    }
+
+    public static ActivityResultLauncher<Void> registerForCameraActivityResult(Fragment fr, GenericListener<Bitmap> resultInterface) {
+        return fr.registerForActivityResult(new ActivityResultContracts.TakePicturePreview(), resultInterface::onComplete);
+    }
+
+    public static ActivityResultLauncher<String> registerForGalleryActivityResult(Fragment fr, GenericListener<Uri> resultInterface) {
+        return fr.registerForActivityResult(new ActivityResultContracts.GetContent(), resultInterface::onComplete);
     }
 }
