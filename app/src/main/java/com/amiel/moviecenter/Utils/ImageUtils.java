@@ -176,8 +176,8 @@ public class ImageUtils {
         builder.setItems(options, (dialog, item) -> {
             if (options[item].equals("Take Photo"))
             {
-                if(PermissionHelper.isMissingPermissions(context.requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
-                    new PermissionHelper().startPermissionRequest(permissionResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
+                if(PermissionHelper.isMissingPermissions(context.requireActivity(), Manifest.permission.CAMERA)) {
+                    PermissionHelper.startPermissionRequest(permissionResult, Manifest.permission.CAMERA);
                 } else {
                     cameraResultLauncher.launch(null);
                 }
