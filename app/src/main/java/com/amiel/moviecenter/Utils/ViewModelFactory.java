@@ -2,17 +2,13 @@ package com.amiel.moviecenter.Utils;
 
 import android.app.Application;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.amiel.moviecenter.DB.GenericListener;
-import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.UI.MovieDetails.MovieDetailsViewModel;
-import com.amiel.moviecenter.UI.MoviesList.MoviesListViewModel;
 import com.amiel.moviecenter.UI.MyPosts.MyPostsViewModel;
 import com.amiel.moviecenter.UI.Profile.ProfileViewModel;
-
-import java.util.List;
 
 public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory implements ViewModelProvider.Factory {
     private final Application mApplication;
@@ -23,8 +19,9 @@ public class ViewModelFactory extends ViewModelProvider.NewInstanceFactory imple
         mParams = params;
     }
 
+    @NonNull
     @Override
-    public <T extends ViewModel> T create(Class<T> modelClass) {
+    public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass == ProfileViewModel.class) {
             return (T) new ProfileViewModel(mApplication, (String) mParams[0]);
         } else if (modelClass == MyPostsViewModel.class) {

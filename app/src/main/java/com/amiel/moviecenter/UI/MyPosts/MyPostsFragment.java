@@ -101,9 +101,7 @@ public class MyPostsFragment extends Fragment {
         adapter = new MyPostsRecyclerAdapter(new ArrayList<>());
         binding.myPostsRecyclerView.setAdapter(adapter);
 
-        myPostsViewModel.getPostsLoadingStatus().observe(getViewLifecycleOwner(), status -> {
-            binding.myPostsSwipeRefreshLayout.setRefreshing(status == LoadingState.LOADING);
-        });
+        myPostsViewModel.getPostsLoadingStatus().observe(getViewLifecycleOwner(), status -> binding.myPostsSwipeRefreshLayout.setRefreshing(status == LoadingState.LOADING));
 
         // Set adapter to recycler view
         binding.myPostsRecyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));

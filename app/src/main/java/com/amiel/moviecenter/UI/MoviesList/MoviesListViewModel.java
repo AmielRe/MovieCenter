@@ -10,7 +10,6 @@ import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.GenericListener;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
-import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.Utils.LoadingState;
 
 import java.util.List;

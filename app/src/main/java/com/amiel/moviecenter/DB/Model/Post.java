@@ -21,30 +21,24 @@ public class Post {
     @ColumnInfo(name = ID)
     public String id;
 
-    @NonNull
     @ColumnInfo(name = TEXT)
     public String text;
 
-    @NonNull
     @ColumnInfo(name = MOVIE_ID)
     public String movieID;
 
-    @NonNull
     @ColumnInfo(name = RATING)
     public float rating;
 
     @ColumnInfo(name = "image")
     public byte[] image;
 
-    @NonNull
     @ColumnInfo(name = USER_ID)
     public String userID;
 
-    @NonNull
     @ColumnInfo(name = DATE)
     public Date postDate;
 
-    @NonNull
     @ColumnInfo(name = POST_IMAGE_URL)
     public String postImageUrl;
 
@@ -61,7 +55,7 @@ public class Post {
     public static final String LAST_UPDATED = "postLastUpdated";
     public static final String COLLECTION = "Posts";
 
-    public Post(String text, String movieID, float rating, byte[] image, String userID, String id, Date postDate, String postImageUrl)
+    public Post(String text, String movieID, float rating, byte[] image, String userID, @NonNull String id, Date postDate, String postImageUrl)
     {
         this.text = text;
         this.movieID = movieID;
@@ -88,11 +82,12 @@ public class Post {
         this.postImageUrl = postImageUrl;
     }
 
+    @NonNull
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@NonNull String id) {
         this.id = id;
     }
 
@@ -101,24 +96,12 @@ public class Post {
         return movieID;
     }
 
-    public void setMovieID(@NonNull String movieID) {
-        this.movieID = movieID;
-    }
-
     public String getUserID() {
         return userID;
     }
 
-    public void setUserID(String userID) {
-        this.userID = userID;
-    }
-
     public float getRating() {
         return rating;
-    }
-
-    public void setRating(float rating) {
-        this.rating = rating;
     }
 
     @NonNull
@@ -131,21 +114,8 @@ public class Post {
     }
 
     @NonNull
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-
-    @NonNull
     public Date getPostDate() {
         return postDate;
-    }
-
-    public void setPostDate(@NonNull Date postDate) {
-        this.postDate = postDate;
     }
 
     public Long getLastUpdated() {

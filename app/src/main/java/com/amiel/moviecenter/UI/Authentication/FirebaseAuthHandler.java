@@ -10,14 +10,12 @@ import android.widget.Toast;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.navigation.NavController;
 
-import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.DB.GenericListener;
 import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.LoginOptions.LoginOptionsFragmentDirections;
 import com.amiel.moviecenter.UI.Authentication.SignUp.SignUpFragmentDirections;
 import com.amiel.moviecenter.UI.Authentication.SignIn.SignInFragmentDirections;
-import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;

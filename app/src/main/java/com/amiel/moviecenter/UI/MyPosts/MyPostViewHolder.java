@@ -36,9 +36,7 @@ public class MyPostViewHolder extends RecyclerView.ViewHolder{
             }
         });
 
-        binding.myPostRowItemPostImage.setOnClickListener(view -> {
-            changeImageListener.onComplete(this);
-        });
+        binding.myPostRowItemPostImage.setOnClickListener(view -> changeImageListener.onComplete(this));
     }
 
     public void bind(MyPostRowItem post, int pos) {

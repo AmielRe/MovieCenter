@@ -13,8 +13,6 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.amiel.moviecenter.DB.GenericListener;
-import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.R;
@@ -170,14 +168,12 @@ public class SignUpFragment extends Fragment {
                                                 binding.signUpEmailEdittext.setError(null);
 
                                                 NavController navController = Navigation.findNavController(requireActivity(), view.getId());
-                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(binding.signUpUsernameEdittext.getText().toString(), binding.signUpEmailEdittext.getText().toString(), binding.signUpPasswordEdittext.getText().toString(), requireActivity(), navController, newUser -> {
-                                                    FirebaseStorageHandler.getInstance().uploadUserImage(ImageUtils.getBitmap(newUser.getProfileImage()), newUser.getId(), imageUrl -> {
-                                                        if (imageUrl != null) {
-                                                            newUser.setProfileImageUrl(imageUrl);
-                                                            db.insertUserTask(newUser, data -> {});
-                                                        }
-                                                    });
-                                                });
+                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(binding.signUpUsernameEdittext.getText().toString(), binding.signUpEmailEdittext.getText().toString(), binding.signUpPasswordEdittext.getText().toString(), requireActivity(), navController, newUser -> FirebaseStorageHandler.getInstance().uploadUserImage(ImageUtils.getBitmap(newUser.getProfileImage()), newUser.getId(), imageUrl -> {
+                                                    if (imageUrl != null) {
+                                                        newUser.setProfileImageUrl(imageUrl);
+                                                        db.insertUserTask(newUser, data -> {});
+                                                    }
+                                                }));
                                             } else {
                                                 // Email already exists
                                                 binding.signUpEmailEdittext.setError(getString(R.string.error_email_already_in_use));
@@ -196,9 +192,7 @@ public class SignUpFragment extends Fragment {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            requireActivity().runOnUiThread(() -> {
-                                loadingProgressBar.setVisibility(View.INVISIBLE);
-                            });
+                            requireActivity().runOnUiThread(() -> loadingProgressBar.setVisibility(View.INVISIBLE));
                         }
                     }
                 });
