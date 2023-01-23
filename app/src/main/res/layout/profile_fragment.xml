@@ -80,7 +80,7 @@
             android:layout_height="40dp"
             android:text="@string/profile_save_button"
             android:layout_marginTop="40dp"
-            android:background="@drawable/customloginbutton"
+            android:background="@drawable/customwhitebutton"
             android:textColor="#FFFBF6"/>
 
     </LinearLayout>
