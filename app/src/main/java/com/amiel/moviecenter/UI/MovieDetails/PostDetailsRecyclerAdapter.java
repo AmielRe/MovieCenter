@@ -7,15 +7,12 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amiel.moviecenter.Utils.OnItemClickListener;
 import com.amiel.moviecenter.R;
 
 import java.util.ArrayList;
 import java.util.List;
 
 class PostDetailsRecyclerAdapter extends RecyclerView.Adapter<PostDetailsViewHolder> {
-
-    OnItemClickListener listener;
     List<PostDetailsItem> data;
 
     public PostDetailsRecyclerAdapter(List<PostDetailsItem> originalData) {
@@ -23,15 +20,11 @@ class PostDetailsRecyclerAdapter extends RecyclerView.Adapter<PostDetailsViewHol
         this.data.addAll(originalData);
     }
 
-    void setOnItemClickListener(OnItemClickListener listener) {
-        this.listener = listener;
-    }
-
     @NonNull
     @Override
     public PostDetailsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.movie_post_row_item, parent, false);
-        return new PostDetailsViewHolder(view, listener);
+        return new PostDetailsViewHolder(view);
     }
 
     @Override
@@ -43,9 +36,5 @@ class PostDetailsRecyclerAdapter extends RecyclerView.Adapter<PostDetailsViewHol
     @Override
     public int getItemCount() {
         return data.size();
-    }
-
-    public PostDetailsItem getItemAtPosition(int pos) {
-        return data.get(pos);
     }
 }

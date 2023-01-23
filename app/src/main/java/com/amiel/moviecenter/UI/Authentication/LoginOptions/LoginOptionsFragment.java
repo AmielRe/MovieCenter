@@ -15,8 +15,6 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import com.amiel.moviecenter.DB.GenericListener;
-import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.DatabaseRepository;
 import com.amiel.moviecenter.R;
@@ -48,7 +46,7 @@ public class LoginOptionsFragment extends Fragment {
     // This event is triggered soon after onCreateView().
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         binding.loginSignInWithEmailButton.setOnClickListener(v -> Navigation.findNavController(view).navigate(R.id.signInFragment));
 
         binding.loginSignUpButton.setOnClickListener(v -> Navigation.findNavController(view).navigate(R.id.signUpFragment));
@@ -61,14 +59,12 @@ public class LoginOptionsFragment extends Fragment {
                         GoogleSignInAccount account = task.getResult(ApiException.class);
 
                         NavController navController = Navigation.findNavController(requireActivity(), getView().getId());
-                        FirebaseAuthHandler.getInstance().signInWithGoogle(account, requireActivity(), navController, newUser -> {
-                            FirebaseStorageHandler.getInstance().uploadUserImage(ImageUtils.getBitmap(newUser.getProfileImage()), newUser.getId(), imageUrl -> {
-                                if (imageUrl != null) {
-                                    newUser.setProfileImageUrl(imageUrl);
-                                    db.insertUserTask(newUser, data -> {});
-                                }
-                            });
-                        });
+                        FirebaseAuthHandler.getInstance().signInWithGoogle(account, requireActivity(), navController, newUser -> FirebaseStorageHandler.getInstance().uploadUserImage(ImageUtils.getBitmap(newUser.getProfileImage()), newUser.getId(), imageUrl -> {
+                            if (imageUrl != null) {
+                                newUser.setProfileImageUrl(imageUrl);
+                                db.insertUserTask(newUser, data -> {});
+                            }
+                        }));
                     } catch (ApiException e) {
                         Log.w("TAG", "Google sign in failed", e);
                     }

@@ -11,11 +11,11 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class AppRemoteFirebaseDatabase {
 
     private final FirebaseFirestore db;
-    private static AppRemoteFirebaseDatabase instance;
 
     private AppRemoteFirebaseDatabase(){
         db = FirebaseFirestore.getInstance();
@@ -25,15 +25,12 @@ public class AppRemoteFirebaseDatabase {
         db.setFirestoreSettings(settings);
     }
 
+    private static final class InstanceHolder {
+        static final AppRemoteFirebaseDatabase instance = new AppRemoteFirebaseDatabase();
+    }
+
     static AppRemoteFirebaseDatabase getInstance(){
-        if (instance == null) {
-            synchronized (AppRemoteFirebaseDatabase.class) {
-                if (instance == null) {
-                    instance = new AppRemoteFirebaseDatabase();
-                }
-            }
-        }
-        return instance;
+        return InstanceHolder.instance;
     }
 
     public String createUniqueId(String collectionName) {
@@ -76,8 +73,11 @@ public class AppRemoteFirebaseDatabase {
             if (task.isSuccessful()){
                 QuerySnapshot jsonsList = task.getResult();
                 for (DocumentSnapshot json: jsonsList){
-                    Movie movie = Movie.fromJson(json.getData());
-                    list.add(movie);
+                    Map<String, Object> currJson = json.getData();
+                    if(currJson != null) {
+                        Movie movie = Movie.fromJson(currJson);
+                        list.add(movie);
+                    }
                 }
             }
             callback.onComplete(list);
@@ -90,8 +90,11 @@ public class AppRemoteFirebaseDatabase {
             if (task.isSuccessful()){
                 QuerySnapshot jsonsList = task.getResult();
                 for (DocumentSnapshot json: jsonsList){
-                    Post post = Post.fromJson(json.getData());
-                    list.add(post);
+                    Map<String, Object> currJson = json.getData();
+                    if(currJson != null) {
+                        Post post = Post.fromJson(currJson);
+                        list.add(post);
+                    }
                 }
             }
             callback.onComplete(list);
@@ -104,8 +107,11 @@ public class AppRemoteFirebaseDatabase {
             if (task.isSuccessful()){
                 QuerySnapshot jsonsList = task.getResult();
                 for (DocumentSnapshot json: jsonsList){
-                    User user = User.fromJson(json.getData());
-                    list.add(user);
+                    Map<String, Object> currJson = json.getData();
+                    if(currJson != null) {
+                        User user = User.fromJson(currJson);
+                        list.add(user);
+                    }
                 }
             }
             callback.onComplete(list);

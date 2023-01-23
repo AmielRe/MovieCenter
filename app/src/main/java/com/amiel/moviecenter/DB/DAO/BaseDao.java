@@ -4,11 +4,10 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Update;
 
+import java.util.List;
+
 public interface BaseDao<T> {
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(T[] obj);
-
-    @Update
-    int update(T[] obj);
 }

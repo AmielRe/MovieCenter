@@ -16,6 +16,28 @@
         android:clickable="true"
         android:focusableInTouchMode="true" >
 
+        <androidx.cardview.widget.CardView
+            android:id="@+id/my_post_row_item_delete_button_card_view"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_margin="5dp"
+            android:foregroundGravity="center"
+            app:cardCornerRadius="160dp"
+            app:cardElevation="16dp"
+            app:layout_constraintEnd_toEndOf="@+id/my_post_row_item_post_text"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/my_post_row_item_delete_button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/delete_icon"
+                app:layout_constraintStart_toStartOf="@+id/parent"
+                app:layout_constraintTop_toBottomOf="@+id/parent" />
+
+        </androidx.cardview.widget.CardView>
+
         <ImageView
             android:id="@+id/my_post_row_item_post_image"
             android:layout_width="100dp"

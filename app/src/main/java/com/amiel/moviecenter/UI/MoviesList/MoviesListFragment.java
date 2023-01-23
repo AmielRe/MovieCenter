@@ -1,6 +1,5 @@
 package com.amiel.moviecenter.UI.MoviesList;
 
-import android.Manifest;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,7 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
@@ -30,7 +28,6 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.amiel.moviecenter.DB.GenericListener;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.Model.Movie;
@@ -62,6 +59,8 @@ public class MoviesListFragment extends Fragment {
     AlertDialog progressDialog;
     ActivityResultLauncher<String[]> moviePosterResult;
     ActivityResultLauncher<String[]> movieImageResult;
+    ActivityResultLauncher<String> galleryResultLauncherMovieImage;
+    ActivityResultLauncher<String> galleryResultLauncherMoviePoster;
     NewPostLayoutBinding newPostBinding;
 
     private static final String BASE_IMDB_MOVIE_URL = "https://imdb-api.com/API/AdvancedSearch/k_4wqqdznf?title=%s&title_type=feature,tv_movie&has=plot&release_date=,%s";
@@ -80,17 +79,41 @@ public class MoviesListFragment extends Fragment {
 
         binding = MovieListFragmentBinding.inflate(inflater, parent, false);
 
-        movieImageResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
+        movieImageResult = PermissionHelper.registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
                 galleryResultLauncherMovieImage.launch("image/*");
             }
         });
 
-        moviePosterResult = new PermissionHelper().registerForActivityResult(this, isGranted -> {
+        moviePosterResult = PermissionHelper.registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
                 galleryResultLauncherMoviePoster.launch("image/*");
+            }
+        });
+
+        galleryResultLauncherMovieImage = ImageUtils.registerForGalleryActivityResult(this, data -> {
+            if (data != null) {
+                try {
+                    Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), data);
+                    newPostBinding.newPostMovieImageImageView.setImageBitmap(res);
+                    newPostBinding.newPostMovieImageImageView.setBackground(null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        galleryResultLauncherMoviePoster = ImageUtils.registerForGalleryActivityResult(this, data -> {
+            if (data != null) {
+                try {
+                    Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), data);
+                    newPostBinding.newPostMoviePosterImageView.setImageBitmap(res);
+                    newPostBinding.newPostMoviePosterImageView.setBackground(null);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
@@ -194,9 +217,7 @@ public class MoviesListFragment extends Fragment {
 
         binding.movieListSwipeRefreshLayout.setOnRefreshListener(this::updateMovies);
 
-        moviesListViewModel.getMoviesLoadingStatus().observe(getViewLifecycleOwner(), status -> {
-            binding.movieListSwipeRefreshLayout.setRefreshing(status == LoadingState.LOADING);
-        });
+        moviesListViewModel.getMoviesLoadingStatus().observe(getViewLifecycleOwner(), status -> binding.movieListSwipeRefreshLayout.setRefreshing(status == LoadingState.LOADING));
 
         binding.movieListFab.setOnClickListener(v -> openNewPostDialog());
     }
@@ -291,21 +312,9 @@ public class MoviesListFragment extends Fragment {
             }
         });
 
-        newPostBinding.newPostMovieImageUploadImage.setOnClickListener(v -> {
-            if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
-                new PermissionHelper().startPermissionRequest(movieImageResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
-            } else {
-                galleryResultLauncherMovieImage.launch("image/*");
-            }
-        });
+        newPostBinding.newPostMovieImageUploadImage.setOnClickListener(v -> galleryResultLauncherMovieImage.launch("image/*"));
 
-        newPostBinding.newPostMoviePosterUploadImage.setOnClickListener(v -> {
-            if(PermissionHelper.isMissingPermissions(requireActivity(), Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET)) {
-                new PermissionHelper().startPermissionRequest(moviePosterResult, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.INTERNET);
-            } else {
-                galleryResultLauncherMoviePoster.launch("image/*");
-            }
-        });
+        newPostBinding.newPostMoviePosterUploadImage.setOnClickListener(v -> galleryResultLauncherMoviePoster.launch("image/*"));
 
         // Finally building an AlertDialog
         final AlertDialog builder = new AlertDialog.Builder(requireActivity())
@@ -328,7 +337,7 @@ public class MoviesListFragment extends Fragment {
                 boolean isExist = adapter.originalData.stream().anyMatch(currMovie -> currMovie.getName().equals(newPostBinding.newPostMovieNameEditText.getText().toString()) && currMovie.getYear() == Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString()));
                 if(!isExist) {
                     final Bitmap movieImageBitmap = ((BitmapDrawable) newPostBinding.newPostMoviePosterImageView.getDrawable()).getBitmap();
-                    Movie newMovie = new Movie(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString().replaceAll("[^0-9]", "")), newPostBinding.newPostMovieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(movieImageBitmap), "", "");
+                    Movie newMovie = new Movie(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString().replaceAll("\\D", "")), newPostBinding.newPostMovieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(movieImageBitmap), "", "");
                     moviesListViewModel.insertMovie(newMovie, movieData -> {
                         FirebaseStorageHandler.getInstance().uploadMovieImage(movieImageBitmap, newMovie.getId(), imageUrl -> {
                             if(imageUrl != null) {
@@ -342,15 +351,13 @@ public class MoviesListFragment extends Fragment {
                         final Bitmap postImageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is nothing because it will be set later
-                        moviesListViewModel.insertPost(newPost, postData -> {
-                            FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, newPost.getId(), imageUrl -> {
-                                if (imageUrl != null) {
-                                    newPost.setPostImageUrl(imageUrl);
-                                    moviesListViewModel.updatePost(newPost);
-                                }
-                            });
-                        });
+                        Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), "", false); // ID is nothing because it will be set later
+                        moviesListViewModel.insertPost(newPost, postData -> FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, newPost.getId(), imageUrl -> {
+                            if (imageUrl != null) {
+                                newPost.setPostImageUrl(imageUrl);
+                                moviesListViewModel.updatePost(newPost);
+                            }
+                        }));
 
                         builder.dismiss();
                         progressDialog.dismiss();
@@ -362,7 +369,7 @@ public class MoviesListFragment extends Fragment {
                         final Bitmap imageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, movie.getId(), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is nothing because it will be set later
+                        Post newPost = new Post(text, movie.getId(), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), "", false); // ID is nothing because it will be set later
                         moviesListViewModel.insertPost(newPost, data -> {
                             FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, newPost.getId(), imageUrl -> {
                                 if (imageUrl != null) {
@@ -384,34 +391,6 @@ public class MoviesListFragment extends Fragment {
             }
         });
     }
-
-    private final ActivityResultLauncher<String> galleryResultLauncherMovieImage = registerForActivityResult(
-            new ActivityResultContracts.GetContent(),
-            result -> {
-                if (result != null) {
-                    try {
-                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), result);
-                        newPostBinding.newPostMovieImageImageView.setImageBitmap(res);
-                        newPostBinding.newPostMovieImageImageView.setBackground(null);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-    private final ActivityResultLauncher<String> galleryResultLauncherMoviePoster = registerForActivityResult(
-            new ActivityResultContracts.GetContent(),
-            result -> {
-                if (result != null) {
-                    try {
-                        Bitmap res = ImageUtils.handleSamplingAndRotationBitmap(requireActivity(), result);
-                        newPostBinding.newPostMoviePosterImageView.setImageBitmap(res);
-                        newPostBinding.newPostMoviePosterImageView.setBackground(null);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
 
     public void updateMovies() {
         moviesListViewModel.getMovies().observe(getViewLifecycleOwner(), mvList -> {

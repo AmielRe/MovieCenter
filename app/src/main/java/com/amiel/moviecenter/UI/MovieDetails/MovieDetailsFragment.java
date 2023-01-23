@@ -33,7 +33,7 @@ public class MovieDetailsFragment extends Fragment {
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         binding = MovieDetailsFragmentBinding.inflate(inflater, parent, false);
 
         return binding.getRoot();
@@ -42,7 +42,7 @@ public class MovieDetailsFragment extends Fragment {
     // This event is triggered soon after onCreateView().
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         MovieDetailsViewModel movieDetailsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), MovieDetailsFragmentArgs.fromBundle(getArguments()).getId())).get(MovieDetailsViewModel.class);
 
         binding.movieDetailsRecyclerView.setHasFixedSize(true);
@@ -53,7 +53,9 @@ public class MovieDetailsFragment extends Fragment {
             List<PostDetailsItem> postsRowItems = new ArrayList<>();
             for(Map.Entry<User, List<Post>> currEntry : postsMap.entrySet()) {
                 for(Post currPost : currEntry.getValue()) {
-                    postsRowItems.add(new PostDetailsItem(currEntry.getKey(), currPost));
+                    if(!currPost.getDeleted()) {
+                        postsRowItems.add(new PostDetailsItem(currEntry.getKey(), currPost));
+                    }
                 }
                 adapter = new PostDetailsRecyclerAdapter(postsRowItems);
                 binding.movieDetailsRecyclerView.setAdapter(adapter);

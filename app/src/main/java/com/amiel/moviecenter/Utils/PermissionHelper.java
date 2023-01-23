@@ -9,10 +9,10 @@ import androidx.fragment.app.FragmentActivity;
 
 public class PermissionHelper {
 
-    public ActivityResultLauncher<String[]> registerForActivityResult(Fragment fr, PermissionInterface permissionInterface) {
+    public static ActivityResultLauncher<String[]> registerForActivityResult(Fragment fr, PermissionInterface permissionInterface) {
         return fr.registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), permissionInterface::onGranted);
     }
-    public void startPermissionRequest(ActivityResultLauncher<String[]> requestPermissionLauncher, String... permissions) {
+    public static void startPermissionRequest(ActivityResultLauncher<String[]> requestPermissionLauncher, String... permissions) {
         requestPermissionLauncher.launch(permissions);
     }
 

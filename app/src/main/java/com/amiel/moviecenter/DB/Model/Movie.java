@@ -20,26 +20,21 @@ public class Movie {
     @ColumnInfo(name = ID)
     private String id;
 
-    @NonNull
     @ColumnInfo(name = NAME)
     private String name;
 
-    @NonNull
     @ColumnInfo(name = YEAR)
     private long year;
 
-    @NonNull
     @ColumnInfo(name = RATING)
     private float rating;
 
-    @NonNull
     @ColumnInfo(name = PLOT)
     private String plot;
 
     @ColumnInfo(name = "poster")
     private byte[] poster;
 
-    @NonNull
     @ColumnInfo(name = POSTER_URL)
     private String posterUrl;
 
@@ -55,7 +50,7 @@ public class Movie {
     public static final String LAST_UPDATED = "movieLastUpdated";
     public static final String COLLECTION = "Movies";
 
-    public Movie(String name, long year, float rating, String plot, byte[] poster, String id, String posterUrl)
+    public Movie(String name, long year, float rating, String plot, byte[] poster, @NonNull String id, String posterUrl)
     {
         this.name = name;
         this.year = year;
@@ -80,6 +75,7 @@ public class Movie {
         this.posterUrl = posterUrl;
     }
 
+    @NonNull
     public String getId() {
         return id;
     }
@@ -116,10 +112,6 @@ public class Movie {
     @NonNull
     public String getPlot() {
         return plot;
-    }
-
-    public void setPlot(@NonNull String plot) {
-        this.plot = plot;
     }
 
     @NonNull

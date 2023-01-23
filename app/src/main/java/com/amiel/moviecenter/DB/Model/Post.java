@@ -21,35 +21,32 @@ public class Post {
     @ColumnInfo(name = ID)
     public String id;
 
-    @NonNull
     @ColumnInfo(name = TEXT)
     public String text;
 
-    @NonNull
     @ColumnInfo(name = MOVIE_ID)
     public String movieID;
 
-    @NonNull
     @ColumnInfo(name = RATING)
     public float rating;
 
     @ColumnInfo(name = "image")
     public byte[] image;
 
-    @NonNull
     @ColumnInfo(name = USER_ID)
     public String userID;
 
-    @NonNull
     @ColumnInfo(name = DATE)
     public Date postDate;
 
-    @NonNull
     @ColumnInfo(name = POST_IMAGE_URL)
     public String postImageUrl;
 
     @ColumnInfo(name = LAST_UPDATED)
     private Long lastUpdated;
+
+    @ColumnInfo(name = IS_DELETED, defaultValue = "0")
+    private Boolean isDeleted;
 
     public static final String TEXT = "text";
     public static final String ID = "post_id";
@@ -59,9 +56,10 @@ public class Post {
     public static final String DATE = "postDate";
     public static final String POST_IMAGE_URL = "postImageUrl";
     public static final String LAST_UPDATED = "postLastUpdated";
+    public static final String IS_DELETED = "isDeleted";
     public static final String COLLECTION = "Posts";
 
-    public Post(String text, String movieID, float rating, byte[] image, String userID, String id, Date postDate, String postImageUrl)
+    public Post(String text, String movieID, float rating, byte[] image, String userID, @NonNull String id, Date postDate, String postImageUrl, Boolean isDeleted)
     {
         this.text = text;
         this.movieID = movieID;
@@ -71,12 +69,21 @@ public class Post {
         this.id = id;
         this.postDate = postDate;
         this.postImageUrl = postImageUrl;
+        this.isDeleted = isDeleted;
     }
 
     @Ignore
     public Post()
     {
 
+    }
+
+    public Boolean getDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
     }
 
     @NonNull
@@ -88,11 +95,12 @@ public class Post {
         this.postImageUrl = postImageUrl;
     }
 
+    @NonNull
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@NonNull String id) {
         this.id = id;
     }
 
@@ -101,24 +109,12 @@ public class Post {
         return movieID;
     }
 
-    public void setMovieID(@NonNull String movieID) {
-        this.movieID = movieID;
-    }
-
     public String getUserID() {
         return userID;
     }
 
-    public void setUserID(String userID) {
-        this.userID = userID;
-    }
-
     public float getRating() {
         return rating;
-    }
-
-    public void setRating(float rating) {
-        this.rating = rating;
     }
 
     @NonNull
@@ -131,21 +127,8 @@ public class Post {
     }
 
     @NonNull
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-
-    @NonNull
     public Date getPostDate() {
         return postDate;
-    }
-
-    public void setPostDate(@NonNull Date postDate) {
-        this.postDate = postDate;
     }
 
     public Long getLastUpdated() {
@@ -164,7 +147,8 @@ public class Post {
         String text = (String) json.get(TEXT);
         Date postDate = ((Timestamp) json.get(DATE)).toDate();
         String postImageUrl = (String) json.get(POST_IMAGE_URL);
-        Post post = new Post(text, movieId, rating, null, userId, id, postDate, postImageUrl);
+        Boolean isDeleted = (Boolean) json.get(IS_DELETED);
+        Post post = new Post(text, movieId, rating, null, userId, id, postDate, postImageUrl, isDeleted);
 
         try{
             Timestamp time = (Timestamp) json.get(LAST_UPDATED);
@@ -184,6 +168,7 @@ public class Post {
         json.put(DATE, getPostDate());
         json.put(POST_IMAGE_URL, getPostImageUrl());
         json.put(LAST_UPDATED, FieldValue.serverTimestamp());
+        json.put(IS_DELETED, getDeleted());
         return json;
     }
 }

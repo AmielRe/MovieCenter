@@ -58,16 +58,4 @@ public class PreferencesManager {
     public Long getMovieLastUpdatedValue() {
         return mPref.getLong(LOCAL_MOVIE_LAST_UPDATED_KEY, 0);
     }
-
-    public void remove(String key) {
-        mPref.edit()
-                .remove(key)
-                .apply();
-    }
-
-    public boolean clear() {
-        return mPref.edit()
-                .clear()
-                .commit();
-    }
 }

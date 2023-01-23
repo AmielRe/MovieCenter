@@ -1,29 +1,20 @@
 package com.amiel.moviecenter.DB;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.amiel.moviecenter.DB.AsyncTask.InsertAsyncTask;
-import com.amiel.moviecenter.DB.AsyncTask.UpdateAsyncTask;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
-import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
-import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.LoadingState;
 import com.amiel.moviecenter.Utils.PreferencesManager;
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 public class DatabaseRepository {
     private final AppLocalDatabase mDatabase;
@@ -57,7 +48,6 @@ public class DatabaseRepository {
 
     public void updateMovieTask(Movie movie, GenericListener<Void> listener){
         remoteFirebaseDatabase.updateMovie(movie, (Void) -> {
-            new UpdateAsyncTask<>(mDatabase.movieDao()).execute(movie);
             refreshAllMovies();
             listener.onComplete(null);
         });
@@ -91,7 +81,6 @@ public class DatabaseRepository {
 
     public void updatePostTask(Post post, GenericListener<Void> listener){
         remoteFirebaseDatabase.updatePost(post, (Void) -> {
-            new UpdateAsyncTask<>(mDatabase.postDao()).execute(post);
             refreshAllPosts();
             listener.onComplete(null);
         });
@@ -122,7 +111,6 @@ public class DatabaseRepository {
 
     public void updateUserTask(User user, GenericListener<Void> listener){
         remoteFirebaseDatabase.updateUser(user, (Void) -> {
-            new UpdateAsyncTask<>(mDatabase.userDao()).execute(user);
             refreshAllUsers();
             listener.onComplete(null);
         });

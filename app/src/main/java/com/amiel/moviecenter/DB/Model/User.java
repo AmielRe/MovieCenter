@@ -22,18 +22,15 @@ public class User {
     @ColumnInfo(name = ID)
     public String id;
 
-    @NonNull
     @ColumnInfo(name = USERNAME)
     public String username;
 
-    @NonNull
     @ColumnInfo(name = EMAIL)
     public String email;
 
     @ColumnInfo(name = "profileImage")
     public byte[] profileImage;
 
-    @NonNull
     @ColumnInfo(name = PROFILE_IMAGE_URL)
     public String profileImageUrl;
 
@@ -47,7 +44,7 @@ public class User {
     public static final String LAST_UPDATED = "userLastUpdated";
     public static final String COLLECTION = "Users";
 
-    public User(@NonNull String username, @NonNull String email, byte[] profileImage, String id, String profileImageUrl)
+    public User(@NonNull String username, @NonNull String email, byte[] profileImage, @NonNull String id, String profileImageUrl)
     {
         this.username = username;
         this.email = email;
@@ -71,11 +68,12 @@ public class User {
         this.profileImageUrl = profileImageUrl;
     }
 
+    @NonNull
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(@NonNull String id) {
         this.id = id;
     }
 
