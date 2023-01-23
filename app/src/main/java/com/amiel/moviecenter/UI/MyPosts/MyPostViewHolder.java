@@ -22,7 +22,7 @@ import java.util.Locale;
 public class MyPostViewHolder extends RecyclerView.ViewHolder{
     MyPostRowItemBinding binding;
 
-    public MyPostViewHolder(@NonNull View itemView, OnMyPostRowItemClickListener listener, GenericListener<MyPostViewHolder> changeImageListener) {
+    public MyPostViewHolder(@NonNull View itemView, OnMyPostRowItemClickListener listener, GenericListener<MyPostViewHolder> changeImageListener, GenericListener<Integer> removePostListener) {
         super(itemView);
         binding = MyPostRowItemBinding.bind(itemView);
 
@@ -37,6 +37,8 @@ public class MyPostViewHolder extends RecyclerView.ViewHolder{
         });
 
         binding.myPostRowItemPostImage.setOnClickListener(view -> changeImageListener.onComplete(this));
+
+        binding.myPostRowItemDeleteButton.setOnClickListener(view -> removePostListener.onComplete(getAdapterPosition()));
     }
 
     public void bind(MyPostRowItem post, int pos) {

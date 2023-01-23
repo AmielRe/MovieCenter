@@ -24,6 +24,8 @@ public class MyPostsRecyclerAdapter extends RecyclerView.Adapter<MyPostViewHolde
 
     GenericListener<MyPostViewHolder> changeImageListener;
 
+    GenericListener<Integer> removePostListener;
+
     public MyPostsRecyclerAdapter(List<MyPostRowItem> originalData) {
         this.data = new ArrayList<>();
         this.data.addAll(originalData);
@@ -37,11 +39,15 @@ public class MyPostsRecyclerAdapter extends RecyclerView.Adapter<MyPostViewHolde
         this.changeImageListener = listener;
     }
 
+    void setRemovePostListener(GenericListener<Integer> removePostListener) {
+        this.removePostListener = removePostListener;
+    }
+
     @NonNull
     @Override
     public MyPostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.my_post_row_item, parent, false);
-        return new MyPostViewHolder(view, listener, changeImageListener);
+        return new MyPostViewHolder(view, listener, changeImageListener, removePostListener);
     }
 
     @Override
@@ -69,11 +75,18 @@ public class MyPostsRecyclerAdapter extends RecyclerView.Adapter<MyPostViewHolde
         List<MyPostRowItem> postsRowItems = new ArrayList<>();
         for (Map.Entry<Movie, List<Post>> currEntry : list.entrySet()) {
             for (Post currPost : currEntry.getValue()) {
-                MyPostRowItem postRowItem = new MyPostRowItem(currPost, currEntry.getKey());
-                postsRowItems.add(postRowItem);
+                if(!currPost.getDeleted()) {
+                    MyPostRowItem postRowItem = new MyPostRowItem(currPost, currEntry.getKey());
+                    postsRowItems.add(postRowItem);
+                }
             }
         }
         data.addAll(postsRowItems);
         notifyDataSetChanged();
+    }
+
+    public void removeItemAtPos(int pos) {
+        data.remove(pos);
+        notifyItemRemoved(pos);
     }
 }
