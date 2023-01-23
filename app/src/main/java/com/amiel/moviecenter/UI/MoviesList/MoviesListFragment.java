@@ -351,7 +351,7 @@ public class MoviesListFragment extends Fragment {
                         final Bitmap postImageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is nothing because it will be set later
+                        Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), "", false); // ID is nothing because it will be set later
                         moviesListViewModel.insertPost(newPost, postData -> FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, newPost.getId(), imageUrl -> {
                             if (imageUrl != null) {
                                 newPost.setPostImageUrl(imageUrl);
@@ -369,7 +369,7 @@ public class MoviesListFragment extends Fragment {
                         final Bitmap imageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
                         // Insert new post
-                        Post newPost = new Post(text, movie.getId(), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), ""); // ID is nothing because it will be set later
+                        Post newPost = new Post(text, movie.getId(), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), "", false); // ID is nothing because it will be set later
                         moviesListViewModel.insertPost(newPost, data -> {
                             FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, newPost.getId(), imageUrl -> {
                                 if (imageUrl != null) {
