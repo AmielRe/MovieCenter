@@ -1,5 +1,7 @@
 package com.amiel.moviecenter.UI.MyPosts;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -30,6 +32,7 @@ import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.amiel.moviecenter.databinding.MyPostsFragmentBinding;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class MyPostsFragment extends Fragment {
 
@@ -118,6 +121,24 @@ public class MyPostsFragment extends Fragment {
         adapter.setChangeImageListener(viewHolder -> {
             this.viewHolder = viewHolder;
             ImageUtils.selectImage(this, galleryResult, cameraResult, permissionResult);
+        });
+
+        adapter.setRemovePostListener(pos -> {
+            AlertDialog alertDialog = new AlertDialog.Builder(requireActivity()).create();
+            alertDialog.setTitle(getString(R.string.warning_title));
+            alertDialog.setMessage(getString(R.string.warning_message));
+            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.yes),
+                    (dialog, which) -> {
+                        MyPostRowItem postRowItem = adapter.getItemAtPosition(pos);
+                        Post updatedPost = postRowItem.post;
+                        updatedPost.setDeleted(true);
+                        myPostsViewModel.updatePost(updatedPost);
+                        adapter.removeItemAtPos(pos);
+                        dialog.dismiss();
+                    });
+            alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.no),
+                    (DialogInterface.OnClickListener) (dialog, which) -> dialog.dismiss());
+            alertDialog.show();
         });
 
         requireActivity().addMenuProvider(new MenuProvider() {
