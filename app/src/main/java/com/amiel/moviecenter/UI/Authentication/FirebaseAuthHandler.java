@@ -14,17 +14,18 @@ import com.amiel.moviecenter.DB.GenericListener;
 import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.LoginOptions.LoginOptionsFragmentDirections;
-import com.amiel.moviecenter.UI.Authentication.SignUp.SignUpFragmentDirections;
 import com.amiel.moviecenter.UI.Authentication.SignIn.SignInFragmentDirections;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.SignInMethodQueryResult;
 
 public class FirebaseAuthHandler {
     private static volatile FirebaseAuthHandler INSTANCE = null;
@@ -47,8 +48,8 @@ public class FirebaseAuthHandler {
         return INSTANCE;
     }
 
-    public FirebaseAuth getmAuth() {
-        return mAuth;
+    public Task<SignInMethodQueryResult> fetchSignInMethods(String email) {
+        return mAuth.fetchSignInMethodsForEmail(email);
     }
 
     public boolean isUserLoggedIn() {
@@ -74,7 +75,7 @@ public class FirebaseAuthHandler {
             });
     }
 
-    public void createUserWithEmailAndPassword(String username, String email, String password, Activity context, NavController navController, GenericListener<User> listener) {
+    public void createUserWithEmailAndPassword(String username, String email, String password, Activity context, GenericListener<User> listener) {
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(context, task -> {
                     if (task.isSuccessful()) {
@@ -85,8 +86,6 @@ public class FirebaseAuthHandler {
                         User newUser = new User(username, email, ImageUtils.getBytes(userImageBitmap), user.getUid(), "");
 
                         listener.onComplete(newUser);
-
-                        navController.navigate(SignUpFragmentDirections.actionSignUpFragmentToMoviesListFragment());
                     } else {
                         // If sign in fails, display a message to the user.
                         Toast.makeText(context, "Authentication failed.",

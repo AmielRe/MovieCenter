@@ -16,16 +16,20 @@ import java.util.Map;
 
 public class MyPostsViewModel extends AndroidViewModel {
 
-    private final LiveData<Map<Movie, List<Post>>> posts;
+    private LiveData<Map<Movie, List<Post>>> posts;
     DatabaseRepository mRepository;
+
+    private final String email;
 
     public MyPostsViewModel(Application app, String email) {
         super(app);
         mRepository = new DatabaseRepository(app);
+        this.email = email;
         posts = mRepository.getAllPostsOfUserWithMovie(email);
     }
 
     public LiveData<Map<Movie, List<Post>>> getPosts() {
+        posts = mRepository.getAllPostsOfUserWithMovie(email);
         return posts;
     }
 

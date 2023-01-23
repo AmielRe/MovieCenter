@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -36,7 +37,6 @@ import okhttp3.Response;
 
 public class SignUpFragment extends Fragment {
 
-    ProgressBar loadingProgressBar;
     SignUpFragmentBinding binding;
     private DatabaseRepository db;
 
@@ -45,7 +45,7 @@ public class SignUpFragment extends Fragment {
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         // Defines the xml file for the fragment
         db = new DatabaseRepository(requireActivity());
         ((AppCompatActivity) requireActivity()).getSupportActionBar().hide();
@@ -57,9 +57,7 @@ public class SignUpFragment extends Fragment {
     // This event is triggered soon after onCreateView().
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        loadingProgressBar = view.findViewById(R.id.sign_up_loading_progress_bar);
-
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         binding.signUpUsernameEdittext.addTextChangedListener(new TextValidator(binding.signUpUsernameEdittext) {
             @Override public void validate(TextView textView, String text) {
                 if(text.length() < 3 || text.length() > 15) {
@@ -122,81 +120,83 @@ public class SignUpFragment extends Fragment {
         });
 
         binding.signUpButtonSignUp.setOnClickListener(v -> {
-            if(validate()) {
-                loadingProgressBar.setVisibility(View.VISIBLE);
-                OkHttpClient client = new OkHttpClient();
+            if(!validate()) {
+                return;
+            }
 
-                Request request = new Request.Builder()
-                        .url(CHECK_EMAIL_BASE_URL + binding.signUpEmailEdittext.getText().toString())
-                        .build();
+            binding.signUpLoadingProgressBar.setVisibility(View.VISIBLE);
+            OkHttpClient client = new OkHttpClient();
 
-                client.newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
+            Request request = new Request.Builder()
+                    .url(CHECK_EMAIL_BASE_URL + binding.signUpEmailEdittext.getText().toString())
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                    requireActivity().runOnUiThread(() -> {
+                        binding.signUpLoadingProgressBar.setVisibility(View.INVISIBLE);
+                    });
+                    e.printStackTrace();
+                    call.cancel();
+                }
+
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+
+                    final String myResponse = response.body().string();
+                    JSONObject json = new JSONObject();
+                    try {
+                        json = new JSONObject(myResponse);
+                    } catch (JSONException e) {
                         requireActivity().runOnUiThread(() -> {
-                            loadingProgressBar.setVisibility(View.INVISIBLE);
+                            binding.signUpLoadingProgressBar.setVisibility(View.INVISIBLE);
                         });
                         e.printStackTrace();
-                        call.cancel();
                     }
 
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-
-                        final String myResponse = response.body().string();
-                        JSONObject json = new JSONObject();
-                        try {
-                            json = new JSONObject(myResponse);
-                        } catch (JSONException e) {
+                    try {
+                        // Check if email is real
+                        if(!json.getJSONObject("data").getBoolean("valid_syntax") || !json.getJSONObject("data").getBoolean("deliverable")) {
                             requireActivity().runOnUiThread(() -> {
-                                loadingProgressBar.setVisibility(View.INVISIBLE);
+                                binding.signUpEmailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+                                binding.signUpEmailEdittext.setError(getString(R.string.error_invalid_email));
+                                binding.signUpLoadingProgressBar.setVisibility(View.INVISIBLE);
                             });
-                            e.printStackTrace();
+                            return;
                         }
+                        requireActivity().runOnUiThread(() -> {
+                            // If we got here, email is not fake
+                            FirebaseAuthHandler.getInstance().fetchSignInMethods(binding.signUpEmailEdittext.getText().toString()).addOnCompleteListener(task -> {
+                                boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
 
-                        try {
-                            // Check if email is real
-                            if(json.getJSONObject("data").getBoolean("valid_syntax") && json.getJSONObject("data").getBoolean("deliverable")) {
-                                requireActivity().runOnUiThread(() -> {
-                                    // If we got here, email is not fake
-                                    FirebaseAuthHandler.getInstance().getmAuth().fetchSignInMethodsForEmail(binding.signUpEmailEdittext.getText().toString())
-                                        .addOnCompleteListener(task -> {
-                                            boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
-
-                                            if (isNewUser) {
-                                                // Email doesn't already exist
-                                                binding.signUpEmailEdittext.setError(null);
-
-                                                NavController navController = Navigation.findNavController(requireActivity(), view.getId());
-                                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(binding.signUpUsernameEdittext.getText().toString(), binding.signUpEmailEdittext.getText().toString(), binding.signUpPasswordEdittext.getText().toString(), requireActivity(), navController, newUser -> FirebaseStorageHandler.getInstance().uploadUserImage(ImageUtils.getBitmap(newUser.getProfileImage()), newUser.getId(), imageUrl -> {
-                                                    if (imageUrl != null) {
-                                                        newUser.setProfileImageUrl(imageUrl);
-                                                        db.insertUserTask(newUser, data -> {});
-                                                    }
-                                                }));
-                                            } else {
-                                                // Email already exists
-                                                binding.signUpEmailEdittext.setError(getString(R.string.error_email_already_in_use));
-                                                binding.signUpEmailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
-                                                loadingProgressBar.setVisibility(View.INVISIBLE);
-                                            }
-                                        });
-                                });
-                            }
-                            else {
-                                requireActivity().runOnUiThread(() -> {
+                                if (!isNewUser) {
+                                    // Email already exists
+                                    binding.signUpEmailEdittext.setError(getString(R.string.error_email_already_in_use));
                                     binding.signUpEmailInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
-                                    binding.signUpEmailEdittext.setError(getString(R.string.error_invalid_email));
-                                    loadingProgressBar.setVisibility(View.INVISIBLE);
-                                });
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            requireActivity().runOnUiThread(() -> loadingProgressBar.setVisibility(View.INVISIBLE));
-                        }
+                                    binding.signUpLoadingProgressBar.setVisibility(View.INVISIBLE);
+                                    return;
+                                }
+
+                                // Email doesn't already exist
+                                binding.signUpEmailEdittext.setError(null);
+
+                                NavController navController = Navigation.findNavController(requireActivity(), view.getId());
+                                FirebaseAuthHandler.getInstance().createUserWithEmailAndPassword(binding.signUpUsernameEdittext.getText().toString(), binding.signUpEmailEdittext.getText().toString(), binding.signUpPasswordEdittext.getText().toString(), requireActivity(), newUser -> FirebaseStorageHandler.getInstance().uploadUserImage(ImageUtils.getBitmap(newUser.getProfileImage()), newUser.getId(), imageUrl -> {
+                                    if (imageUrl != null) {
+                                        newUser.setProfileImageUrl(imageUrl);
+                                        db.insertUserTask(newUser, data -> {});
+                                    }
+                                    navController.navigate(SignUpFragmentDirections.actionSignUpFragmentToMoviesListFragment());
+                                }));
+                            });
+                        });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        requireActivity().runOnUiThread(() -> binding.signUpLoadingProgressBar.setVisibility(View.INVISIBLE));
                     }
-                });
-            }
+                }
+            });
         });
     }
 
