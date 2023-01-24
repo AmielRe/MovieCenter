@@ -2,7 +2,7 @@ package com.amiel.moviecenter.Utils;
 
 import android.graphics.Bitmap;
 
-import com.amiel.moviecenter.DB.GenericListener;
+import com.amiel.moviecenter.Utils.Listeners.GenericListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;

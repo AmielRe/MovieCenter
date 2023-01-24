@@ -10,9 +10,9 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amiel.moviecenter.DB.GenericListener;
+import com.amiel.moviecenter.Utils.Listeners.GenericListener;
 import com.amiel.moviecenter.R;
-import com.amiel.moviecenter.Utils.OnMyPostRowItemClickListener;
+import com.amiel.moviecenter.Utils.Listeners.OnMyPostRowItemClickListener;
 import com.amiel.moviecenter.databinding.MyPostRowItemBinding;
 import com.squareup.picasso.Picasso;
 

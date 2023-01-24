@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.R;
-import com.amiel.moviecenter.Utils.OnItemClickListener;
+import com.amiel.moviecenter.Utils.Listeners.OnItemClickListener;
 import com.amiel.moviecenter.databinding.RowItemBinding;
 import com.squareup.picasso.Picasso;
 

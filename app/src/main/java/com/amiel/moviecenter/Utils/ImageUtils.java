@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment;
 
 import android.net.Uri;
 
-import com.amiel.moviecenter.DB.GenericListener;
+import com.amiel.moviecenter.Utils.Listeners.GenericListener;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

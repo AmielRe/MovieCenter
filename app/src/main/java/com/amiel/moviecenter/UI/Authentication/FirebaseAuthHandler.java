@@ -10,7 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.navigation.NavController;
 
-import com.amiel.moviecenter.DB.GenericListener;
+import com.amiel.moviecenter.Utils.Listeners.GenericListener;
 import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.LoginOptions.LoginOptionsFragmentDirections;

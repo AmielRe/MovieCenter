@@ -1,4 +1,4 @@
-package com.amiel.moviecenter.Utils;
+package com.amiel.moviecenter.DB;
 
 import androidx.room.TypeConverter;
 
