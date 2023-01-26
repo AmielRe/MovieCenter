@@ -61,8 +61,7 @@ public class SignInFragment extends Fragment {
                     binding.signInPasswordEdittext.setError(getString(R.string.error_invalid_password_length));
                 } else {
                     binding.signInPasswordEdittext.setError(null);
-                    binding.signInPasswordInputlayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
-                    binding.signInPasswordInputlayout.setEndIconDrawable(R.drawable.ic_check_circle_black_24dp);
+                    binding.signInPasswordInputlayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
                 }
             }
         });
@@ -84,6 +83,7 @@ public class SignInFragment extends Fragment {
         if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             binding.signInEmailEdittext.setError(getString(R.string.error_invalid_email_length));
             valid = false;
+            binding.signInEmailInputlayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             binding.signInEmailEdittext.setError(null);
         }
@@ -91,8 +91,10 @@ public class SignInFragment extends Fragment {
         if (password.isEmpty() || password.length() < 6 || password.length() > 20) {
             binding.signInPasswordEdittext.setError(getString(R.string.error_invalid_password_length));
             valid = false;
+            binding.signInPasswordInputlayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             binding.signInPasswordEdittext.setError(null);
+            binding.signInPasswordInputlayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
         }
 
         return valid;

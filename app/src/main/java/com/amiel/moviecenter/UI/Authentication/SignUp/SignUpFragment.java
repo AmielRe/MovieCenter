@@ -91,8 +91,7 @@ public class SignUpFragment extends Fragment {
                     binding.signUpPasswordEdittext.setError(getString(R.string.error_invalid_password_length));
                 } else {
                     binding.signUpPasswordEdittext.setError(null);
-                    binding.signUpPasswordInputLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
-                    binding.signUpPasswordInputLayout.setEndIconDrawable(R.drawable.ic_check_circle_black_24dp);
+                    binding.signUpPasswordInputLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
                 }
 
                 if(!text.equals(Objects.requireNonNull(binding.signUpPasswordConfirmEdittext.getText()).toString())) {
@@ -100,8 +99,7 @@ public class SignUpFragment extends Fragment {
                     binding.signUpPasswordConfirmEdittext.setError(getString(R.string.error_password_confirm));
                 } else {
                     binding.signUpPasswordConfirmEdittext.setError(null);
-                    binding.signUpPasswordConfirmInputLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
-                    binding.signUpPasswordConfirmInputLayout.setEndIconDrawable(R.drawable.ic_check_circle_black_24dp);
+                    binding.signUpPasswordConfirmInputLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
                 }
             }
         });
@@ -113,8 +111,7 @@ public class SignUpFragment extends Fragment {
                     binding.signUpPasswordConfirmEdittext.setError(getString(R.string.error_password_confirm));
                 } else {
                     binding.signUpPasswordConfirmEdittext.setError(null);
-                    binding.signUpPasswordConfirmInputLayout.setEndIconMode(TextInputLayout.END_ICON_CUSTOM);
-                    binding.signUpPasswordConfirmInputLayout.setEndIconDrawable(R.drawable.ic_check_circle_black_24dp);
+                    binding.signUpPasswordConfirmInputLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
                 }
             }
         });
@@ -230,6 +227,7 @@ public class SignUpFragment extends Fragment {
             binding.signUpPasswordInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             binding.signUpPasswordEdittext.setError(null);
+            binding.signUpPasswordInputLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
         }
 
         if(passwordConfirm.isEmpty() || !passwordConfirm.equals(password)) {
@@ -238,6 +236,7 @@ public class SignUpFragment extends Fragment {
             binding.signUpPasswordConfirmInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
         } else {
             binding.signUpPasswordConfirmEdittext.setError(null);
+            binding.signUpPasswordConfirmInputLayout.setEndIconMode(TextInputLayout.END_ICON_PASSWORD_TOGGLE);
         }
 
         return valid;

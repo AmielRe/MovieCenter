@@ -71,6 +71,7 @@
             android:hint="@string/sign_in_password_hint"
             android:textColorHint="@color/pink300"
             app:errorEnabled="true"
+            app:passwordToggleEnabled="true"
             app:startIconDrawable="@android:drawable/ic_lock_lock">
 
             <!--this is the actual edit text which takes the input-->
@@ -88,7 +89,7 @@
             android:layout_height="40dp"
             android:text="@string/sign_in_button_text"
             android:layout_marginTop="10dp"
-            android:background="@drawable/customloginbutton"
+            android:background="@drawable/customwhitebutton"
             android:textColor="#FFFBF6"/>
 
     </LinearLayout>

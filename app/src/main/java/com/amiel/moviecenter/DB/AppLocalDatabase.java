@@ -12,7 +12,6 @@ import com.amiel.moviecenter.DB.DAO.UserDao;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
-import com.amiel.moviecenter.Utils.Converters;
 
 @Database(entities = {Movie.class, Post.class, User.class}, version = 1)
 @TypeConverters({Converters.class})

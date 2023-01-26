@@ -7,6 +7,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
+import com.amiel.moviecenter.Utils.Listeners.PermissionInterface;
+
 public class PermissionHelper {
 
     public static ActivityResultLauncher<String[]> registerForActivityResult(Fragment fr, PermissionInterface permissionInterface) {

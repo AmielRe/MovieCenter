@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/login_options_fragment"
     tools:context=".LoginOptionsFragment"
     android:background="@drawable/bg_gradient">
@@ -24,33 +25,35 @@
             >
         </ImageView>
 
-        <Button style="@style/Widget.AppCompat.Button.Colored"
+        <com.google.android.material.button.MaterialButton style="@style/Widget.AppCompat.Button.Colored"
             android:id="@+id/login_sign_in_with_email_button"
             android:layout_width="250dp"
             android:layout_height="40dp"
             android:text="@string/login_sign_in_with_email_text"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="8dp"
-            android:background="@drawable/customloginbutton"
+            app:icon="@drawable/ic_person"
+            android:background="@drawable/customwhitebutton"
             android:textColor="#FFFBF6"/>
 
-        <Button style="@style/Widget.AppCompat.Button.Colored"
+        <com.google.android.material.button.MaterialButton style="@style/Widget.AppCompat.Button.Colored"
             android:id="@+id/login_sign_in_with_google_button"
             android:layout_width="250dp"
             android:layout_height="40dp"
             android:text="@string/login_sign_in_with_google_text"
             android:layout_marginTop="10dp"
+            app:icon="@drawable/ic_google"
             android:layout_marginBottom="8dp"
-            android:background="@drawable/customwhitebutton"
-            android:textColor="@color/pink300"/>
+            android:background="@drawable/customwhitebutton"/>
 
-        <Button style="@style/Widget.AppCompat.Button.Colored"
+        <com.google.android.material.button.MaterialButton style="@style/Widget.AppCompat.Button.Colored"
             android:id="@+id/login_sign_up_button"
             android:layout_width="250dp"
             android:layout_height="40dp"
             android:text="@string/login_sign_up_button_text"
             android:layout_marginTop="10dp"
-            android:background="@drawable/customloginbutton"
+            app:icon="@drawable/ic_signup"
+            android:background="@drawable/customwhitebutton"
             android:textColor="#FFFBF6"/>
 
     </LinearLayout>
