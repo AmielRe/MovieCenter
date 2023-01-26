@@ -11,7 +11,6 @@ import java.io.ByteArrayOutputStream;
 
 public class FirebaseStorageHandler {
 
-    private static volatile FirebaseStorageHandler INSTANCE = null;
     private final StorageReference storageRef;
 
     private FirebaseStorageHandler() {
@@ -20,15 +19,12 @@ public class FirebaseStorageHandler {
         storageRef = storage.getReference();
     }
 
+    private static final class InstanceHolder {
+        static final FirebaseStorageHandler INSTANCE = new FirebaseStorageHandler();
+    }
+
     public static FirebaseStorageHandler getInstance() {
-        if(INSTANCE == null) {
-            synchronized (FirebaseStorageHandler.class) {
-                if (INSTANCE == null) {
-                    INSTANCE = new FirebaseStorageHandler();
-                }
-            }
-        }
-        return INSTANCE;
+        return InstanceHolder.INSTANCE;
     }
 
     private void uploadImage(Bitmap image, String imageName, GenericListener<String> listener) {

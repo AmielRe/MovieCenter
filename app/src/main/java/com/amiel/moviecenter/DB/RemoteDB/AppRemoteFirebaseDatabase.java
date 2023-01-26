@@ -1,4 +1,4 @@
-package com.amiel.moviecenter.DB;
+package com.amiel.moviecenter.DB.RemoteDB;
 
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
@@ -30,7 +30,7 @@ public class AppRemoteFirebaseDatabase {
         static final AppRemoteFirebaseDatabase instance = new AppRemoteFirebaseDatabase();
     }
 
-    static AppRemoteFirebaseDatabase getInstance(){
+    public static AppRemoteFirebaseDatabase getInstance(){
         return InstanceHolder.instance;
     }
 

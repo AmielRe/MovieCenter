@@ -1,4 +1,4 @@
-package com.amiel.moviecenter.DB;
+package com.amiel.moviecenter.DB.LocalDB;
 
 import android.content.Context;
 
@@ -25,7 +25,7 @@ public abstract class AppLocalDatabase extends androidx.room.RoomDatabase {
 
     private static volatile AppLocalDatabase instance;
 
-    static AppLocalDatabase getInstance(final Context context){
+    public static AppLocalDatabase getInstance(final Context context){
         if (instance == null) {
             synchronized (AppLocalDatabase.class) {
                 if (instance == null) {
