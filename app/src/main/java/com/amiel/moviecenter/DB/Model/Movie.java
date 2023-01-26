@@ -8,6 +8,8 @@ import androidx.room.PrimaryKey;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FieldValue;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,21 +22,30 @@ public class Movie {
     @ColumnInfo(name = ID)
     private String id;
 
+    @Expose
+    @SerializedName("Title")
     @ColumnInfo(name = NAME)
     private String name;
 
+    @Expose
+    @SerializedName("Year")
     @ColumnInfo(name = YEAR)
     private long year;
+
 
     @ColumnInfo(name = RATING)
     private float rating;
 
+    @Expose
+    @SerializedName("Plot")
     @ColumnInfo(name = PLOT)
     private String plot;
 
     @ColumnInfo(name = "poster")
     private byte[] poster;
 
+    @Expose
+    @SerializedName("Poster")
     @ColumnInfo(name = POSTER_URL)
     private String posterUrl;
 
