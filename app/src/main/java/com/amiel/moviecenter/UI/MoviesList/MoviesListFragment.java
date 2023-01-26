@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 import androidx.appcompat.widget.SearchView;
 
@@ -329,65 +330,67 @@ public class MoviesListFragment extends Fragment {
 
         //Setting up OnClickListener on positive button of AlertDialog
         builder.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(view -> {
-            if(newPostBinding.newPostMovieNameEditText.getError() == null && newPostBinding.newPostMovieYearEditText.getError() == null)
-            {
-                progressDialog.show();
+            updateMovies();
 
-                // If new movie - insert it
-                boolean isExist = adapter.originalData.stream().anyMatch(currMovie -> currMovie.getName().equals(newPostBinding.newPostMovieNameEditText.getText().toString()) && currMovie.getYear() == Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString()));
-                if(!isExist) {
-                    final Bitmap movieImageBitmap = ((BitmapDrawable) newPostBinding.newPostMoviePosterImageView.getDrawable()).getBitmap();
-                    Movie newMovie = new Movie(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString().replaceAll("\\D", "")), newPostBinding.newPostMovieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(movieImageBitmap), "", "");
-                    moviesListViewModel.insertMovie(newMovie, movieData -> {
-                        FirebaseStorageHandler.getInstance().uploadMovieImage(movieImageBitmap, newMovie.getId(), imageUrl -> {
-                            if(imageUrl != null) {
-                                newMovie.setPosterUrl(imageUrl);
-                                moviesListViewModel.updateMovie(newMovie);
-                                updateMovies();
-                            }
-                        });
+            if(!validateNewPostInput()) {
+                return;
+            }
 
-                        final String text = newPostBinding.newPostHowWasYourExperienceEditText.getText().toString();
-                        final Bitmap postImageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
+            progressDialog.show();
 
-                        // Insert new post
-                        Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), "", false); // ID is nothing because it will be set later
-                        moviesListViewModel.insertPost(newPost, postData -> FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, newPost.getId(), imageUrl -> {
-                            if (imageUrl != null) {
-                                newPost.setPostImageUrl(imageUrl);
-                                moviesListViewModel.updatePost(newPost);
-                            }
-                        }));
-
-                        builder.dismiss();
-                        progressDialog.dismiss();
+            // If new movie - insert it
+            Stream<Movie> matchingMovies = adapter.originalData.stream().filter(currMovie -> currMovie.getName().equals(newPostBinding.newPostMovieNameEditText.getText().toString()) && currMovie.getYear() == Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString()));
+            if(!matchingMovies.findAny().isPresent()) {
+                final Bitmap movieImageBitmap = ((BitmapDrawable) newPostBinding.newPostMoviePosterImageView.getDrawable()).getBitmap();
+                Movie newMovie = new Movie(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString().replaceAll("\\D", "")), newPostBinding.newPostMovieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(movieImageBitmap), "", "");
+                moviesListViewModel.insertMovie(newMovie, movieData -> {
+                    FirebaseStorageHandler.getInstance().uploadMovieImage(movieImageBitmap, newMovie.getId(), imageUrl -> {
+                        if(imageUrl != null) {
+                            newMovie.setPosterUrl(imageUrl);
+                            moviesListViewModel.updateMovie(newMovie);
+                            updateMovies();
+                        }
                     });
-                } else {
-                    moviesListViewModel.getMovieByNameAndYear(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
-                        final float rating = movie.getRating();
-                        final String text = newPostBinding.newPostHowWasYourExperienceEditText.getText().toString();
-                        final Bitmap imageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
-                        // Insert new post
-                        Post newPost = new Post(text, movie.getId(), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), "", false); // ID is nothing because it will be set later
-                        moviesListViewModel.insertPost(newPost, data -> {
-                            FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, newPost.getId(), imageUrl -> {
-                                if (imageUrl != null) {
-                                    newPost.setPostImageUrl(imageUrl);
-                                    moviesListViewModel.updatePost(newPost);
-                                }
-                            });
+                    final String text = newPostBinding.newPostHowWasYourExperienceEditText.getText().toString();
+                    final Bitmap postImageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
-                            // Update movie rating
-                            movie.setRating((movie.getRating() + newPostBinding.newPostMovieRating.getRating()) / 2);
-                            moviesListViewModel.updateMovie(movie);
-                            adapter.updateMovieRating(movie);
+                    // Insert new post
+                    Post newPost = new Post(text, newMovie.getId(), newMovie.getRating(), ImageUtils.getBytes(postImageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), "", false); // ID is nothing because it will be set later
+                    moviesListViewModel.insertPost(newPost, postData -> FirebaseStorageHandler.getInstance().uploadPostImage(postImageBitmap, newPost.getId(), imageUrl -> {
+                        if (imageUrl != null) {
+                            newPost.setPostImageUrl(imageUrl);
+                            moviesListViewModel.updatePost(newPost);
+                        }
+                    }));
 
-                            builder.dismiss();
-                            progressDialog.dismiss();
-                        });
+                    builder.dismiss();
+                    progressDialog.dismiss();
+                });
+            } else {
+                Movie movie = matchingMovies.findFirst().get();
+                final float rating = movie.getRating();
+                final String text = newPostBinding.newPostHowWasYourExperienceEditText.getText().toString();
+                final Bitmap imageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
+
+                // Insert new post
+                Post newPost = new Post(text, movie.getId(), rating, ImageUtils.getBytes(imageBitmap), FirebaseAuthHandler.getInstance().getCurrentUserId(), "", Calendar.getInstance().getTime(), "", false); // ID is nothing because it will be set later
+                moviesListViewModel.insertPost(newPost, data -> {
+                    FirebaseStorageHandler.getInstance().uploadPostImage(imageBitmap, newPost.getId(), imageUrl -> {
+                        if (imageUrl != null) {
+                            newPost.setPostImageUrl(imageUrl);
+                            moviesListViewModel.updatePost(newPost);
+                        }
                     });
-                }
+
+                    // Update movie rating
+                    movie.setRating((movie.getRating() + newPostBinding.newPostMovieRating.getRating()) / 2);
+                    moviesListViewModel.updateMovie(movie);
+                    adapter.updateMovieRating(movie);
+
+                    builder.dismiss();
+                    progressDialog.dismiss();
+                });
             }
         });
     }
@@ -397,5 +400,35 @@ public class MoviesListFragment extends Fragment {
             adapter.clear();
             adapter.addAll(mvList);
         });
+    }
+
+    public boolean validateNewPostInput() {
+        boolean isValid = true;
+
+        String movieName = newPostBinding.newPostMovieNameEditText.getText().toString();
+        String movieYear = newPostBinding.newPostMovieYearEditText.getText().toString();
+
+        if(movieName.isEmpty()) {
+            newPostBinding.newPostMovieNameInputLayout.setError("Please enter movie name");
+            isValid = false;
+            newPostBinding.newPostMovieNameInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+        } else {
+            newPostBinding.newPostMovieNameInputLayout.setError(null);
+        }
+
+        if(movieYear.isEmpty()) {
+            newPostBinding.newPostMovieYearEditText.setError("Please enter movie year");
+            isValid = false;
+            newPostBinding.newPostMovieYearInputLayout.setEndIconMode(TextInputLayout.END_ICON_NONE);
+        } else {
+            newPostBinding.newPostMovieYearInputLayout.setError(null);
+        }
+
+        if(newPostBinding.newPostMoviePosterImageView.getDrawable() == null || newPostBinding.newPostMovieImageImageView.getDrawable() == null) {
+            Toast.makeText(requireActivity(), "Please upload movie poster and image", Toast.LENGTH_SHORT).show();
+            isValid = false;
+        }
+
+        return isValid;
     }
 }

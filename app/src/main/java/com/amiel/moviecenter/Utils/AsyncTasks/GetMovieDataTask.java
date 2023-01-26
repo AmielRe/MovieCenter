@@ -58,7 +58,7 @@ public class GetMovieDataTask extends AsyncTask<String, Void, Pair<Movie, String
                 JSONObject json = new JSONObject(response.body().string());
                 JSONObject resultsJSON = (JSONObject) json.getJSONArray("results").get(0);
                 String plot = resultsJSON.getString("plot");
-                String year = resultsJSON.getString("description").replaceAll("[^0-9]", "");
+                String year = resultsJSON.getString("description").replaceAll("\\D", "");
                 String moviePosterUrl = resultsJSON.getString("image");
                 String title = resultsJSON.getString("title");
                 moviesListViewModel.setNewMoviePlot(plot);
