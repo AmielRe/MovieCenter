@@ -71,6 +71,7 @@
             android:hint="@string/sign_in_password_hint"
             android:textColorHint="@color/pink300"
             app:errorEnabled="true"
+            app:passwordToggleEnabled="true"
             app:startIconDrawable="@android:drawable/ic_lock_lock">
 
             <!--this is the actual edit text which takes the input-->
