@@ -8,6 +8,6 @@ import retrofit2.http.Query;
 
 public interface MovieApi {
 
-    @GET("/?apikey=5fac8496")
+    @GET("/?apikey=5fac8496&plot=full&type=movie")
     Call<Movie> getMovieByTitle(@Query("t") String title);
 }
