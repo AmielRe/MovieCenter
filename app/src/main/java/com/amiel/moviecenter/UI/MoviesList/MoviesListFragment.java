@@ -23,11 +23,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.amiel.moviecenter.DB.Model.User;
 import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.Model.Movie;
@@ -62,8 +64,6 @@ public class MoviesListFragment extends Fragment {
     ActivityResultLauncher<String> galleryResultLauncherMovieImage;
     ActivityResultLauncher<String> galleryResultLauncherMoviePoster;
     NewPostLayoutBinding newPostBinding;
-
-    private static final String BASE_IMDB_MOVIE_URL = "https://imdb-api.com/API/AdvancedSearch/k_4wqqdznf?title=%s&title_type=feature,tv_movie&has=plot&release_date=,%s";
 
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
@@ -260,7 +260,9 @@ public class MoviesListFragment extends Fragment {
 
                 progressDialog.show();
 
-                moviesListViewModel.getMovieByName(newPostBinding.newPostMovieNameEditText.getText().toString()).observe(getViewLifecycleOwner(), movie -> {
+                LiveData<Movie> movieLiveData = moviesListViewModel.getMovieByName(newPostBinding.newPostMovieNameEditText.getText().toString());
+                movieLiveData.observe(getViewLifecycleOwner(), movie -> {
+                    movieLiveData.removeObservers(getViewLifecycleOwner());
                     if(movie != null) {
                         setNewMovieDetails(movie);
                         moviesListViewModel.setNewMoviePlot(movie.getPlot());
@@ -280,20 +282,16 @@ public class MoviesListFragment extends Fragment {
         newPostBinding.newPostMovieYearEditText.setOnFocusChangeListener((v, hasFocus) -> {
             if(!hasFocus && newPostBinding.newPostMovieNameEditText.getText().toString().length() > 0 && newPostBinding.newPostMovieYearEditText.getText().toString().length() > 0) {
                 progressDialog.show();
-                try {
-                    moviesListViewModel.getMovieByNameAndYear(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
-                        if(movie != null) {
-                            setNewMovieDetails(movie);
-                            moviesListViewModel.setNewMoviePlot(movie.getPlot());
-                            progressDialog.dismiss();
-                            Toast.makeText(requireActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } catch(Exception e) {
+                LiveData<Movie> movieLiveData = moviesListViewModel.getMovieByNameAndYear(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString()));
+                movieLiveData.observe(getViewLifecycleOwner(), movie -> {
+                    movieLiveData.removeObservers(getViewLifecycleOwner());
+                    if(movie != null) {
+                        setNewMovieDetails(movie);
+                        moviesListViewModel.setNewMoviePlot(movie.getPlot());
+                        Toast.makeText(requireActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
+                    }
                     progressDialog.dismiss();
-                    Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
-                }
+                });
             }
         });
 
@@ -327,7 +325,7 @@ public class MoviesListFragment extends Fragment {
             if(!matchingMovies.findAny().isPresent()) {
                 final Bitmap movieImageBitmap = ((BitmapDrawable) newPostBinding.newPostMoviePosterImageView.getDrawable()).getBitmap();
                 Movie newMovie = new Movie(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString().replaceAll("\\D", "")), newPostBinding.newPostMovieRating.getRating(), moviesListViewModel.getNewMoviePlot(),  ImageUtils.getBytes(movieImageBitmap), "", "");
-                moviesListViewModel.insertMovie(newMovie, movieData -> {
+                moviesListViewModel.insertMovie(newMovie, (Void) -> {
                     FirebaseStorageHandler.getInstance().uploadMovieImage(movieImageBitmap, newMovie.getId(), imageUrl -> {
                         if(imageUrl != null) {
                             newMovie.setPosterUrl(imageUrl);
@@ -353,7 +351,7 @@ public class MoviesListFragment extends Fragment {
                 });
             } else {
                 Movie movie = matchingMovies.findFirst().get();
-                final float rating = movie.getRating();
+                final float rating = newPostBinding.newPostMovieRating.getRating();
                 final String text = newPostBinding.newPostHowWasYourExperienceEditText.getText().toString();
                 final Bitmap imageBitmap = ((BitmapDrawable) newPostBinding.newPostMovieImageImageView.getDrawable()).getBitmap();
 
