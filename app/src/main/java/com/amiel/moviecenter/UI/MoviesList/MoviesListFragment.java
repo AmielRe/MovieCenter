@@ -32,21 +32,20 @@ import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
-import com.amiel.moviecenter.Utils.AsyncTasks.GetMovieDataTask;
 import com.amiel.moviecenter.Utils.DialogUtils;
 import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.LoadingState;
-import com.amiel.moviecenter.Utils.PermissionHelper;
+import com.amiel.moviecenter.Utils.MovieRemoteApi.MovieModel;
+import com.amiel.moviecenter.Utils.PermissionUtils;
 import com.amiel.moviecenter.Utils.TextValidator;
 import com.amiel.moviecenter.databinding.MovieListFragmentBinding;
 import com.amiel.moviecenter.databinding.NewPostLayoutBinding;
 import com.google.android.material.textfield.TextInputLayout;
+import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Locale;
 import java.util.stream.Stream;
 
 import androidx.appcompat.widget.SearchView;
@@ -80,14 +79,14 @@ public class MoviesListFragment extends Fragment {
 
         binding = MovieListFragmentBinding.inflate(inflater, parent, false);
 
-        movieImageResult = PermissionHelper.registerForActivityResult(this, isGranted -> {
+        movieImageResult = PermissionUtils.registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
                 galleryResultLauncherMovieImage.launch("image/*");
             }
         });
 
-        moviePosterResult = PermissionHelper.registerForActivityResult(this, isGranted -> {
+        moviePosterResult = PermissionUtils.registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
                 galleryResultLauncherMoviePoster.launch("image/*");
@@ -263,25 +262,16 @@ public class MoviesListFragment extends Fragment {
 
                 moviesListViewModel.getMovieByName(newPostBinding.newPostMovieNameEditText.getText().toString()).observe(getViewLifecycleOwner(), movie -> {
                     if(movie != null) {
-                        Bitmap movieBitmap = ImageUtils.getBitmap(movie.getPoster());
-                        if (movieBitmap != null) {
-                            newPostBinding.newPostMoviePosterImageView.setImageBitmap(movieBitmap);
-                            newPostBinding.newPostMoviePosterImageView.setBackground(null);
-                        }
+                        setNewMovieDetails(movie);
                         moviesListViewModel.setNewMoviePlot(movie.getPlot());
-                        newPostBinding.newPostMoviePosterUploadImage.setOnClickListener(null);
                         progressDialog.dismiss();
                         Toast.makeText(requireActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
                     } else {
-                        try {
-                            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                            String currentDate = df.format(Calendar.getInstance().getTime());
-                            new GetMovieDataTask(getActivity(), newPostBinding.newPostMoviePosterImageView, newPostBinding.newPostMovieNameEditText, newPostBinding.newPostMovieYearEditText, moviesListViewModel, progressDialog).execute(String.format(BASE_IMDB_MOVIE_URL, newPostBinding.newPostMovieNameEditText.getText().toString(), currentDate));
-                        } catch (Exception e) {
+                        MovieModel.getInstance().GetMovieByTitle(newPostBinding.newPostMovieNameEditText.getText().toString()).observe(getViewLifecycleOwner(), movieFromApi -> {
+                            moviesListViewModel.setNewMoviePlot(movieFromApi.getPlot());
+                            setNewMovieDetails(movieFromApi);
                             progressDialog.dismiss();
-                            Toast.makeText(requireActivity(), "Could not find movie...", Toast.LENGTH_SHORT).show();
-                            e.printStackTrace();
-                        }
+                        });
                     }
                 });
             }
@@ -293,14 +283,8 @@ public class MoviesListFragment extends Fragment {
                 try {
                     moviesListViewModel.getMovieByNameAndYear(newPostBinding.newPostMovieNameEditText.getText().toString(), Integer.parseInt(newPostBinding.newPostMovieYearEditText.getText().toString())).observe(getViewLifecycleOwner(), movie -> {
                         if(movie != null) {
-                            Bitmap movieBitmap = ImageUtils.getBitmap(movie.getPoster());
-                            if(movieBitmap != null) {
-                                newPostBinding.newPostMoviePosterImageView.setImageBitmap(movieBitmap);
-                                newPostBinding.newPostMoviePosterImageView.setBackground(null);
-                            }
-                            newPostBinding.newPostMoviePosterImageView.setBackground(null);
+                            setNewMovieDetails(movie);
                             moviesListViewModel.setNewMoviePlot(movie.getPlot());
-                            newPostBinding.newPostMoviePosterUploadImage.setOnClickListener(null);
                             progressDialog.dismiss();
                             Toast.makeText(requireActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
                         }
@@ -430,5 +414,14 @@ public class MoviesListFragment extends Fragment {
         }
 
         return isValid;
+    }
+
+    private void setNewMovieDetails(Movie movie) {
+        newPostBinding.newPostMovieNameEditText.setText(movie.getName());
+        newPostBinding.newPostMovieYearEditText.setText(String.valueOf(movie.getYear()));
+        newPostBinding.newPostMovieYearEditText.setEnabled(false);
+        Picasso.get().load(movie.getPosterUrl()).placeholder(R.drawable.default_post_placeholder).into(newPostBinding.newPostMoviePosterImageView);
+        newPostBinding.newPostMoviePosterImageView.setBackground(null);
+        newPostBinding.newPostMoviePosterUploadImage.setOnClickListener(null);
     }
 }

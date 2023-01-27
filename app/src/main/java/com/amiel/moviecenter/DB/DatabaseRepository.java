@@ -7,9 +7,11 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.amiel.moviecenter.DB.AsyncTask.InsertAsyncTask;
+import com.amiel.moviecenter.DB.LocalDB.AppLocalDatabase;
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.DB.Model.User;
+import com.amiel.moviecenter.DB.RemoteDB.AppRemoteFirebaseDatabase;
 import com.amiel.moviecenter.Utils.Listeners.GenericListener;
 import com.amiel.moviecenter.Utils.LoadingState;
 import com.amiel.moviecenter.Utils.PreferencesManager;

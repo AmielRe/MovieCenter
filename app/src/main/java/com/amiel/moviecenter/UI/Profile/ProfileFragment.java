@@ -22,7 +22,7 @@ import com.amiel.moviecenter.R;
 import com.amiel.moviecenter.UI.Authentication.FirebaseAuthHandler;
 import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
 import com.amiel.moviecenter.Utils.ImageUtils;
-import com.amiel.moviecenter.Utils.PermissionHelper;
+import com.amiel.moviecenter.Utils.PermissionUtils;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.amiel.moviecenter.databinding.ProfileFragmentBinding;
 import com.squareup.picasso.Picasso;
@@ -43,7 +43,7 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
         binding = ProfileFragmentBinding.inflate(inflater, parent, false);
 
-        permissionResult = PermissionHelper.registerForActivityResult(this, isGranted -> {
+        permissionResult = PermissionUtils.registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
                 cameraResult.launch(null);

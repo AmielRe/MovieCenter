@@ -3,6 +3,7 @@ package com.amiel.moviecenter.DB.DAO;
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Query;
+import androidx.room.RewriteQueriesToDropUnusedColumns;
 
 import com.amiel.moviecenter.DB.Model.Movie;
 import com.amiel.moviecenter.DB.Model.Post;
@@ -14,6 +15,7 @@ import java.util.Map;
 @Dao
 public interface PostDao extends BaseDao<Post>{
 
+    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT * FROM Users " +
             "JOIN Posts ON Posts.userId = Users.user_id " +
             "INNER JOIN Movies ON Posts.movieId = Movies.movie_id " +

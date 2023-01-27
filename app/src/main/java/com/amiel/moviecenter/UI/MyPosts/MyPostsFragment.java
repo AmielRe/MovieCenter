@@ -27,12 +27,11 @@ import com.amiel.moviecenter.DB.Model.Post;
 import com.amiel.moviecenter.Utils.FirebaseStorageHandler;
 import com.amiel.moviecenter.Utils.ImageUtils;
 import com.amiel.moviecenter.Utils.LoadingState;
-import com.amiel.moviecenter.Utils.PermissionHelper;
+import com.amiel.moviecenter.Utils.PermissionUtils;
 import com.amiel.moviecenter.Utils.ViewModelFactory;
 import com.amiel.moviecenter.databinding.MyPostsFragmentBinding;
 
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class MyPostsFragment extends Fragment {
 
@@ -54,7 +53,7 @@ public class MyPostsFragment extends Fragment {
         binding = MyPostsFragmentBinding.inflate(inflater, parent, false);
         myPostsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), FirebaseAuthHandler.getInstance().getCurrentUserEmail())).get(MyPostsViewModel.class);
 
-        permissionResult = PermissionHelper.registerForActivityResult(this, isGranted -> {
+        permissionResult = PermissionUtils.registerForActivityResult(this, isGranted -> {
             // If permission granted
             if(!isGranted.containsValue(false)) {
                 cameraResult.launch(null);
