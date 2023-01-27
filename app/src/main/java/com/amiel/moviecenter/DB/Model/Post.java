@@ -95,6 +95,14 @@ public class Post {
         this.postImageUrl = postImageUrl;
     }
 
+    public byte[] getImage() {
+        return image;
+    }
+
+    public void setImage(byte[] image) {
+        this.image = image;
+    }
+
     @NonNull
     public String getId() {
         return id;

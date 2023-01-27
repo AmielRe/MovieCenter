@@ -86,7 +86,6 @@ public class User {
         this.email = email;
     }
 
-    @NonNull
     public byte[] getProfileImage() {
         return profileImage;
     }

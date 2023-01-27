@@ -125,7 +125,6 @@ public class Movie {
         return plot;
     }
 
-    @NonNull
     public byte[] getPoster() {
         return poster;
     }
