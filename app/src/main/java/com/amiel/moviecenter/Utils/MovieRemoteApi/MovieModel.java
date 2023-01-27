@@ -1,5 +1,6 @@
 package com.amiel.moviecenter.Utils.MovieRemoteApi;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
@@ -9,6 +10,9 @@ import com.amiel.moviecenter.DB.Model.Movie;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -30,12 +34,20 @@ public class MovieModel {
     }
 
     private MovieModel() {
+        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(1, TimeUnit.MINUTES)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(15, TimeUnit.SECONDS)
+                .build();
+
         Gson gson = new GsonBuilder()
                 .setLenient()
                 .excludeFieldsWithoutExposeAnnotation()
                 .create();
+
         retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
+                .client(okHttpClient)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
         movieApi = retrofit.create(MovieApi.class);
@@ -57,7 +69,7 @@ public class MovieModel {
 
             @Override
             public void onFailure(Call<Movie> call, Throwable t) {
-
+                result.setValue(null);
             }
         });
 

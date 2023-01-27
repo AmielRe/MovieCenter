@@ -269,9 +269,14 @@ public class MoviesListFragment extends Fragment {
                         setNewMovieDetails(movie);
                         moviesListViewModel.setNewMoviePlot(movie.getPlot());
                         progressDialog.dismiss();
-                        Toast.makeText(requireActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
                     } else {
                         MovieModel.getInstance().GetMovieByTitle(newPostBinding.newPostMovieNameEditText.getText().toString()).observe(getViewLifecycleOwner(), movieFromApi -> {
+                            if(movieFromApi == null) {
+                                Toast.makeText(requireActivity(), "Error fetching movie", Toast.LENGTH_SHORT).show();
+                                progressDialog.dismiss();
+                                return;
+                            }
+
                             moviesListViewModel.setNewMoviePlot(movieFromApi.getPlot());
                             setNewMovieDetails(movieFromApi);
                             progressDialog.dismiss();
@@ -290,7 +295,6 @@ public class MoviesListFragment extends Fragment {
                     if(movie != null) {
                         setNewMovieDetails(movie);
                         moviesListViewModel.setNewMoviePlot(movie.getPlot());
-                        Toast.makeText(requireActivity(), "Found matching movie!", Toast.LENGTH_SHORT).show();
                     }
                     progressDialog.dismiss();
                 });
