@@ -1,5 +1,6 @@
 package com.amiel.moviecenter.UI.MovieDetails;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -64,9 +65,14 @@ public class MovieDetailsFragment extends Fragment {
 
         binding.movieDetailsMovieName.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getName());
         binding.movieDetailsMovieYear.setText(String.valueOf(MovieDetailsFragmentArgs.fromBundle(getArguments()).getYear()));
-        if(!MovieDetailsFragmentArgs.fromBundle(getArguments()).getImageurl().isEmpty()) {
+
+        Bitmap movieBitmap = MovieDetailsFragmentArgs.fromBundle(getArguments()).getImage();
+        if(movieBitmap != null) {
+            binding.movieDetailsMovieImage.setImageBitmap(movieBitmap);
+        } else if(!MovieDetailsFragmentArgs.fromBundle(getArguments()).getImageurl().isEmpty()) {
             Picasso.get().load(MovieDetailsFragmentArgs.fromBundle(getArguments()).getImageurl()).placeholder(R.drawable.default_post_placeholder).into(binding.movieDetailsMovieImage);
         }
+
         binding.movieDetailsMovieRating.setRating(MovieDetailsFragmentArgs.fromBundle(getArguments()).getRating());
         binding.movieDetailsMovieDescription.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getPlot());
 
