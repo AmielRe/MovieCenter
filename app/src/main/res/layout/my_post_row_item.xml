@@ -86,7 +86,7 @@
             android:padding="15dp"
             android:textAlignment="center"
             app:layout_constrainedWidth="true"
-            android:inputType="textMultiLine"
+            android:inputType="textMultiLine|textCapSentences"
             android:background="@null"
             android:gravity="center"
             app:layout_constraintBottom_toBottomOf="@+id/my_post_row_item_post_image"
