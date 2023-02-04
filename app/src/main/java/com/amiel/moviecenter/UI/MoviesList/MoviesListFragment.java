@@ -416,8 +416,10 @@ public class MoviesListFragment extends Fragment {
         byte[] moviePoster = movie.getPoster();
         if(moviePoster != null) {
             newPostBinding.newPostMoviePosterImageView.setImageBitmap(ImageUtils.getBitmap(moviePoster));
-        } else if(!movie.getPosterUrl().isEmpty()) {
+        } else if(movie.getPosterUrl() != null && !movie.getPosterUrl().isEmpty()) {
             Picasso.get().load(movie.getPosterUrl()).placeholder(R.drawable.default_post_placeholder).into(newPostBinding.newPostMoviePosterImageView);
+        } else {
+            newPostBinding.newPostMoviePosterImageView.setImageResource(R.drawable.default_post_placeholder);
         }
         newPostBinding.newPostMoviePosterImageView.setBackground(null);
         newPostBinding.newPostMoviePosterUploadImage.setOnClickListener(null);

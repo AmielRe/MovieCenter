@@ -33,6 +33,8 @@ class MoviesListViewHolder extends RecyclerView.ViewHolder{
             binding.rowItemMovieImage.setImageBitmap(ImageUtils.getBitmap(moviePoster));
         } else if(!movie.getPosterUrl().isEmpty()) {
             Picasso.get().load(movie.getPosterUrl()).placeholder(R.drawable.default_post_placeholder).into(binding.rowItemMovieImage);
+        } else {
+            binding.rowItemMovieImage.setImageResource(R.drawable.default_post_placeholder);
         }
     }
 }

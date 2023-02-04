@@ -34,12 +34,16 @@ class PostDetailsViewHolder extends RecyclerView.ViewHolder{
             binding.moviePostRowItemPostImage.setImageBitmap(ImageUtils.getBitmap(postImage));
         } else if(!post.post.getPostImageUrl().isEmpty()) {
             Picasso.get().load(post.post.getPostImageUrl()).placeholder(R.drawable.default_post_placeholder).into(binding.moviePostRowItemPostImage);
+        } else {
+            binding.moviePostRowItemPostImage.setImageResource(R.drawable.default_post_placeholder);
         }
 
         if(postUserImage != null) {
             binding.moviePostRowItemUserImage.setImageBitmap(ImageUtils.getBitmap(postUserImage));
         } else if(!post.postUser.getProfileImageUrl().isEmpty()) {
             Picasso.get().load(post.postUser.getProfileImageUrl()).placeholder(R.drawable.default_profile_image).into(binding.moviePostRowItemUserImage);
+        } else {
+            binding.moviePostRowItemUserImage.setImageResource(R.drawable.default_profile_image);
         }
     }
 }
