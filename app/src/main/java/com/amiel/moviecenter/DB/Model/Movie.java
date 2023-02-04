@@ -77,7 +77,6 @@ public class Movie {
 
     }
 
-    @NonNull
     public String getPosterUrl() {
         return posterUrl;
     }
