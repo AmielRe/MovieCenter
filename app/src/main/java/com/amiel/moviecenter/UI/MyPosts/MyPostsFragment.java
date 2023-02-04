@@ -67,6 +67,7 @@ public class MyPostsFragment extends Fragment {
                 FirebaseStorageHandler.getInstance().uploadPostImage(data, updatedPost.getId(), imageUrl -> {
                     if (imageUrl != null) {
                         updatedPost.setPostImageUrl(imageUrl);
+                        updatedPost.setImage(ImageUtils.getBytes(data));
                         myPostsViewModel.updatePost(updatedPost);
                     }
                 });
@@ -82,6 +83,7 @@ public class MyPostsFragment extends Fragment {
                     FirebaseStorageHandler.getInstance().uploadPostImage(res, updatedPost.getId(), imageUrl -> {
                         if (imageUrl != null) {
                             updatedPost.setPostImageUrl(imageUrl);
+                            updatedPost.setImage(ImageUtils.getBytes(res));
                             myPostsViewModel.updatePost(updatedPost);
                         }
                     });
@@ -136,7 +138,7 @@ public class MyPostsFragment extends Fragment {
                         dialog.dismiss();
                     });
             alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.no),
-                    (DialogInterface.OnClickListener) (dialog, which) -> dialog.dismiss());
+                    (dialog, which) -> dialog.dismiss());
             alertDialog.show();
         });
 

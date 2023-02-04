@@ -57,6 +57,11 @@
             app:argType="string" />
 
         <argument
+            android:name="image"
+            app:argType="android.graphics.Bitmap"
+            app:nullable="true" />
+
+        <argument
             android:name="imageurl"
             app:argType="string" />
 

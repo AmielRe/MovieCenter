@@ -96,7 +96,12 @@ public class ProfileFragment extends Fragment {
             binding.profileFragmentEmailEditText.setText(email);
             binding.profileFragmentUsernameEditText.setText(user.username);
             binding.profileFragmentUsernameEditText.setSelection(binding.profileFragmentUsernameEditText.getText().length());
-            Picasso.get().load(user.getProfileImageUrl()).placeholder(R.drawable.default_profile_image).into(binding.profileFragmentImage);
+            byte[] userImage = user.getProfileImage();
+            if(userImage != null) {
+                binding.profileFragmentImage.setImageBitmap(ImageUtils.getBitmap(userImage));
+            } else {
+                Picasso.get().load(user.getProfileImageUrl()).placeholder(R.drawable.default_profile_image).into(binding.profileFragmentImage);
+            }
         });
 
         binding.profileFragmentImage.setOnClickListener(v -> ImageUtils.selectImage(this, galleryResult, cameraResult, permissionResult));
@@ -107,7 +112,7 @@ public class ProfileFragment extends Fragment {
                 byte[] userUpdatedProfileImage = ImageUtils.getBytes(((BitmapDrawable)binding.profileFragmentImage.getDrawable()).getBitmap());
                 updatedUser.setUsername(binding.profileFragmentUsernameEditText.getText().toString());
                 updatedUser.setProfileImage(userUpdatedProfileImage);
-                FirebaseStorageHandler.getInstance().uploadUserImage(((BitmapDrawable)binding.profileFragmentImage.getDrawable()).getBitmap(), updatedUser.getId(), data -> {
+                FirebaseStorageHandler.getInstance().uploadUserImage(ImageUtils.getBitmap(userUpdatedProfileImage), updatedUser.getId(), data -> {
                     if(data != null) {
                         updatedUser.setProfileImageUrl(data);
                     }

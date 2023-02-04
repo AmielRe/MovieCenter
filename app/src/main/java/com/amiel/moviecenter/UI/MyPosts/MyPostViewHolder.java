@@ -28,7 +28,7 @@ public class MyPostViewHolder extends RecyclerView.ViewHolder{
 
         binding.myPostRowItemPostText.setOnFocusChangeListener((view1, inFocus) -> {
             int pos = getAdapterPosition();
-            if(!inFocus) {
+            if(!inFocus && pos != -1) {
                 hideKeyboard(view1);
                 toggleEditText(binding.myPostRowItemPostText);
                 final Bitmap postImageBitmap = ((BitmapDrawable) binding.myPostRowItemPostImage.getDrawable()).getBitmap();

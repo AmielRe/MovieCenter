@@ -172,7 +172,7 @@ public class ImageUtils {
     public static void selectImage(Fragment context, ActivityResultLauncher<String> galleryResultLauncher, ActivityResultLauncher<Void> cameraResultLauncher, ActivityResultLauncher<String[]> permissionResult) {
         final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
         AlertDialog.Builder builder = new AlertDialog.Builder(context.requireActivity());
-        builder.setTitle("Choose profile picture");
+        builder.setTitle("Choose picture");
         builder.setItems(options, (dialog, item) -> {
             if (options[item].equals("Take Photo"))
             {

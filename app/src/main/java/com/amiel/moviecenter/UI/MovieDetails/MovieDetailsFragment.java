@@ -1,5 +1,6 @@
 package com.amiel.moviecenter.UI.MovieDetails;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -30,6 +31,8 @@ public class MovieDetailsFragment extends Fragment {
     PostDetailsRecyclerAdapter adapter;
     MovieDetailsFragmentBinding binding;
 
+    MovieDetailsViewModel movieDetailsViewModel;
+
     // The onCreateView method is called when Fragment should create its View object hierarchy,
     // either dynamically or via XML layout inflation.
     @Override
@@ -43,30 +46,30 @@ public class MovieDetailsFragment extends Fragment {
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        MovieDetailsViewModel movieDetailsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), MovieDetailsFragmentArgs.fromBundle(getArguments()).getId())).get(MovieDetailsViewModel.class);
+        movieDetailsViewModel = new ViewModelProvider(this, new ViewModelFactory(requireActivity().getApplication(), MovieDetailsFragmentArgs.fromBundle(getArguments()).getId())).get(MovieDetailsViewModel.class);
 
         binding.movieDetailsRecyclerView.setHasFixedSize(true);
 
+        adapter = new PostDetailsRecyclerAdapter(new ArrayList<>());
+        binding.movieDetailsRecyclerView.setAdapter(adapter);
+
         // Set adapter to recycler view
         binding.movieDetailsRecyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
-        movieDetailsViewModel.getPosts().observe(getViewLifecycleOwner(), postsMap -> {
-            List<PostDetailsItem> postsRowItems = new ArrayList<>();
-            for(Map.Entry<User, List<Post>> currEntry : postsMap.entrySet()) {
-                for(Post currPost : currEntry.getValue()) {
-                    if(!currPost.getDeleted()) {
-                        postsRowItems.add(new PostDetailsItem(currEntry.getKey(), currPost));
-                    }
-                }
-                adapter = new PostDetailsRecyclerAdapter(postsRowItems);
-                binding.movieDetailsRecyclerView.setAdapter(adapter);
-            }
-        });
+
+        updatePosts();
 
         binding.movieDetailsMovieName.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getName());
         binding.movieDetailsMovieYear.setText(String.valueOf(MovieDetailsFragmentArgs.fromBundle(getArguments()).getYear()));
-        if(!MovieDetailsFragmentArgs.fromBundle(getArguments()).getImageurl().isEmpty()) {
+
+        Bitmap movieBitmap = MovieDetailsFragmentArgs.fromBundle(getArguments()).getImage();
+        if(movieBitmap != null) {
+            binding.movieDetailsMovieImage.setImageBitmap(movieBitmap);
+        } else if(!MovieDetailsFragmentArgs.fromBundle(getArguments()).getImageurl().isEmpty()) {
             Picasso.get().load(MovieDetailsFragmentArgs.fromBundle(getArguments()).getImageurl()).placeholder(R.drawable.default_post_placeholder).into(binding.movieDetailsMovieImage);
+        } else {
+            binding.movieDetailsMovieImage.setImageResource(R.drawable.default_post_placeholder);
         }
+
         binding.movieDetailsMovieRating.setRating(MovieDetailsFragmentArgs.fromBundle(getArguments()).getRating());
         binding.movieDetailsMovieDescription.setText(MovieDetailsFragmentArgs.fromBundle(getArguments()).getPlot());
 
@@ -83,6 +86,19 @@ public class MovieDetailsFragment extends Fragment {
 
             @Override
             public void onPrepareMenu(@NonNull Menu menu) {}
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updatePosts();
+    }
+
+    public void updatePosts() {
+        movieDetailsViewModel.getPosts().observe(getViewLifecycleOwner(), postsMap -> {
+            adapter.clear();
+            adapter.addAll(postsMap);
         });
     }
 }
